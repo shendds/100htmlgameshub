@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>Rock Paper Scissors | 100 HTML Games</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        body {
+            background: #0a0a0f;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Outfit', sans-serif;
+            color: #fff;
+            padding: 24px
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 900;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #06b6d4, #7c3aed);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text
+        }
+
+        .scoreboard {
+            display: flex;
+            gap: 24px;
+            margin-bottom: 24px
+        }
+
+        .sb {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 14px;
+            padding: 12px 24px;
+            text-align: center;
+            min-width: 90px
+        }
+
+        .sb-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #64748b
+        }
+
+        .sb-val {
+            font-size: 2rem;
+            font-weight: 900
+        }
+
+        .arena {
+            display: flex;
+            align-items: center;
+            gap: 40px;
+            margin-bottom: 24px
+        }
+
+        .fighter {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px
+        }
+
+        .fighter-label {
+            font-size: 13px;
+            color: #64748b;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px
+        }
+
+        .choice-display {
+            font-size: 5rem;
+            width: 110px;
+            height: 110px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            transition: all .3s
+        }
+
+        .choice-display.win {
+            border-color: #22c55e;
+            box-shadow: 0 0 30px rgba(34, 197, 94, 0.3)
+        }
+
+        .choice-display.lose {
+            border-color: #ef4444;
+            box-shadow: 0 0 20px rgba(239, 68, 68, 0.2)
+        }
+
+        .vs {
+            font-size: 1.5rem;
+            font-weight: 900;
+            color: #334155
+        }
+
+        .choices {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 20px
+        }
+
+        .choice-btn {
+            width: 90px;
+            height: 90px;
+            font-size: 3rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            cursor: pointer;
+            transition: all .2s;
+            display: flex;
+            align-items: center;
+            justify-content: center
+        }
+
+        .choice-btn:hover {
+            background: rgba(124, 58, 237, 0.2);
+            border-color: rgba(124, 58, 237, 0.5);
+            transform: scale(1.1)
+        }
+
+        .choice-btn:active {
+            transform: scale(0.95)
+        }
+
+        #result {
+            font-size: 1.4rem;
+            font-weight: 900;
+            min-height: 36px;
+            text-align: center;
+            margin-bottom: 12px
+        }
+
+        .btn {
+            padding: 10px 22px;
+            background: linear-gradient(135deg, #334155, #475569);
+            border: none;
+            border-radius: 999px;
+            color: #fff;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform .15s;
+            font-family: 'Outfit', sans-serif
+        }
+
+        .btn:hover {
+            transform: scale(1.05)
+        }
+
+        .back {
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            text-decoration: none;
+            color: #64748b;
+            font-size: 13px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 6px 14px;
+            border-radius: 999px
+        }
+
+        .back:hover {
+            color: #fff
+        }
+
+        .history {
+            font-size: 1.2rem;
+            letter-spacing: 4px;
+            min-height: 24px;
+            margin-bottom: 8px;
+            color: #64748b
+        }
+    </style>
+</head>
+
+<body>
+    <a href="../../index.html" class="back">← Back to Menu</a>
+    <h1>✂️ Rock Paper Scissors</h1>
+    <div class="scoreboard">
+        <div class="sb">
+            <div class="sb-label">You</div>
+            <div class="sb-val" id="youScore" style="color:#22c55e">0</div>
+        </div>
+        <div class="sb">
+            <div class="sb-label">Draw</div>
+            <div class="sb-val" id="drawScore" style="color:#64748b">0</div>
+        </div>
+        <div class="sb">
+            <div class="sb-label">CPU</div>
+            <div class="sb-val" id="cpuScore" style="color:#ef4444">0</div>
+        </div>
+    </div>
+    <div class="arena">
+        <div class="fighter">
+            <div class="fighter-label">You</div>
+            <div class="choice-display" id="youChoice">❓</div>
+        </div>
+        <div class="vs">VS</div>
+        <div class="fighter">
+            <div class="fighter-label">CPU</div>
+            <div class="choice-display" id="cpuChoice">❓</div>
+        </div>
+    </div>
+    <div id="result">Choose your weapon!</div>
+    <div class="choices">
+        <button class="choice-btn" data-choice="rock" title="Rock">🪨</button>
+        <button class="choice-btn" data-choice="paper" title="Paper">📄</button>
+        <button class="choice-btn" data-choice="scissors" title="Scissors">✂️</button>
+    </div>
+    <div class="history" id="history"></div>
+    <button class="btn" id="resetBtn">Reset Score</button>
+    <script>
+        const ICONS = { rock: '🪨', paper: '📄', scissors: '✂️' };
+        const BEATS = { rock: 'scissors', paper: 'rock', scissors: 'paper' };
+        let scores = { you: 0, draw: 0, cpu: 0 }; let history = [];
+
+        function play(choice) {
+            const cpu = ['rock', 'paper', 'scissors'][Math.floor(Math.random() * 3)];
+            document.getElementById('youChoice').textContent = ICONS[choice]; document.getElementById('cpuChoice').textContent = ICONS[cpu];
+            const yu = document.getElementById('youChoice'), cu = document.getElementById('cpuChoice');
+            yu.className = 'choice-display'; cu.className = 'choice-display';
+            let res, emoji;
+            if (choice === cpu) { scores.draw++; res = 'draw'; document.getElementById('result').textContent = "🤝 It's a Draw!"; document.getElementById('result').style.color = '#94a3b8'; emoji = '➖'; }
+            else if (BEATS[choice] === cpu) { scores.you++; res = 'win'; document.getElementById('result').textContent = '🏆 You Win!'; document.getElementById('result').style.color = '#22c55e'; yu.classList.add('win'); cu.classList.add('lose'); emoji = '✅'; }
+            else { scores.cpu++; res = 'lose'; document.getElementById('result').textContent = '💀 CPU Wins!'; document.getElementById('result').style.color = '#ef4444'; cu.classList.add('win'); yu.classList.add('lose'); emoji = '❌'; }
+            history.unshift(emoji); if (history.length > 10) history.pop(); document.getElementById('history').textContent = history.join('');
+            document.getElementById('youScore').textContent = scores.you; document.getElementById('drawScore').textContent = scores.draw; document.getElementById('cpuScore').textContent = scores.cpu;
+        }
+
+        document.querySelectorAll('.choice-btn').forEach(b => b.addEventListener('click', () => play(b.dataset.choice)));
+        document.getElementById('resetBtn').addEventListener('click', () => { scores = { you: 0, draw: 0, cpu: 0 }; history = [];['youScore', 'drawScore', 'cpuScore'].forEach(id => document.getElementById(id).textContent = 0); document.getElementById('history').textContent = ''; document.getElementById('result').textContent = 'Choose your weapon!'; document.getElementById('result').style.color = '#fff'; document.getElementById('youChoice').textContent = '❓'; document.getElementById('cpuChoice').textContent = '❓'; document.getElementById('youChoice').className = 'choice-display'; document.getElementById('cpuChoice').className = 'choice-display'; });
+    </script>
+</body>
+
+</html>

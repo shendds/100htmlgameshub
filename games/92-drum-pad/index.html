@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>Drum Pad | 100 HTML Games</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        body {
+            background: #0a0a0f;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Outfit', sans-serif;
+            color: #fff;
+            padding: 24px
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 900;
+            margin-bottom: 4px;
+            background: linear-gradient(135deg, #ef4444, #f97316);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text
+        }
+
+        .kit-btns {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+            justify-content: center
+        }
+
+        .kit-btn {
+            padding: 5px 14px;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 999px;
+            color: #94a3b8;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: 'Outfit', sans-serif;
+            transition: all .2s
+        }
+
+        .kit-btn.active {
+            background: rgba(239, 68, 68, 0.3);
+            border-color: rgba(239, 68, 68, 0.6);
+            color: #fca5a5
+        }
+
+        .pad-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin-bottom: 16px;
+            width: 440px;
+            max-width: 100%
+        }
+
+        .pad {
+            height: 100px;
+            border-radius: 14px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            transition: all .07s;
+            font-weight: 900;
+            user-select: none;
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4)
+        }
+
+        .pad:active,
+        .pad.hit {
+            transform: scale(0.92);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2) !important
+        }
+
+        .pad-icon {
+            font-size: 2rem;
+            margin-bottom: 4px
+        }
+
+        .pad-name {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            opacity: 0.8
+        }
+
+        .pad-key {
+            font-size: 11px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 4px;
+            padding: 2px 6px;
+            margin-top: 3px;
+            opacity: 0.7
+        }
+
+        .controls {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+            margin-bottom: 12px
+        }
+
+        .ctrl-label {
+            font-size: 13px;
+            color: #64748b
+        }
+
+        input[type=range] {
+            width: 100px;
+            accent-color: #ef4444
+        }
+
+        #visualization {
+            display: flex;
+            gap: 3px;
+            align-items: flex-end;
+            height: 50px;
+            width: 440px;
+            max-width: 100%;
+            margin-bottom: 8px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 10px;
+            padding: 8px;
+            overflow: hidden
+        }
+
+        .bar {
+            flex: 1;
+            background: linear-gradient(to top, #ef4444, #f97316);
+            border-radius: 3px;
+            transition: height .1s;
+            min-height: 2px
+        }
+
+        .back {
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            text-decoration: none;
+            color: #64748b;
+            font-size: 13px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 6px 14px;
+            border-radius: 999px
+        }
+
+        .back:hover {
+            color: #fff
+        }
+
+        .hint {
+            font-size: 12px;
+            color: #334155;
+            margin-top: 6px
+        }
+    </style>
+</head>
+
+<body>
+    <a href="../../index.html" class="back">← Back to Menu</a>
+    <h1>🥁 Drum Pad</h1>
+    <div class="kit-btns">
+        <button class="kit-btn active" data-kit="trap">Trap 🎵</button>
+        <button class="kit-btn" data-kit="rock">Rock 🎸</button>
+        <button class="kit-btn" data-kit="electronic">Electronic ⚡</button>
+    </div>
+    <div id="visualization"></div>
+    <div class="pad-grid" id="padGrid"></div>
+    <div class="controls">
+        <span class="ctrl-label">Volume:</span>
+        <input type="range" id="vol" min="0" max="1" step="0.05" value="0.7" />
+        <span class="ctrl-label">Reverb:</span>
+        <input type="range" id="reverb" min="0" max="1" step="0.1" value="0.2" />
+    </div>
+    <div class="hint">Click pads or use keyboard keys shown</div>
+    <script>
+        const audio = new (window.AudioContext || window.webkitAudioContext)();
+        let vol = 0.7, reverbAmount = 0.2;
+
+        const KITS = {
+            trap: {
+                name: 'Trap', pads: [
+                    { name: 'Kick', key: 'q', icon: '🥁', color: '#ef4444', freq: 55, type: 'kick' },
+                    { name: 'Snare', key: 'w', icon: '💥', color: '#f97316', freq: 200, type: 'snare' },
+                    { name: 'Hi-Hat', key: 'e', icon: '🔔', color: '#eab308', freq: 8000, type: 'hihat' },
+                    { name: 'Open HH', key: 'r', icon: '🔓', color: '#eab308', freq: 6000, type: 'openhat' },
+                    { name: 'Tom 1', key: 'a', icon: '🎵', color: '#22c55e', freq: 120, type: 'tom' },
+                    { name: 'Tom 2', key: 's', icon: '🎵', color: '#06b6d4', freq: 90, type: 'tom' },
+                    { name: 'Cymbal', key: 'd', icon: '✨', color: '#7c3aed', freq: 5000, type: 'cymbal' },
+                    { name: 'Clap', key: 'f', icon: '👏', color: '#ec4899', freq: 1000, type: 'clap' },
+                ]
+            },
+            rock: {
+                name: 'Rock', pads: [
+                    { name: 'Kick', key: 'q', icon: '🥁', color: '#ef4444', freq: 50, type: 'kick' },
+                    { name: 'Snare', key: 'w', icon: '💥', color: '#f97316', freq: 250, type: 'snare' },
+                    { name: 'Hi-Hat', key: 'e', icon: '🔔', color: '#eab308', freq: 9000, type: 'hihat' },
+                    { name: 'Crash', key: 'r', icon: '💫', color: '#22c55e', freq: 4000, type: 'cymbal' },
+                    { name: 'Tom 1', key: 'a', icon: '🎸', color: '#06b6d4', freq: 150, type: 'tom' },
+                    { name: 'Tom 2', key: 's', icon: '🎸', color: '#7c3aed', freq: 100, type: 'tom' },
+                    { name: 'Floor T', key: 'd', icon: '🎵', color: '#ec4899', freq: 70, type: 'tom' },
+                    { name: 'Ride', key: 'f', icon: '⭐', color: '#94a3b8', freq: 3000, type: 'cymbal' },
+                ]
+            },
+            electronic: {
+                name: 'Electronic', pads: [
+                    { name: 'Bass', key: 'q', icon: '🔊', color: '#ef4444', freq: 60, type: 'bass' },
+                    { name: 'Snare', key: 'w', icon: '⚡', color: '#f97316', freq: 300, type: 'elec' },
+                    { name: 'HH', key: 'e', icon: '💎', color: '#eab308', freq: 10000, type: 'hihat' },
+                    { name: 'Synth', key: 'r', icon: '🌊', color: '#22c55e', freq: 440, type: 'synth' },
+                    { name: 'Zap', key: 'a', icon: '⚡', color: '#06b6d4', freq: 800, type: 'zap' },
+                    { name: 'Boom', key: 's', icon: '💣', color: '#7c3aed', freq: 40, type: 'kick' },
+                    { name: 'Beep', key: 'd', icon: '📡', color: '#ec4899', freq: 2000, type: 'synth' },
+                    { name: 'Noise', key: 'f', icon: '📻', color: '#94a3b8', freq: 0, type: 'noise' },
+                ]
+            },
+        };
+        let currentKit = 'trap';
+        const VIZ = []; for (let i = 0; i < 30; i++) { const b = document.createElement('div'); b.className = 'bar'; document.getElementById('visualization').appendChild(b); VIZ.push(b); }
+        let vizValues = Array(30).fill(0); function decayViz() { vizValues = vizValues.map(v => v * 0.9); VIZ.forEach((b, i) => { b.style.height = Math.max(2, vizValues[i] * 34) + 'px'; }); requestAnimationFrame(decayViz); } decayViz();
+
+        function playSound(type, freq) {
+            const now = audio.currentTime; const gainNode = audio.createGain(); gainNode.gain.setValueAtTime(0, now); gainNode.gain.linearRampToValueAtTime(vol, now + 0.005); gainNode.gain.exponentialRampToValueAtTime(0.001, now + (type === 'openhat' ? 0.4 : 0.2));
+            if (type === 'kick' || type === 'bass') { const osc = audio.createOscillator(); osc.type = 'sine'; osc.frequency.setValueAtTime(freq * 2, now); osc.frequency.exponentialRampToValueAtTime(freq, now + 0.1); osc.connect(gainNode); gainNode.connect(audio.destination); osc.start(now); osc.stop(now + 0.5); }
+            else if (type === 'snare' || type === 'clap' || type === 'elec') { const buf = audio.createBuffer(1, audio.sampleRate * 0.15, audio.sampleRate); const data = buf.getChannelData(0); for (let i = 0; i < data.length; i++)data[i] = (Math.random() - 0.5) * 0.8; const src = audio.createBufferSource(); src.buffer = buf; const filter = audio.createBiquadFilter(); filter.type = 'bandpass'; filter.frequency.value = freq; src.connect(filter); filter.connect(gainNode); gainNode.connect(audio.destination); src.start(now); }
+            else if (type === 'hihat' || type === 'openhat' || type === 'cymbal') { const buf = audio.createBuffer(1, audio.sampleRate * 0.3, audio.sampleRate); const data = buf.getChannelData(0); for (let i = 0; i < data.length; i++)data[i] = (Math.random() - 0.5); const src = audio.createBufferSource(); src.buffer = buf; const hp = audio.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = freq; src.connect(hp); hp.connect(gainNode); gainNode.connect(audio.destination); src.start(now); }
+            else if (type === 'tom') { const osc = audio.createOscillator(); osc.type = 'sine'; osc.frequency.setValueAtTime(freq * 1.5, now); osc.frequency.exponentialRampToValueAtTime(freq, now + 0.08); osc.connect(gainNode); gainNode.connect(audio.destination); osc.start(now); osc.stop(now + 0.3); }
+            else if (type === 'synth' || type === 'zap') { const osc = audio.createOscillator(); osc.type = 'square'; osc.frequency.setValueAtTime(freq, now); osc.frequency.exponentialRampToValueAtTime(freq / 2, now + 0.1); osc.connect(gainNode); gainNode.connect(audio.destination); osc.start(now); osc.stop(now + 0.2); }
+            else if (type === 'noise') { const buf = audio.createBuffer(1, audio.sampleRate * 0.1, audio.sampleRate); const data = buf.getChannelData(0); for (let i = 0; i < data.length; i++)data[i] = (Math.random() - 0.5); const src = audio.createBufferSource(); src.buffer = buf; src.connect(gainNode); gainNode.connect(audio.destination); src.start(now); }
+            // visualize
+            const ri = Math.floor(Math.random() * 10) + 10; for (let i = ri - 5; i < ri + 5; i++) { if (i >= 0 && i < 30) vizValues[i] = Math.min(1, vizValues[i] + (0.5 + Math.random() * 0.5)); }
+        }
+
+        function buildPads() {
+            const grid = document.getElementById('padGrid'); grid.innerHTML = '';
+            KITS[currentKit].pads.forEach((pad) => {
+                const p = document.createElement('div'); p.className = 'pad'; p.style.background = `linear-gradient(135deg,${pad.color}33,${pad.color}11)`; p.style.borderColor = `${pad.color}44`; p.style.boxShadow = `0 6px 16px rgba(0,0,0,0.4),0 0 20px ${pad.color}22`;
+                p.innerHTML = `<div class="pad-icon">${pad.icon}</div><div class="pad-name">${pad.name}</div><div class="pad-key">${pad.key.toUpperCase()}</div>`;
+                const hit = () => { playSound(pad.type, pad.freq); p.classList.add('hit'); p.style.background = `linear-gradient(135deg,${pad.color}88,${pad.color}44)`; setTimeout(() => { p.classList.remove('hit'); p.style.background = `linear-gradient(135deg,${pad.color}33,${pad.color}11)`; }, 100); };
+                p.addEventListener('mousedown', hit); p.addEventListener('touchstart', e => { e.preventDefault(); hit(); }, { passive: false });
+                grid.appendChild(p);
+            });
+        }
+
+        const KEY_MAP = {};
+        function updateKeyMap() { Object.keys(KEY_MAP).forEach(k => delete KEY_MAP[k]); KITS[currentKit].pads.forEach(p => { KEY_MAP[p.key] = p; }); }
+        document.addEventListener('keydown', e => { if (e.repeat) return; const p = KEY_MAP[e.key.toLowerCase()]; if (p) { playSound(p.type, p.freq); document.querySelectorAll('.pad').forEach((el, i) => { if (KITS[currentKit].pads[i].key === e.key.toLowerCase()) { el.classList.add('hit'); setTimeout(() => el.classList.remove('hit'), 100); } }); } });
+        document.querySelectorAll('.kit-btn').forEach(b => { b.addEventListener('click', () => { document.querySelectorAll('.kit-btn').forEach(x => x.classList.remove('active')); b.classList.add('active'); currentKit = b.dataset.kit; buildPads(); updateKeyMap(); }); });
+        document.getElementById('vol').addEventListener('input', e => vol = parseFloat(e.target.value));
+        buildPads(); updateKeyMap();
+    </script>
+</body>
+
+</html>

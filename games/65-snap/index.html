@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>Snap | 100 HTML Games</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        body {
+            background: #0a0a0f;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Outfit', sans-serif;
+            color: #fff;
+            padding: 24px
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 900;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #f59e0b, #ef4444);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text
+        }
+
+        .info {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 14px;
+            font-size: 14px;
+            color: #64748b
+        }
+
+        .info b {
+            color: #f59e0b;
+            font-size: 1.2em
+        }
+
+        .pile {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            margin: 20px 0
+        }
+
+        .card {
+            width: 80px;
+            height: 112px;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            border: 2px solid rgba(255, 255, 255, 0.15);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4)
+        }
+
+        .card.face-up {
+            background: linear-gradient(to bottom right, #fff, #f8fafc)
+        }
+
+        .card.red {
+            color: #dc2626
+        }
+
+        .card.black {
+            color: #1e293b
+        }
+
+        .card.face-down {
+            background: linear-gradient(135deg, #1e3a5f, #0f172a)
+        }
+
+        .card .val {
+            font-size: 1.3rem
+        }
+
+        .card .suit {
+            font-size: 1.1rem
+        }
+
+        .snap-btn {
+            width: 160px;
+            height: 60px;
+            background: linear-gradient(135deg, #ef4444, #f97316);
+            border: none;
+            border-radius: 16px;
+            color: #fff;
+            font-size: 1.5rem;
+            font-weight: 900;
+            cursor: pointer;
+            transition: all .15s;
+            font-family: 'Outfit', sans-serif;
+            margin: 12px 0;
+            box-shadow: 0 6px 20px rgba(239, 68, 68, 0.3);
+            letter-spacing: 2px
+        }
+
+        .snap-btn:hover {
+            transform: scale(1.05)
+        }
+
+        .snap-btn:active {
+            transform: scale(0.95)
+        }
+
+        #msg {
+            font-size: 1rem;
+            font-weight: 700;
+            min-height: 28px;
+            text-align: center;
+            margin: 8px 0;
+            color: #64748b
+        }
+
+        .btn {
+            padding: 10px 22px;
+            background: linear-gradient(135deg, #f59e0b, #ef4444);
+            border: none;
+            border-radius: 999px;
+            color: #fff;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: 'Outfit', sans-serif;
+            transition: transform .15s
+        }
+
+        .btn:hover {
+            transform: scale(1.05)
+        }
+
+        .flash {
+            animation: flash .2s ease
+        }
+
+        @keyframes flash {
+
+            0%,
+            100% {
+                background-color: rgba(255, 255, 255, 0)
+            }
+
+            50% {
+                background-color: rgba(255, 255, 255, 0.1)
+            }
+        }
+
+        .back {
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            text-decoration: none;
+            color: #64748b;
+            font-size: 13px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 6px 14px;
+            border-radius: 999px
+        }
+
+        .back:hover {
+            color: #fff
+        }
+    </style>
+</head>
+
+<body>
+    <a href="../../index.html" class="back">← Back to Menu</a>
+    <h1>⚡ Snap!</h1>
+    <div class="info"><span>You: <b id="yourCards">26</b></span><span>CPU: <b id="cpuCards">26</b></span></div>
+    <div class="pile">
+        <div class="card face-up" id="pileCard" style="visibility:hidden">
+            <div class="val">-</div>
+            <div class="suit">-</div>
+        </div>
+    </div>
+    <button class="snap-btn" id="snapBtn">SNAP!</button>
+    <div id="msg">Cards flip automatically. Press SNAP when two match!</div>
+    <button class="btn" id="startBtn">▶ Start</button>
+    <script>
+        const SUITS = ['♥', '♦', '♣', '♠'], VALS = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
+        function isRed(s) { return s === '♥' || s === '♦'; }
+        function mk() { const d = []; SUITS.forEach(s => VALS.forEach(v => d.push({ s, v }))); return d.sort(() => Math.random() - .5); }
+        let you, cpu, pile, lastCard, flipTimer, running = false, canSnap = false;
+
+        function init() { const d = mk(); you = d.splice(0, 26); cpu = d; pile = []; lastCard = null; running = true; canSnap = false; document.getElementById('pileCard').style.visibility = 'hidden'; document.getElementById('yourCards').textContent = 26; document.getElementById('cpuCards').textContent = 26; document.getElementById('msg').textContent = 'Watch for matching values!'; document.getElementById('startBtn').textContent = '↩ Restart'; flipTimer = setInterval(flipCard, 1200); }
+
+        function flipCard() {
+            if (!running) return; const turn = pile.length % 2 === 0; const hand = turn ? you : cpu; if (hand.length === 0) { endGame(); return; }
+            const card = hand.shift(); pile.push(card);
+            const el = document.getElementById('pileCard'); el.style.visibility = 'visible'; el.className = `card face-up ${isRed(card.s) ? 'red' : 'black'}`; el.innerHTML = `<div class="val">${card.v}</div><div class="suit">${card.s}</div>`;
+            canSnap = lastCard && lastCard.v === card.v; if (canSnap && Math.random() < 0.3) { setTimeout(cpuSnap, 300 + Math.random() * 500); }
+            lastCard = card; document.getElementById('yourCards').textContent = you.length; document.getElementById('cpuCards').textContent = cpu.length;
+        }
+
+        function snap(isPlayer) {
+            if (!canSnap) { if (isPlayer) { you.splice(0, 0, ...pile.splice(pile.length - 3)); document.getElementById('msg').textContent = '❌ False snap! Penalty cards!'; document.getElementById('yourCards').textContent = you.length; } return; }
+            canSnap = false; const winner = isPlayer ? you : cpu; winner.push(...pile); pile = []; lastCard = null;
+            document.getElementById('msg').textContent = isPlayer ? '✅ SNAP! You take the pile!' : '💀 CPU snaps first!'; document.getElementById('yourCards').textContent = you.length; document.getElementById('cpuCards').textContent = cpu.length;
+            if (you.length === 0 || cpu.length === 0) endGame();
+        }
+        function cpuSnap() { if (canSnap) snap(false); }
+
+        function endGame() { running = false; clearInterval(flipTimer); document.getElementById('msg').textContent = you.length > cpu.length ? '🏆 You win!' : '💀 CPU wins!'; }
+
+        document.getElementById('snapBtn').addEventListener('click', () => { if (running) snap(true); });
+        document.addEventListener('keydown', e => { if (e.key === ' ' && running) { e.preventDefault(); snap(true); } });
+        document.getElementById('startBtn').addEventListener('click', () => { clearInterval(flipTimer); init(); });
+    </script>
+</body>
+
+</html>

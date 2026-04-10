@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>Pong | 100 HTML Games</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        body {
+            background: #0a0a0f;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            font-family: 'Segoe UI', sans-serif;
+            color: #fff
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 900;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #06b6d4, #7c3aed);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text
+        }
+
+        canvas {
+            border: 2px solid rgba(6, 182, 212, 0.3);
+            border-radius: 12px;
+            background: #060d14;
+            box-shadow: 0 0 40px rgba(6, 182, 212, 0.15)
+        }
+
+        #msg {
+            margin-top: 16px;
+            font-size: 1rem;
+            color: #64748b;
+            min-height: 24px;
+            text-align: center
+        }
+
+        .btn {
+            margin-top: 12px;
+            padding: 10px 28px;
+            background: linear-gradient(135deg, #06b6d4, #7c3aed);
+            border: none;
+            border-radius: 999px;
+            color: #fff;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform .15s
+        }
+
+        .btn:hover {
+            transform: scale(1.05)
+        }
+
+        .back {
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            text-decoration: none;
+            color: #64748b;
+            font-size: 13px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 6px 14px;
+            border-radius: 999px
+        }
+
+        .back:hover {
+            color: #fff
+        }
+
+        .hint {
+            font-size: 12px;
+            color: #334155;
+            margin-top: 8px
+        }
+    </style>
+</head>
+
+<body>
+    <a href="../../index.html" class="back">← Back to Menu</a>
+    <h1>🏓 Pong</h1>
+    <canvas id="c" width="600" height="400"></canvas>
+    <div id="msg">Press SPACE or the button to start</div>
+    <button class="btn" id="startBtn">▶ Start</button>
+    <div class="hint">Left player: W/S — Right player: ↑/↓</div>
+    <script>
+        const c = document.getElementById('c'), ctx = c.getContext('2d');
+        const W = 600, H = 400, PAD_H = 80, PAD_W = 12, BALL_R = 8, MAX_SCORE = 7;
+        let running = false, animId;
+        let pl = { x: 16, y: H / 2 - PAD_H / 2, score: 0 }, pr = { x: W - 16 - PAD_W, y: H / 2 - PAD_H / 2, score: 0 };
+        let ball = { x: W / 2, y: H / 2, vx: 4, vy: 3 }; let keys = {};
+
+        function reset(dir = 1) { ball = { x: W / 2, y: H / 2, vx: 4.5 * dir, vy: (Math.random() * 3 + 2) * (Math.random() < .5 ? 1 : -1) }; }
+        function update() {
+            const spd = 6;
+            if (keys['w'] || keys['W']) pl.y = Math.max(0, pl.y - spd);
+            if (keys['s'] || keys['S']) pl.y = Math.min(H - PAD_H, pl.y + spd);
+            if (keys['ArrowUp']) pr.y = Math.max(0, pr.y - spd);
+            if (keys['ArrowDown']) pr.y = Math.min(H - PAD_H, pr.y + spd);
+            ball.x += ball.vx; ball.y += ball.vy;
+            if (ball.y - BALL_R < 0) { ball.y = BALL_R; ball.vy *= -1; }
+            if (ball.y + BALL_R > H) { ball.y = H - BALL_R; ball.vy *= -1; }
+            if (ball.x - BALL_R < pl.x + PAD_W && ball.x - BALL_R > pl.x && ball.y > pl.y && ball.y < pl.y + PAD_H) {
+                ball.vx = Math.abs(ball.vx) * 1.05; ball.vy = ((ball.y - (pl.y + PAD_H / 2)) / (PAD_H / 2)) * 6; ball.x = pl.x + PAD_W + BALL_R;
+            }
+            if (ball.x + BALL_R > pr.x && ball.x + BALL_R < pr.x + PAD_W + 20 && ball.y > pr.y && ball.y < pr.y + PAD_H) {
+                ball.vx = -Math.abs(ball.vx) * 1.05; ball.vy = ((ball.y - (pr.y + PAD_H / 2)) / (PAD_H / 2)) * 6; ball.x = pr.x - BALL_R;
+            }
+            ball.vx = Math.sign(ball.vx) * Math.min(Math.abs(ball.vx), 14);
+            if (ball.x < 0) { pr.score++; reset(1); if (checkWin()) return; }
+            if (ball.x > W) { pl.score++; reset(-1); if (checkWin()) return; }
+        }
+        function checkWin() {
+            if (pl.score >= MAX_SCORE || pr.score >= MAX_SCORE) {
+                draw(); document.getElementById('msg').textContent = `🏆 ${pl.score >= MAX_SCORE ? 'Left' : 'Right'} Player Wins! (${pl.score} - ${pr.score})`;
+                document.getElementById('startBtn').textContent = '↩ Play Again'; cancelAnimationFrame(animId); running = false; return true;
+            } return false;
+        }
+        function draw() {
+            ctx.fillStyle = '#060d14'; ctx.fillRect(0, 0, W, H);
+            ctx.setLineDash([10, 10]); ctx.strokeStyle = 'rgba(255,255,255,0.08)'; ctx.lineWidth = 2;
+            ctx.beginPath(); ctx.moveTo(W / 2, 0); ctx.lineTo(W / 2, H); ctx.stroke(); ctx.setLineDash([]);
+            ctx.font = 'bold 48px Segoe UI'; ctx.textAlign = 'center'; ctx.fillStyle = 'rgba(255,255,255,0.15)';
+            ctx.fillText(pl.score, W / 2 - 80, 60); ctx.fillText(pr.score, W / 2 + 80, 60);
+            [pl, pr].forEach(p => {
+                const g = ctx.createLinearGradient(p.x, p.y, p.x + PAD_W, p.y + PAD_H);
+                g.addColorStop(0, '#38bdf8'); g.addColorStop(1, '#7c3aed'); ctx.fillStyle = g; ctx.shadowColor = '#06b6d4'; ctx.shadowBlur = 18;
+                ctx.beginPath(); ctx.roundRect(p.x, p.y, PAD_W, PAD_H, 6); ctx.fill(); ctx.shadowBlur = 0;
+            });
+            ctx.shadowColor = '#fff'; ctx.shadowBlur = 20; ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(ball.x, ball.y, BALL_R, 0, Math.PI * 2); ctx.fill(); ctx.shadowBlur = 0;
+        }
+        function loop() { if (!running) return; update(); draw(); animId = requestAnimationFrame(loop); }
+        function start() {
+            if (running) cancelAnimationFrame(animId);
+            pl.score = 0; pr.score = 0; pl.y = H / 2 - PAD_H / 2; pr.y = H / 2 - PAD_H / 2; reset(1); running = true;
+            document.getElementById('msg').textContent = ''; loop();
+        }
+        document.getElementById('startBtn').addEventListener('click', start);
+        document.addEventListener('keydown', e => { keys[e.key] = true; if (e.key === ' ') { e.preventDefault(); if (!running) start(); } });
+        document.addEventListener('keyup', e => { keys[e.key] = false; });
+        draw();
+    </script>
+</body>
+
+</html>

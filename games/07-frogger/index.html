@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>Frogger | 100 HTML Games</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        body {
+            background: #0a0a0f;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            font-family: 'Segoe UI', sans-serif;
+            color: #fff
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 900;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #22c55e, #10b981);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text
+        }
+
+        .info {
+            display: flex;
+            gap: 32px;
+            margin-bottom: 12px;
+            font-size: 14px;
+            color: #64748b
+        }
+
+        .info span b {
+            color: #22c55e;
+            font-size: 1.2em
+        }
+
+        canvas {
+            border: 2px solid rgba(34, 197, 94, 0.3);
+            border-radius: 12px;
+            box-shadow: 0 0 40px rgba(34, 197, 94, 0.1)
+        }
+
+        #msg {
+            margin-top: 14px;
+            font-size: 1rem;
+            color: #64748b;
+            min-height: 24px;
+            text-align: center
+        }
+
+        .btn {
+            margin-top: 10px;
+            padding: 10px 28px;
+            background: linear-gradient(135deg, #22c55e, #10b981);
+            border: none;
+            border-radius: 999px;
+            color: #fff;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform .15s
+        }
+
+        .btn:hover {
+            transform: scale(1.05)
+        }
+
+        .back {
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            text-decoration: none;
+            color: #64748b;
+            font-size: 13px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 6px 14px;
+            border-radius: 999px
+        }
+
+        .back:hover {
+            color: #fff
+        }
+
+        .hint {
+            font-size: 12px;
+            color: #334155;
+            margin-top: 8px
+        }
+    </style>
+</head>
+
+<body>
+    <a href="../../index.html" class="back">← Back to Menu</a>
+    <h1>🐸 Frogger</h1>
+    <div class="info">
+        <span>Score: <b id="scoreDisp">0</b></span>
+        <span>Lives: <b id="livesDisp">3</b></span>
+        <span>Best: <b id="highDisp">0</b></span>
+    </div>
+    <canvas id="c" width="400" height="520"></canvas>
+    <div id="msg">Press ↑ or the button to start</div>
+    <button class="btn" id="startBtn">▶ Start</button>
+    <div class="hint">Arrow keys to move</div>
+    <script>
+        const c = document.getElementById('c'), ctx = c.getContext('2d');
+        const W = 400, H = 520, CELL = 40, ROWS = 13;
+        const LANES = [{ type: 'safe' }, { type: 'car', speed: 2.5, dir: 1, color: '#ef4444', w: 80, gap: 180 }, { type: 'car', speed: 2, dir: -1, color: '#f59e0b', w: 70, gap: 160 }, { type: 'car', speed: 3, dir: 1, color: '#7c3aed', w: 90, gap: 200 }, { type: 'car', speed: 1.8, dir: -1, color: '#06b6d4', w: 60, gap: 150 }, { type: 'car', speed: 2.2, dir: 1, color: '#ec4899', w: 75, gap: 170 }, { type: 'safe' }, { type: 'log', speed: 1.5, dir: 1, color: '#92400e', w: 100, gap: 160 }, { type: 'log', speed: 2, dir: -1, color: '#78350f', w: 80, gap: 140 }, { type: 'log', speed: 1.2, dir: 1, color: '#92400e', w: 120, gap: 180 }, { type: 'log', speed: 1.8, dir: -1, color: '#78350f', w: 90, gap: 150 }, { type: 'log', speed: 1, dir: 1, color: '#a16207', w: 110, gap: 120 }, { type: 'goal' }];
+        let frog, obstacles, score, highScore = 0, lives, running = false, animId;
+        function mkObs() {
+            const obs = [];
+            LANES.filter(l => l.type === 'car' || l.type === 'log').forEach(l => {
+                const li = LANES.indexOf(l); let x = Math.random() * W;
+                for (let i = 0; i < 4; i++) { obs.push({ x: x % W, y: (ROWS - 1 - li) * CELL + CELL * 0.1, w: l.w, h: CELL * 0.8, speed: l.speed, dir: l.dir, color: l.color, type: l.type, lane: li }); x = (x + l.gap) % W; }
+            }); return obs;
+        }
+        function init() { frog = { x: W / 2 - CELL / 2, y: (ROWS - 1) * CELL, w: CELL - 8, h: CELL - 8 }; obstacles = mkObs(); score = 0; lives = 3; }
+        function update() {
+            obstacles.forEach(o => { o.x += o.speed * o.dir; if (o.dir === 1 && o.x > W) o.x = -o.w; if (o.dir === -1 && o.x < -o.w) o.x = W; });
+            const frogRow = Math.round((H - frog.y - CELL / 2) / CELL); const laneType = LANES[ROWS - 1 - frogRow]?.type;
+            if (laneType === 'car') { for (const o of obstacles) { if (o.type !== 'car') continue; if (frog.x < o.x + o.w && frog.x + frog.w > o.x && frog.y < o.y + o.h && frog.y + frog.h > o.y) { die(); return; } } }
+            if (laneType === 'log') { let onLog = false; for (const o of obstacles) { if (o.type !== 'log') continue; if (frog.x < o.x + o.w && frog.x + frog.w > o.x && frog.y < o.y + o.h && frog.y + frog.h > o.y) { frog.x += o.speed * o.dir; onLog = true; break; } } if (!onLog) { die(); return; } if (frog.x < -CELL || frog.x > W) { die(); return; } }
+            if (laneType === 'goal') { score += 100; frog.y = (ROWS - 1) * CELL; frog.x = W / 2 - CELL / 2; if (score > highScore) highScore = score; document.getElementById('msg').textContent = '🎉 Goal reached!'; setTimeout(() => document.getElementById('msg').textContent = '', 1200); }
+            updateUI();
+        }
+        function die() { lives--; updateUI(); frog.x = W / 2 - CELL / 2; frog.y = (ROWS - 1) * CELL; if (lives <= 0) end(); }
+        function draw() {
+            for (let r = 0; r < ROWS; r++) {
+                const l = LANES[ROWS - 1 - r]; let bg = '#1a2e1a';
+                if (l.type === 'car') bg = '#1e293b'; else if (l.type === 'log') bg = '#0c4a6e'; else if (l.type === 'goal') bg = '#14532d';
+                ctx.fillStyle = bg; ctx.fillRect(0, r * CELL, W, CELL);
+                if (l.type === 'log') { ctx.fillStyle = 'rgba(0,100,200,0.2)'; ctx.fillRect(0, r * CELL, W, CELL); }
+            }
+            obstacles.forEach(o => {
+                ctx.fillStyle = o.color; ctx.shadowColor = o.color; ctx.shadowBlur = 8; ctx.beginPath(); ctx.roundRect(o.x, o.y, o.w, o.h, 6); ctx.fill(); ctx.shadowBlur = 0;
+                if (o.type === 'car') { ctx.fillStyle = 'rgba(255,255,255,0.3)'; ctx.beginPath(); ctx.roundRect(o.x + o.w * 0.6, o.y + 4, o.w * 0.3, o.h - 8, 3); ctx.fill(); }
+                else { ctx.strokeStyle = 'rgba(0,0,0,0.2)'; ctx.lineWidth = 2; for (let i = 1; i < 4; i++) { ctx.beginPath(); ctx.moveTo(o.x + o.w / 4 * i, o.y + 3); ctx.lineTo(o.x + o.w / 4 * i, o.y + o.h - 3); ctx.stroke(); } }
+            });
+            ctx.fillStyle = '#22c55e'; ctx.shadowColor = '#22c55e'; ctx.shadowBlur = 14; ctx.beginPath(); ctx.roundRect(frog.x + 2, frog.y + 2, frog.w - 4, frog.h - 4, 8); ctx.fill(); ctx.shadowBlur = 0;
+            ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(frog.x + frog.w * .25, frog.y + frog.h * .25, 4, 0, Math.PI * 2); ctx.fill(); ctx.beginPath(); ctx.arc(frog.x + frog.w * .75, frog.y + frog.h * .25, 4, 0, Math.PI * 2); ctx.fill();
+            ctx.fillStyle = '#000'; ctx.beginPath(); ctx.arc(frog.x + frog.w * .25, frog.y + frog.h * .25, 2, 0, Math.PI * 2); ctx.fill(); ctx.beginPath(); ctx.arc(frog.x + frog.w * .75, frog.y + frog.h * .25, 2, 0, Math.PI * 2); ctx.fill();
+        }
+        function updateUI() { document.getElementById('scoreDisp').textContent = score; document.getElementById('livesDisp').textContent = lives; document.getElementById('highDisp').textContent = highScore; }
+        function end() { cancelAnimationFrame(animId); running = false; document.getElementById('msg').textContent = `💀 Game Over! Score: ${score}`; document.getElementById('startBtn').textContent = '↩ Play Again'; }
+        function loop() { if (!running) return; update(); draw(); animId = requestAnimationFrame(loop); }
+        function start() { cancelAnimationFrame(animId); init(); running = true; document.getElementById('msg').textContent = ''; document.getElementById('startBtn').textContent = '↩ Restart'; loop(); }
+        document.addEventListener('keydown', e => {
+            if (!running && e.key.startsWith('Arrow')) { start(); return; }
+            const step = CELL;
+            if (e.key === 'ArrowUp') { e.preventDefault(); frog.y = Math.max(0, frog.y - step); }
+            if (e.key === 'ArrowDown') { e.preventDefault(); frog.y = Math.min((ROWS - 1) * CELL, frog.y + step); }
+            if (e.key === 'ArrowLeft') { e.preventDefault(); frog.x = Math.max(0, frog.x - step); }
+            if (e.key === 'ArrowRight') { e.preventDefault(); frog.x = Math.min(W - CELL, frog.x + step); }
+        });
+        document.getElementById('startBtn').addEventListener('click', start);
+        draw();
+    </script>
+</body>
+
+</html>

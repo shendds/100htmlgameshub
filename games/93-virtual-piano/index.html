@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>Virtual Piano | 100 HTML Games</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        body {
+            background: #0a0a0f;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Outfit', sans-serif;
+            color: #fff;
+            padding: 24px
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 900;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #06b6d4, #7c3aed);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text
+        }
+
+        .piano {
+            display: flex;
+            position: relative;
+            height: 220px;
+            margin: 20px 0;
+            user-select: none
+        }
+
+        .white-key {
+            width: 52px;
+            height: 200px;
+            background: linear-gradient(to bottom, #fff, #e8e8e8);
+            border: 1px solid #aaa;
+            border-radius: 0 0 8px 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            padding-bottom: 10px;
+            font-size: 12px;
+            font-weight: 700;
+            color: #888;
+            position: relative;
+            z-index: 1;
+            box-shadow: 2px 4px 8px rgba(0, 0, 0, 0.3);
+            transition: all .05s
+        }
+
+        .white-key:active,
+        .white-key.pressed {
+            background: linear-gradient(to bottom, #d0e8ff, #b8d8ff);
+            transform: translateY(3px) scaleY(0.97);
+            box-shadow: 1px 2px 4px rgba(0, 0, 0, 0.2)
+        }
+
+        .black-key {
+            width: 32px;
+            height: 128px;
+            background: linear-gradient(to bottom, #2a2a2a, #1a1a1a);
+            border-radius: 0 0 6px 6px;
+            cursor: pointer;
+            position: absolute;
+            z-index: 2;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            padding-bottom: 8px;
+            font-size: 10px;
+            color: #555;
+            box-shadow: 2px 4px 8px rgba(0, 0, 0, 0.5);
+            transition: all .05s
+        }
+
+        .black-key:active,
+        .black-key.pressed {
+            background: linear-gradient(to bottom, #1a5f8a, #0d3d5c);
+            transform: translateY(2px);
+            box-shadow: 1px 2px 4px rgba(0, 0, 0, 0.3);
+            color: #7dd3fc
+        }
+
+        .octave-label {
+            position: absolute;
+            top: 8px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 11px;
+            color: #64748b
+        }
+
+        .controls {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+            margin-bottom: 14px;
+            flex-wrap: wrap;
+            justify-content: center
+        }
+
+        .ctrl-label {
+            font-size: 13px;
+            color: #64748b
+        }
+
+        input[type=range] {
+            width: 100px;
+            accent-color: #7c3aed
+        }
+
+        .wave-btn {
+            padding: 5px 12px;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: #94a3b8;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: 'Outfit', sans-serif;
+            transition: all .15s
+        }
+
+        .wave-btn.active {
+            background: rgba(124, 58, 237, 0.3);
+            border-color: rgba(124, 58, 237, 0.5);
+            color: #c4b5fd
+        }
+
+        .hint {
+            font-size: 12px;
+            color: #334155;
+            margin-top: 10px;
+            text-align: center
+        }
+
+        .keyboard-map {
+            display: grid;
+            grid-template-columns: repeat(14, 36px);
+            gap: 2px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 10px;
+            padding: 10px;
+            margin-bottom: 8px
+        }
+
+        .km-key {
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: 700;
+            border-radius: 6px;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: #64748b
+        }
+
+        .back {
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            text-decoration: none;
+            color: #64748b;
+            font-size: 13px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 6px 14px;
+            border-radius: 999px
+        }
+
+        .back:hover {
+            color: #fff
+        }
+    </style>
+</head>
+
+<body>
+    <a href="../../index.html" class="back">← Back to Menu</a>
+    <h1>🎹 Virtual Piano</h1>
+    <div class="controls">
+        <span class="ctrl-label">Volume:</span><input type="range" id="vol" min="0" max="1" step="0.05" value="0.5" />
+        <span class="ctrl-label">Wave:</span>
+        <button class="wave-btn active" data-wave="sine">Sine</button>
+        <button class="wave-btn" data-wave="square">Square</button>
+        <button class="wave-btn" data-wave="sawtooth">Saw</button>
+        <button class="wave-btn" data-wave="triangle">Triangle</button>
+    </div>
+    <div class="piano" id="piano"></div>
+    <div class="hint">Click keys or use keyboard: A S D F G H J K L ; ' (white) | W E T Y U O P (black)</div>
+    <script>
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        let wave = 'sine', vol = 0.5, activeOscs = {};
+
+        const NOTES = [
+            { note: 'C4', freq: 261.63, key: 'a', black: false },
+            { note: 'C#4', freq: 277.18, key: 'w', black: true, offset: 38 },
+            { note: 'D4', freq: 293.66, key: 's', black: false },
+            { note: 'D#4', freq: 311.13, key: 'e', black: true, offset: 90 },
+            { note: 'E4', freq: 329.63, key: 'd', black: false },
+            { note: 'F4', freq: 349.23, key: 'f', black: false },
+            { note: 'F#4', freq: 369.99, key: 't', black: true, offset: 194 },
+            { note: 'G4', freq: 392.00, key: 'g', black: false },
+            { note: 'G#4', freq: 415.30, key: 'y', black: true, offset: 246 },
+            { note: 'A4', freq: 440.00, key: 'h', black: false },
+            { note: 'A#4', freq: 466.16, key: 'u', black: true, offset: 298 },
+            { note: 'B4', freq: 493.88, key: 'j', black: false },
+            { note: 'C5', freq: 523.25, key: 'k', black: false },
+            { note: 'C#5', freq: 554.37, key: 'o', black: true, offset: 402 },
+            { note: 'D5', freq: 587.33, key: 'l', black: false },
+            { note: 'D#5', freq: 622.25, key: 'p', black: true, offset: 454 },
+            { note: 'E5', freq: 659.25, key: ';', black: false },
+            { note: 'F5', freq: 698.46, key: "'", black: false },
+        ];
+
+        const whites = NOTES.filter(n => !n.black), blacks = NOTES.filter(n => n.black);
+        const piano = document.getElementById('piano');
+
+        whites.forEach((n, i) => {
+            const k = document.createElement('div'); k.className = 'white-key'; k.textContent = n.key.toUpperCase(); k.dataset.note = n.note; k.dataset.freq = n.freq;
+            const lbl = document.createElement('div'); lbl.className = 'octave-label'; lbl.textContent = n.note; k.appendChild(lbl);
+            k.addEventListener('mousedown', () => playNote(n.freq, n.note)); k.addEventListener('mouseup', () => stopNote(n.note)); k.addEventListener('mouseleave', () => stopNote(n.note));
+            k.addEventListener('touchstart', e => { e.preventDefault(); playNote(n.freq, n.note); }); k.addEventListener('touchend', () => stopNote(n.note));
+            piano.appendChild(k);
+        });
+
+        blacks.forEach(n => {
+            const k = document.createElement('div'); k.className = 'black-key'; k.style.left = n.offset + 'px'; k.textContent = n.key.toUpperCase(); k.dataset.note = n.note; k.dataset.freq = n.freq;
+            k.addEventListener('mousedown', e => { e.stopPropagation(); playNote(n.freq, n.note); }); k.addEventListener('mouseup', () => stopNote(n.note)); k.addEventListener('mouseleave', () => stopNote(n.note));
+            k.addEventListener('touchstart', e => { e.preventDefault(); playNote(n.freq, n.note); }); k.addEventListener('touchend', () => stopNote(n.note));
+            piano.appendChild(k);
+        });
+
+        function playNote(freq, note) {
+            if (activeOscs[note]) return;
+            const osc = ctx.createOscillator(), gain = ctx.createGain(); osc.type = wave; osc.frequency.setValueAtTime(freq, ctx.currentTime); gain.gain.setValueAtTime(0, ctx.currentTime); gain.gain.linearRampToValueAtTime(vol, ctx.currentTime + 0.01); osc.connect(gain); gain.connect(ctx.destination); osc.start(); activeOscs[note] = { osc, gain };
+            document.querySelector(`[data-note="${note}"]`)?.classList.add('pressed');
+        }
+
+        function stopNote(note) {
+            if (!activeOscs[note]) return; const { osc, gain } = activeOscs[note]; gain.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.1); osc.stop(ctx.currentTime + 0.1); delete activeOscs[note];
+            document.querySelector(`[data-note="${note}"]`)?.classList.remove('pressed');
+        }
+
+        const KEY_MAP = {}; NOTES.forEach(n => KEY_MAP[n.key] = n);
+        document.addEventListener('keydown', e => { if (e.repeat) return; const n = KEY_MAP[e.key.toLowerCase()]; if (n) playNote(n.freq, n.note); });
+        document.addEventListener('keyup', e => { const n = KEY_MAP[e.key.toLowerCase()]; if (n) stopNote(n.note); });
+        document.getElementById('vol').addEventListener('input', e => vol = parseFloat(e.target.value));
+        document.querySelectorAll('.wave-btn').forEach(b => { b.addEventListener('click', () => { wave = b.dataset.wave; document.querySelectorAll('.wave-btn').forEach(x => x.classList.remove('active')); b.classList.add('active'); }); });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>Backgammon | 100 HTML Games</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        body {
+            background: #0a0a0f;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Outfit', sans-serif;
+            color: #fff;
+            padding: 16px
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 900;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #f59e0b, #92400e);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text
+        }
+
+        canvas {
+            border-radius: 12px;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
+            cursor: pointer
+        }
+
+        .info {
+            display: flex;
+            gap: 16px;
+            margin: 10px 0;
+            font-size: 14px;
+            color: #64748b
+        }
+
+        .info b {
+            color: #f59e0b
+        }
+
+        .dice-area {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            margin: 8px 0
+        }
+
+        .dice {
+            width: 50px;
+            height: 50px;
+            border-radius: 10px;
+            background: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: 900;
+            color: #1e293b;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
+            cursor: pointer;
+            transition: transform .15s
+        }
+
+        .dice:hover {
+            transform: scale(1.1)
+        }
+
+        #msg {
+            font-size: 1rem;
+            font-weight: 700;
+            min-height: 28px;
+            text-align: center;
+            margin: 8px 0;
+            color: #64748b;
+            max-width: 440px
+        }
+
+        .btn {
+            padding: 10px 22px;
+            background: linear-gradient(135deg, #f59e0b, #92400e);
+            border: none;
+            border-radius: 999px;
+            color: #fff;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: 'Outfit', sans-serif;
+            transition: transform .15s
+        }
+
+        .btn:hover {
+            transform: scale(1.05)
+        }
+
+        .back {
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            text-decoration: none;
+            color: #64748b;
+            font-size: 13px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 6px 14px;
+            border-radius: 999px
+        }
+
+        .back:hover {
+            color: #fff
+        }
+    </style>
+</head>
+
+<body>
+    <a href="../../index.html" class="back">← Back to Menu</a>
+    <h1>🎲 Backgammon</h1>
+    <div class="info"><span>⚪ White: <b id="wb">0</b> borne off</span><span>⚫ Black: <b id="bb">0</b> borne off</span>
+    </div>
+    <div class="dice-area">
+        <div class="dice" id="d1">🎲</div>
+        <div class="dice" id="d2">🎲</div><span id="dv" style="color:#94a3b8;font-size:13px">Roll!</span>
+    </div>
+    <canvas id="c" width="520" height="340"></canvas>
+    <div id="msg">Roll dice to begin! White(you) moves 24→1, Black(CPU) moves 1→24.</div>
+    <button class="btn" id="newBtn">🔄 New Game</button>
+    <script>
+        const c = document.getElementById('c'), ctx = c.getContext('2d'), W = 520, H = 340;
+        const BOARD_PAD = 20, PW = 38, PH = 120, BAR_W = 30;
+        // 24 points, 0-indexed. White goes 23→0 (bearoff), Black goes 0→23
+        let board, turn, dice, usedDice, selected, wOff, bOff;
+
+        function init() {
+            board = Array(24).fill(null).map(() => ({ w: 0, b: 0 }));
+            // Standard starting position
+            board[0].w = 2; board[5].b = 5; board[7].b = 3; board[11].w = 5; board[12].b = 5; board[16].w = 3; board[18].w = 5; board[23].b = 2;
+            turn = 'w'; dice = []; usedDice = []; selected = -1; wOff = 0; bOff = 0;
+            document.getElementById('wb').textContent = 0; document.getElementById('bb').textContent = 0; document.getElementById('msg').textContent = 'Roll dice to move!'; render();
+        }
+
+        function rollDice() {
+            if (dice.length > 0) return;
+            const d1 = 1 + Math.floor(Math.random() * 6), d2 = 1 + Math.floor(Math.random() * 6);
+            document.getElementById('d1').textContent = ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅'][d1 - 1];
+            document.getElementById('d2').textContent = ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅'][d2 - 1];
+            dice = d1 === d2 ? [d1, d1, d1, d1] : [d1, d2]; usedDice = [];
+            document.getElementById('dv').textContent = dice.join(', ');
+            if (turn === 'b') { setTimeout(cpuMove, 600); }
+            else document.getElementById('msg').textContent = 'Click your checker to move!';
+        }
+
+        function canMove(from, steps, player) {
+            const to = player === 'w' ? from - steps : from + steps;
+            if (to < 0 || to > 23) {/* bearing off */
+                if (player === 'w') { const allHome = Array.from({ length: 18 }, (_, i) => i + 6).every(i => board[i].w === 0); if (!allHome) return false; return from - steps < 0; }
+                else { const allHome = Array.from({ length: 18 }, (_, i) => i).every(i => board[i].b === 0); if (!allHome) return false; return from + steps > 23; }
+            }
+            const opp = player === 'w' ? 'b' : 'w'; return board[to][opp] <= 1;
+        }
+
+        function move(from, steps, player) {
+            const to = player === 'w' ? from - steps : from + steps; board[from][player]--;
+            if (to < 0 || to > 23) { if (player === 'w') { wOff++; document.getElementById('wb').textContent = wOff; } else { bOff++; document.getElementById('bb').textContent = bOff; } render(); return; }
+            const opp = player === 'w' ? 'b' : 'w'; if (board[to][opp] === 1) { board[to][opp] = 0;/* hit to bar - simplified */ }
+            board[to][player]++; render();
+        }
+
+        c.addEventListener('click', e => {
+            if (turn !== 'w' || dice.length === 0) return;
+            const rect = c.getBoundingClientRect(); const mx = e.clientX - rect.left;
+            // determine clicked point
+            let pt = -1; for (let i = 0; i < 24; i++) { const px = pointX(i); if (Math.abs(mx - px - PW / 2) < PW / 2 + 2) pt = i; }
+            if (pt < 0) return;
+            if (selected === -1) { if (board[pt].w > 0) { selected = pt; render(); } return; }
+            // try to use a die
+            const steps = Math.abs(selected - pt); const di = dice.indexOf(steps);
+            if (di >= 0 && canMove(selected, steps, 'w')) {
+                move(selected, steps, 'w'); dice.splice(di, 1); selected = -1; document.getElementById('dv').textContent = dice.join(', ') || 'Done';
+                if (wOff >= 15) { document.getElementById('msg').textContent = '🏆 You win!'; dice = []; return; }
+                if (dice.length === 0) { turn = 'b'; document.getElementById('msg').textContent = 'CPU\'s turn...'; setTimeout(rollDice, 600); }
+            } else { selected = pt; render(); }
+        });
+
+        function cpuMove() {
+            for (let d = 0; d < dice.length; d++) { for (let i = 0; i < 24; i++) { if (board[i].b > 0 && canMove(i, dice[d], 'b')) { move(i, dice[d], 'b'); dice.splice(d, 1); d--; break; } } }
+            if (bOff >= 15) { document.getElementById('msg').textContent = '💀 CPU wins!'; dice = []; return; }
+            dice = []; turn = 'w'; document.getElementById('msg').textContent = 'Your turn! Roll dice.'; render();
+        }
+
+        function pointX(i) { const half = i < 12 ? i : 23 - i; const section = half < 6 ? 0 : 1; const inSec = half % 6; return BOARD_PAD + (section === 1 ? BAR_W : 0) + half * PW; }
+
+        function render() {
+            ctx.fillStyle = '#2d1810'; ctx.fillRect(0, 0, W, H); ctx.fillStyle = '#1a0e08'; ctx.fillRect(BOARD_PAD, 10, W - BOARD_PAD * 2, H - 20);
+            // points (triangles)
+            for (let i = 0; i < 24; i++) {
+                const x = pointX(i); const top = i < 12; const color = i % 2 === 0 ? '#7f5539' : '#ddb892'; ctx.fillStyle = color; ctx.beginPath();
+                if (!top) { ctx.moveTo(x, 10); ctx.lineTo(x + PW, 10); ctx.lineTo(x + PW / 2, 10 + PH); } else { ctx.moveTo(x, H - 10); ctx.lineTo(x + PW, H - 10); ctx.lineTo(x + PW / 2, H - 10 - PH); } ctx.fill();
+                // checkers
+                const pt = board[i]; for (let j = 0; j < pt.w; j++) { ctx.fillStyle = selected === i ? '#fcd34d' : '#e2e8f0'; ctx.beginPath(); const cy = top ? H - 25 - j * 22 : 25 + j * 22; ctx.arc(x + PW / 2, cy, 10, 0, Math.PI * 2); ctx.fill(); ctx.strokeStyle = 'rgba(0,0,0,0.3)'; ctx.lineWidth = 1; ctx.stroke(); }
+                for (let j = 0; j < pt.b; j++) { ctx.fillStyle = '#334155'; ctx.beginPath(); const cy = top ? H - 25 - j * 22 : 25 + j * 22; ctx.arc(x + PW / 2, cy, 10, 0, Math.PI * 2); ctx.fill(); ctx.strokeStyle = 'rgba(0,0,0,0.5)'; ctx.lineWidth = 1; ctx.stroke(); }
+            }
+        }
+
+        document.getElementById('d1').addEventListener('click', rollDice);
+        document.getElementById('d2').addEventListener('click', rollDice);
+        document.getElementById('newBtn').addEventListener('click', init); init();
+    </script>
+</body>
+
+</html>

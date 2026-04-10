@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>Number Guess | 100 HTML Games</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        body {
+            background: #0a0a0f;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Outfit', sans-serif;
+            color: #fff;
+            padding: 24px
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 900;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #10b981, #06b6d4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text
+        }
+
+        .difficulty {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px
+        }
+
+        .diff-btn {
+            padding: 6px 16px;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 999px;
+            color: #94a3b8;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: 'Outfit', sans-serif;
+            transition: all .2s
+        }
+
+        .diff-btn.active {
+            background: rgba(16, 185, 129, 0.3);
+            border-color: rgba(16, 185, 129, 0.6);
+            color: #6ee7b7
+        }
+
+        .range-display {
+            font-size: 3rem;
+            font-weight: 900;
+            color: rgba(255, 255, 255, 0.1);
+            margin-bottom: 16px;
+            letter-spacing: 1px
+        }
+
+        .input-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 16px
+        }
+
+        input[type=number] {
+            background: rgba(255, 255, 255, 0.06);
+            border: 2px solid rgba(16, 185, 129, 0.3);
+            color: #fff;
+            border-radius: 12px;
+            padding: 12px 20px;
+            font-size: 1.4rem;
+            font-family: 'Outfit', sans-serif;
+            width: 160px;
+            text-align: center;
+            outline: none;
+            transition: border-color .2s
+        }
+
+        input[type=number]:focus {
+            border-color: rgba(16, 185, 129, 0.7)
+        }
+
+        .btn {
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #10b981, #06b6d4);
+            border: none;
+            border-radius: 12px;
+            color: #fff;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform .15s;
+            font-family: 'Outfit', sans-serif
+        }
+
+        .btn:hover {
+            transform: scale(1.05)
+        }
+
+        .btn.secondary {
+            background: linear-gradient(135deg, #334155, #475569);
+            padding: 10px 20px;
+            font-size: 14px
+        }
+
+        #feedback {
+            font-size: 1.4rem;
+            font-weight: 700;
+            min-height: 40px;
+            margin-bottom: 8px;
+            text-align: center;
+            transition: all .3s
+        }
+
+        .history {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            justify-content: center;
+            max-width: 380px;
+            margin-bottom: 12px
+        }
+
+        .hist-item {
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 700
+        }
+
+        .hist-item.low {
+            background: rgba(59, 130, 246, 0.2);
+            color: #93c5fd;
+            border: 1px solid rgba(59, 130, 246, 0.3)
+        }
+
+        .hist-item.high {
+            background: rgba(239, 68, 68, 0.2);
+            color: #f87171;
+            border: 1px solid rgba(239, 68, 68, 0.3)
+        }
+
+        .hist-item.win {
+            background: rgba(34, 197, 94, 0.2);
+            color: #86efac;
+            border: 1px solid rgba(34, 197, 94, 0.3)
+        }
+
+        .attempts-bar {
+            width: 300px;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.06);
+            border-radius: 999px;
+            margin-bottom: 16px;
+            overflow: hidden
+        }
+
+        .attempts-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #10b981, #f59e0b, #ef4444);
+            border-radius: 999px;
+            transition: width .3s
+        }
+
+        .stats {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 8px;
+            font-size: 13px;
+            color: #64748b
+        }
+
+        .back {
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            text-decoration: none;
+            color: #64748b;
+            font-size: 13px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 6px 14px;
+            border-radius: 999px
+        }
+
+        .back:hover {
+            color: #fff
+        }
+    </style>
+</head>
+
+<body>
+    <a href="../../index.html" class="back">← Back to Menu</a>
+    <h1>🎯 Number Guess</h1>
+    <div class="difficulty">
+        <button class="diff-btn active" data-max="100" data-tries="10">Easy (1-100)</button>
+        <button class="diff-btn" data-max="500" data-tries="12">Medium (1-500)</button>
+        <button class="diff-btn" data-max="1000" data-tries="15">Hard (1-1000)</button>
+    </div>
+    <div class="range-display" id="rangeDisplay">1 — 100</div>
+    <div class="attempts-bar">
+        <div class="attempts-fill" id="attemptsBar" style="width:0%"></div>
+    </div>
+    <div class="stats">
+        <span>Attempts: <b id="attemptsLeft">10</b> remaining</span>
+        <span>Wins: <b id="wins">0</b></span>
+    </div>
+    <div class="history" id="history"></div>
+    <div id="feedback">Guess a number!</div>
+    <div class="input-row">
+        <input type="number" id="guessInput" placeholder="?" min="1" />
+        <button class="btn" id="guessBtn">Guess!</button>
+    </div>
+    <button class="btn secondary" id="newBtn">🔄 New Game</button>
+    <script>
+        let secret, max = 100, maxTries = 10, attempts, won, wins = 0;
+
+        function init() {
+            secret = Math.floor(Math.random() * max) + 1; attempts = 0; won = false;
+            document.getElementById('guessInput').value = ''; document.getElementById('guessInput').min = 1; document.getElementById('guessInput').max = max;
+            document.getElementById('feedback').textContent = 'Guess a number!'; document.getElementById('feedback').style.color = '#94a3b8';
+            document.getElementById('history').innerHTML = ''; document.getElementById('attemptsBar').style.width = '0%';
+            document.getElementById('attemptsLeft').textContent = maxTries;
+            document.getElementById('guessInput').disabled = false; document.getElementById('guessBtn').disabled = false;
+        }
+
+        function guess() {
+            const val = parseInt(document.getElementById('guessInput').value); if (isNaN(val) || val < 1 || val > max) return;
+            if (won || attempts >= maxTries) return;
+            attempts++; const left = maxTries - attempts; document.getElementById('attemptsLeft').textContent = left;
+            document.getElementById('attemptsBar').style.width = (attempts / maxTries * 100) + '%';
+            const hist = document.getElementById('history'); const item = document.createElement('span');
+            item.className = 'hist-item'; item.textContent = val;
+            if (val === secret) { won = true; wins++; document.getElementById('wins').textContent = wins; item.classList.add('win'); document.getElementById('feedback').textContent = `🏆 Correct! The number was ${secret}`; document.getElementById('feedback').style.color = '#22c55e'; document.getElementById('guessInput').disabled = true; document.getElementById('guessBtn').disabled = true; }
+            else if (val < secret) { item.classList.add('low'); document.getElementById('feedback').textContent = `📈 Too low! Go higher.`; document.getElementById('feedback').style.color = '#60a5fa'; }
+            else { item.classList.add('high'); document.getElementById('feedback').textContent = `📉 Too high! Go lower.`; document.getElementById('feedback').style.color = '#f87171'; }
+            hist.appendChild(item);
+            if (!won && attempts >= maxTries) { document.getElementById('feedback').textContent = `💀 Out of attempts! The number was ${secret}`; document.getElementById('feedback').style.color = '#ef4444'; document.getElementById('guessInput').disabled = true; document.getElementById('guessBtn').disabled = true; }
+            document.getElementById('guessInput').value = '';
+        }
+
+        document.querySelectorAll('.diff-btn').forEach(b => { b.addEventListener('click', () => { document.querySelectorAll('.diff-btn').forEach(x => x.classList.remove('active')); b.classList.add('active'); max = parseInt(b.dataset.max); maxTries = parseInt(b.dataset.tries); document.getElementById('rangeDisplay').textContent = `1 — ${max}`; document.getElementById('guessInput').max = max; init(); }); });
+        document.getElementById('guessBtn').addEventListener('click', guess);
+        document.getElementById('newBtn').addEventListener('click', init);
+        document.getElementById('guessInput').addEventListener('keydown', e => { if (e.key === 'Enter') guess(); });
+        init();
+    </script>
+</body>
+
+</html>

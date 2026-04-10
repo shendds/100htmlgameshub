@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>Fruit Ninja | 100 HTML Games</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        body {
+            background: #0a0a0f;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Outfit', sans-serif;
+            color: #fff;
+            padding: 16px
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 900;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #ef4444, #f97316);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text
+        }
+
+        .info {
+            display: flex;
+            gap: 32px;
+            margin-bottom: 12px;
+            font-size: 14px;
+            color: #64748b
+        }
+
+        .info span b {
+            color: #ef4444;
+            font-size: 1.2em
+        }
+
+        canvas {
+            border: 2px solid rgba(239, 68, 68, 0.3);
+            border-radius: 12px;
+            background: #0f0a00;
+            box-shadow: 0 0 30px rgba(239, 68, 68, 0.1);
+            touch-action: none
+        }
+
+        #msg {
+            margin-top: 14px;
+            font-size: 1rem;
+            color: #64748b;
+            min-height: 24px;
+            text-align: center
+        }
+
+        .btn {
+            margin-top: 10px;
+            padding: 10px 28px;
+            background: linear-gradient(135deg, #ef4444, #f97316);
+            border: none;
+            border-radius: 999px;
+            color: #fff;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform .15s;
+            font-family: 'Outfit', sans-serif
+        }
+
+        .btn:hover {
+            transform: scale(1.05)
+        }
+
+        .back {
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            text-decoration: none;
+            color: #64748b;
+            font-size: 13px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 6px 14px;
+            border-radius: 999px
+        }
+
+        .back:hover {
+            color: #fff
+        }
+
+        .hint {
+            font-size: 12px;
+            color: #334155;
+            margin-top: 6px
+        }
+    </style>
+</head>
+
+<body>
+    <a href="../../index.html" class="back">← Back to Menu</a>
+    <h1>🍉 Fruit Ninja</h1>
+    <div class="info">
+        <span>Score: <b id="score">0</b></span>
+        <span>Lives: <b id="lives">3</b></span>
+        <span>Combo: <b id="combo">0x</b></span>
+    </div>
+    <canvas id="c" width="420" height="500"></canvas>
+    <div id="msg">Click Start to play!</div>
+    <button class="btn" id="startBtn">▶ Start</button>
+    <div class="hint">Swipe across fruits to slice them! Avoid bombs 💣</div>
+    <script>
+        const c = document.getElementById('c'), ctx = c.getContext('2d');
+        const W = 420, H = 500;
+        const FRUITS = ['🍎', '🍊', '🍋', '🍇', '🍓', '🍒', '🍑', '🥭', '🍍', '🍉'];
+        let items = [], blades = [], particles = [], score = 0, lives = 3, combo = 0, comboTimer = 0, running = false, animId, spawnTimer = 0, mouseX = 0, mouseY = 0, prevMX = 0, prevMY = 0, isSlicing = false;
+
+        function spawnItem() {
+            const bomb = Math.random() < 0.15; const x = 60 + Math.random() * (W - 120);
+            const vy = -(10 + Math.random() * 6); const vx = (Math.random() - .5) * 3;
+            items.push({ x, y: H + 20, vx, vy, rot: 0, rspd: (Math.random() - .5) * 0.15, size: 28, emoji: bomb ? '💣' : FRUITS[Math.floor(Math.random() * FRUITS.length)], bomb, sliced: false, alpha: 1 });
+        }
+
+        function slice(item, sx, sy, ex, ey) {
+            item.sliced = true;
+            if (item.bomb) { lives--; document.getElementById('lives').textContent = lives; combo = 0; comboTimer = 0; for (let i = 0; i < 15; i++)particles.push({ x: item.x, y: item.y, vx: (Math.random() - .5) * 8, vy: (Math.random() - .5) * 8, life: 30, color: '#ef4444', size: 3 }); if (lives <= 0) end(); return; }
+            combo++; comboTimer = 80; score += combo; document.getElementById('score').textContent = score; document.getElementById('combo').textContent = combo + 'x';
+            const splash = ['#ef4444', '#f97316', '#eab308', '#22c55e', '#3b82f6'];
+            for (let i = 0; i < 12; i++)particles.push({ x: item.x, y: item.y, vx: (Math.random() - .5) * 6, vy: -Math.random() * 5, life: 25, color: splash[Math.floor(Math.random() * splash.length)], size: 2 + Math.random() * 3 });
+            blades.push({ x1: sx, y1: sy, x2: ex, y2: ey, alpha: 1 });
+        }
+
+        function checkSlice(mx, my) {
+            items.forEach(item => { if (item.sliced) return; const dx = mx - item.x, dy = my - item.y; if (dx * dx + dy * dy < item.size ** 2) { slice(item, prevMX, prevMY, mx, my); } });
+        }
+
+        function update() {
+            if (comboTimer > 0) comboTimer--; else if (combo > 0) { combo = 0; document.getElementById('combo').textContent = '0x'; }
+            spawnTimer++; if (spawnTimer > Math.max(30, 80 - score / 3)) { spawnTimer = 0; spawnItem(); }
+            items.forEach(item => { item.x += item.vx; item.y += item.vy; item.vy += 0.25; item.rot += item.rspd; if (item.y > H + 60 && !item.sliced && !item.bomb) { lives--; document.getElementById('lives').textContent = lives; if (lives <= 0) { end(); return; } } });
+            if (isSlicing) checkSlice(mouseX, mouseY);
+            items = items.filter(i => i.y < H + 80); blades = blades.filter(b => { b.alpha -= 0.04; return b.alpha > 0; });
+            particles.forEach(p => { p.x += p.vx; p.y += p.vy; p.vy += 0.2; p.life--; }); particles = particles.filter(p => p.life > 0);
+            prevMX = mouseX; prevMY = mouseY;
+        }
+
+        function draw() {
+            ctx.fillStyle = 'rgba(15,10,0,0.25)'; ctx.fillRect(0, 0, W, H);
+            blades.forEach(b => { ctx.globalAlpha = b.alpha; ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.shadowColor = '#fff'; ctx.shadowBlur = 8; ctx.beginPath(); ctx.moveTo(b.x1, b.y1); ctx.lineTo(b.x2, b.y2); ctx.stroke(); ctx.shadowBlur = 0; ctx.globalAlpha = 1; });
+            particles.forEach(p => { ctx.globalAlpha = p.life / 30; ctx.fillStyle = p.color; ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2); ctx.fill(); ctx.globalAlpha = 1; });
+            items.forEach(item => { if (item.sliced && item.alpha > 0) { item.alpha -= 0.05; } ctx.save(); ctx.globalAlpha = item.alpha || 1; ctx.translate(item.x, item.y); ctx.rotate(item.rot); ctx.font = `${item.size * 2}px serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(item.emoji, 0, 0); ctx.restore(); });
+        }
+
+        function loop() { if (!running) return; update(); draw(); animId = requestAnimationFrame(loop); }
+        function end() { clearInterval(animId); running = false; document.getElementById('msg').textContent = `💀 Game Over! Final Score: ${score}`; document.getElementById('startBtn').textContent = '▶ Play Again'; }
+
+        function start() { cancelAnimationFrame(animId); items = []; blades = []; particles = []; score = 0; lives = 3; combo = 0; comboTimer = 0; spawnTimer = 0; running = true; document.getElementById('score').textContent = 0; document.getElementById('lives').textContent = 3; document.getElementById('combo').textContent = '0x'; document.getElementById('msg').textContent = ''; document.getElementById('startBtn').textContent = '↩ Restart'; loop(); }
+
+        c.addEventListener('mousemove', e => { const r = c.getBoundingClientRect(); prevMX = mouseX; prevMY = mouseY; mouseX = e.clientX - r.left; mouseY = e.clientY - r.top; });
+        c.addEventListener('mousedown', () => isSlicing = true);
+        c.addEventListener('mouseup', () => isSlicing = false);
+        c.addEventListener('touchmove', e => { e.preventDefault(); const r = c.getBoundingClientRect(); prevMX = mouseX; prevMY = mouseY; mouseX = e.touches[0].clientX - r.left; mouseY = e.touches[0].clientY - r.top; isSlicing = true; }, { passive: false });
+        c.addEventListener('touchend', () => isSlicing = false);
+        document.getElementById('startBtn').addEventListener('click', start);
+        ctx.fillStyle = '#0f0a00'; ctx.fillRect(0, 0, W, H);
+    </script>
+</body>
+
+</html>

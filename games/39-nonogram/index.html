@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>Nonogram | 100 HTML Games</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        body {
+            background: #0a0a0f;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Outfit', sans-serif;
+            color: #fff;
+            padding: 24px
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 900;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #ec4899, #7c3aed);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text
+        }
+
+        .board {
+            display: inline-grid;
+            gap: 2px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 8px;
+            margin: 12px 0
+        }
+
+        .clue-cell {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: 700;
+            color: #94a3b8;
+            min-width: 32px;
+            min-height: 32px
+        }
+
+        .cell {
+            width: 32px;
+            height: 32px;
+            border-radius: 4px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            cursor: pointer;
+            transition: all .1s
+        }
+
+        .cell.filled {
+            background: rgba(236, 72, 153, 0.5);
+            border-color: #ec4899
+        }
+
+        .cell.marked {
+            background: rgba(255, 255, 255, 0.02)
+        }
+
+        .cell.marked::after {
+            content: '✕';
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: rgba(255, 255, 255, 0.2);
+            font-size: 14px;
+            height: 100%
+        }
+
+        .btn {
+            padding: 10px 24px;
+            background: linear-gradient(135deg, #ec4899, #7c3aed);
+            border: none;
+            border-radius: 999px;
+            color: #fff;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: 'Outfit', sans-serif;
+            transition: transform .15s;
+            margin: 4px
+        }
+
+        .btn:hover {
+            transform: scale(1.05)
+        }
+
+        #msg {
+            font-size: 1rem;
+            font-weight: 700;
+            min-height: 28px;
+            text-align: center;
+            margin: 8px 0;
+            color: #64748b
+        }
+
+        .back {
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            text-decoration: none;
+            color: #64748b;
+            font-size: 13px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 6px 14px;
+            border-radius: 999px
+        }
+
+        .back:hover {
+            color: #fff
+        }
+
+        .info {
+            font-size: 13px;
+            color: #64748b;
+            margin-bottom: 8px
+        }
+    </style>
+</head>
+
+<body>
+    <a href="../../index.html" class="back">← Back to Menu</a>
+    <h1>🎨 Nonogram</h1>
+    <div class="info">Left-click: fill | Right-click: mark ✕</div>
+    <div id="board" class="board"></div>
+    <div id="msg">Solve the puzzle using the number clues!</div>
+    <button class="btn" id="newBtn">🔀 New Puzzle</button>
+    <script>
+        const S = 5; let solution, player;
+        function genPuzzle() { solution = Array.from({ length: S }, () => Array.from({ length: S }, () => Math.random() < 0.5 ? 1 : 0)); player = Array.from({ length: S }, () => Array(S).fill(0)); }
+        function getRowClue(row) { const clues = []; let c = 0; for (const v of row) { if (v) c++; else if (c) { clues.push(c); c = 0; } } if (c) clues.push(c); return clues.length ? clues : [0]; }
+        function getColClue(col) { return getRowClue(col); }
+        function render() {
+            const board = document.getElementById('board'); board.innerHTML = '';
+            const maxRowClue = Math.max(...solution.map(r => getRowClue(r).length)); const maxColClue = Math.max(...Array.from({ length: S }, (_, c) => getRowClue(solution.map(r => r[c])).length));
+            board.style.gridTemplateColumns = `repeat(${maxRowClue},32px) repeat(${S},32px)`; board.style.gridTemplateRows = `repeat(${maxColClue},32px) repeat(${S},32px)`;
+            // col clues
+            for (let cr = 0; cr < maxColClue; cr++) {
+                for (let pad = 0; pad < maxRowClue; pad++) { const e = document.createElement('div'); e.className = 'clue-cell'; board.appendChild(e); }
+                for (let c = 0; c < S; c++) { const clue = getRowClue(solution.map(r => r[c])); const idx = cr - (maxColClue - clue.length); const e = document.createElement('div'); e.className = 'clue-cell'; e.textContent = idx >= 0 ? clue[idx] : ''; board.appendChild(e); }
+            }
+            // rows
+            for (let r = 0; r < S; r++) {
+                const clue = getRowClue(solution[r]); for (let pad = 0; pad < maxRowClue; pad++) { const idx = pad - (maxRowClue - clue.length); const e = document.createElement('div'); e.className = 'clue-cell'; e.textContent = idx >= 0 ? clue[idx] : ''; board.appendChild(e); }
+                for (let c = 0; c < S; c++) { const cell = document.createElement('div'); cell.className = 'cell' + (player[r][c] === 1 ? ' filled' : '') + (player[r][c] === 2 ? ' marked' : ''); cell.addEventListener('click', () => { player[r][c] = player[r][c] === 1 ? 0 : 1; render(); checkWin(); }); cell.addEventListener('contextmenu', e => { e.preventDefault(); player[r][c] = player[r][c] === 2 ? 0 : 2; render(); }); board.appendChild(cell); }
+            }
+        }
+        function checkWin() { for (let r = 0; r < S; r++)for (let c = 0; c < S; c++) { if (solution[r][c] === 1 && player[r][c] !== 1) return; if (solution[r][c] === 0 && player[r][c] === 1) return; } document.getElementById('msg').textContent = '🏆 Puzzle solved!'; }
+        function init() { genPuzzle(); document.getElementById('msg').textContent = 'Use clues to fill the grid!'; render(); }
+        document.getElementById('newBtn').addEventListener('click', init); init();
+    </script>
+</body>
+
+</html>

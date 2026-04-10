@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>Laser Maze | 100 HTML Games</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        body {
+            background: #0a0a0f;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Outfit', sans-serif;
+            color: #fff;
+            padding: 16px
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 900;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #ef4444, #f97316);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text
+        }
+
+        .info {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 12px;
+            font-size: 14px;
+            color: #64748b
+        }
+
+        .info b {
+            color: #ef4444;
+            font-size: 1.2em
+        }
+
+        canvas {
+            border: 2px solid rgba(239, 68, 68, 0.3);
+            border-radius: 12px;
+            background: #050508;
+            cursor: pointer;
+            box-shadow: 0 0 30px rgba(239, 68, 68, 0.1)
+        }
+
+        .btn {
+            margin-top: 12px;
+            padding: 10px 28px;
+            background: linear-gradient(135deg, #ef4444, #f97316);
+            border: none;
+            border-radius: 999px;
+            color: #fff;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: 'Outfit', sans-serif;
+            transition: transform .15s
+        }
+
+        .btn:hover {
+            transform: scale(1.05)
+        }
+
+        #msg {
+            margin-top: 10px;
+            font-size: 13px;
+            color: #64748b;
+            min-height: 22px;
+            text-align: center
+        }
+
+        .back {
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            text-decoration: none;
+            color: #64748b;
+            font-size: 13px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 6px 14px;
+            border-radius: 999px
+        }
+
+        .back:hover {
+            color: #fff
+        }
+    </style>
+</head>
+
+<body>
+    <a href="../../index.html" class="back">← Back to Menu</a>
+    <h1>🔴 Laser Maze</h1>
+    <div class="info"><span>Level: <b id="level">1</b></span><span>Time: <b id="time">0.0</b>s</span></div>
+    <canvas id="c" width="440" height="440"></canvas>
+    <div id="msg">Navigate through the laser beams to reach the exit! Arrow keys/WASD.</div>
+    <button class="btn" id="startBtn">▶ Start</button>
+    <script>
+        const c = document.getElementById('c'), ctx = c.getContext('2d'), S = 440;
+        let player, exit, lasers, level = 1, running = false, animId, startTime, frame = 0; const keys = {};
+
+        function genLevel(lv) {
+            player = { x: 30, y: S - 30, r: 8 }; exit = { x: S - 30, y: 30, r: 12 }; lasers = [];
+            for (let i = 0; i < 3 + lv * 2; i++) {
+                const hor = Math.random() < 0.5;
+                if (hor) lasers.push({ x1: 40 + Math.random() * (S - 80), y1: 40 + Math.random() * (S - 80), x2: 0, y2: 0, hor: true, len: 80 + Math.random() * 150, speed: (0.5 + Math.random() * 1.5) * (Math.random() < 0.5 ? 1 : -1), offset: Math.random() * S });
+                else lasers.push({ x1: 40 + Math.random() * (S - 80), y1: 40 + Math.random() * (S - 80), hor: false, len: 80 + Math.random() * 150, speed: (0.5 + Math.random() * 1.5) * (Math.random() < 0.5 ? 1 : -1), offset: Math.random() * S });
+            }
+        }
+
+        function update() {
+            frame++; const sp = 3; if (keys.w || keys.ArrowUp) player.y = Math.max(player.r, player.y - sp); if (keys.s || keys.ArrowDown) player.y = Math.min(S - player.r, player.y + sp); if (keys.a || keys.ArrowLeft) player.x = Math.max(player.r, player.x - sp); if (keys.d || keys.ArrowRight) player.x = Math.min(S - player.r, player.x + sp);
+            document.getElementById('time').textContent = ((Date.now() - startTime) / 1000).toFixed(1);
+            // lasers move
+            lasers.forEach(l => { l.offset += l.speed; if (l.offset < 0 || l.offset > S) l.speed *= -1; });
+            // collision with lasers
+            lasers.forEach(l => {
+                const lx = l.hor ? l.x1 : l.x1; const ly = l.hor ? l.offset : l.y1; const ex = l.hor ? l.x1 + l.len : l.x1; const ey = l.hor ? l.offset : l.y1 + l.len;
+                // simple line-circle collision
+                const dx = ex - lx, dy = ey - ly; const t = Math.max(0, Math.min(1, ((player.x - lx) * dx + (player.y - ly) * dy) / (dx * dx + dy * dy))); const cx = lx + t * dx, cy = ly + t * dy;
+                if (Math.hypot(player.x - cx, player.y - cy) < player.r + 2) { player.x = 30; player.y = S - 30; document.getElementById('msg').textContent = '💀 Hit by laser! Back to start.'; }
+            });
+            // exit
+            if (Math.hypot(player.x - exit.x, player.y - exit.y) < player.r + exit.r) { level++; document.getElementById('level').textContent = level; document.getElementById('msg').textContent = `✅ Level ${level - 1} complete!`; genLevel(level); }
+        }
+
+        function draw() {
+            ctx.fillStyle = '#050508'; ctx.fillRect(0, 0, S, S);
+            // grid
+            ctx.strokeStyle = 'rgba(255,255,255,0.02)'; ctx.lineWidth = 1; for (let i = 0; i < S; i += 40) { ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, S); ctx.stroke(); ctx.beginPath(); ctx.moveTo(0, i); ctx.lineTo(S, i); ctx.stroke(); }
+            // exit
+            ctx.fillStyle = '#22c55e'; ctx.shadowColor = '#22c55e'; ctx.shadowBlur = 20; ctx.beginPath(); ctx.arc(exit.x, exit.y, exit.r, 0, Math.PI * 2); ctx.fill(); ctx.font = '14px serif'; ctx.textAlign = 'center'; ctx.fillText('🚪', exit.x, exit.y + 5); ctx.shadowBlur = 0;
+            // lasers
+            lasers.forEach(l => {
+                const lx = l.hor ? l.x1 : l.x1; const ly = l.hor ? l.offset : l.y1; const ex = l.hor ? l.x1 + l.len : l.x1; const ey = l.hor ? l.offset : l.y1 + l.len;
+                ctx.strokeStyle = '#ef4444'; ctx.shadowColor = '#ef4444'; ctx.shadowBlur = 10; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(lx, ly); ctx.lineTo(ex, ey); ctx.stroke(); ctx.shadowBlur = 0;
+            });
+            // player
+            ctx.fillStyle = '#06b6d4'; ctx.shadowColor = '#06b6d4'; ctx.shadowBlur = 14; ctx.beginPath(); ctx.arc(player.x, player.y, player.r, 0, Math.PI * 2); ctx.fill(); ctx.shadowBlur = 0;
+        }
+
+        document.addEventListener('keydown', e => { keys[e.key] = true;['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key) && e.preventDefault(); });
+        document.addEventListener('keyup', e => keys[e.key] = false);
+        function loop() { if (!running) return; update(); draw(); animId = requestAnimationFrame(loop); }
+        function start() { level = 1; running = true; startTime = Date.now(); frame = 0; document.getElementById('level').textContent = 1; document.getElementById('msg').textContent = ''; document.getElementById('startBtn').textContent = '↩ Restart'; genLevel(1); cancelAnimationFrame(animId); loop(); }
+        document.getElementById('startBtn').addEventListener('click', start); ctx.fillStyle = '#050508'; ctx.fillRect(0, 0, S, S);
+    </script>
+</body>
+
+</html>

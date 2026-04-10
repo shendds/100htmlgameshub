@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>Connect Four | 100 HTML Games</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        body {
+            background: #0a0a0f;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Outfit', sans-serif;
+            color: #fff
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 900;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #ef4444, #eab308);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text
+        }
+
+        .info {
+            display: flex;
+            gap: 24px;
+            margin-bottom: 14px;
+            font-size: 15px;
+            color: #64748b
+        }
+
+        .player-tag {
+            padding: 6px 16px;
+            border-radius: 999px;
+            font-weight: 700;
+            font-size: 14px;
+            transition: all .2s
+        }
+
+        .player-tag.active {
+            transform: scale(1.1)
+        }
+
+        #board-wrap {
+            background: rgba(30, 58, 138, 0.5);
+            border: 2px solid rgba(59, 130, 246, 0.3);
+            border-radius: 16px;
+            padding: 14px;
+            margin-bottom: 16px;
+            box-shadow: 0 0 40px rgba(59, 130, 246, 0.1)
+        }
+
+        #board {
+            display: grid;
+            grid-template-columns: repeat(7, 56px);
+            gap: 8px
+        }
+
+        .col-btn {
+            width: 56px;
+            height: 24px;
+            background: rgba(255, 255, 255, 0.06);
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            color: #94a3b8;
+            font-size: 16px;
+            transition: all .15s;
+            font-family: 'Outfit', sans-serif
+        }
+
+        .col-btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+            color: #fff
+        }
+
+        .disc {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            transition: all .2s;
+            background: rgba(255, 255, 255, 0.04)
+        }
+
+        .disc.p1 {
+            background: radial-gradient(circle, #f87171, #ef4444);
+            border-color: #ef4444;
+            box-shadow: 0 0 14px rgba(239, 68, 68, 0.5)
+        }
+
+        .disc.p2 {
+            background: radial-gradient(circle, #fde04d, #eab308);
+            border-color: #eab308;
+            box-shadow: 0 0 14px rgba(234, 179, 8, 0.5)
+        }
+
+        .disc.win {
+            animation: winPulse .6s ease infinite alternate
+        }
+
+        @keyframes winPulse {
+            from {
+                transform: scale(1)
+            }
+
+            to {
+                transform: scale(1.12)
+            }
+        }
+
+        .btns {
+            display: flex;
+            gap: 10px
+        }
+
+        .btn {
+            padding: 10px 22px;
+            background: linear-gradient(135deg, #ef4444, #eab308);
+            border: none;
+            border-radius: 999px;
+            color: #fff;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform .15s;
+            font-family: 'Outfit', sans-serif
+        }
+
+        .btn:hover {
+            transform: scale(1.05)
+        }
+
+        #msg {
+            font-size: 1.1rem;
+            min-height: 28px;
+            margin-bottom: 12px;
+            text-align: center;
+            color: #64748b
+        }
+
+        .back {
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            text-decoration: none;
+            color: #64748b;
+            font-size: 13px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 6px 14px;
+            border-radius: 999px
+        }
+
+        .back:hover {
+            color: #fff
+        }
+    </style>
+</head>
+
+<body>
+    <a href="../../index.html" class="back">← Back to Menu</a>
+    <h1>🔴 Connect Four</h1>
+    <div class="info">
+        <span class="player-tag active" id="p1tag" style="background:rgba(239,68,68,0.2);color:#f87171">🔴 Player
+            1</span>
+        <span class="player-tag" id="p2tag" style="background:rgba(234,179,8,0.1);color:#64748b">🟡 Player 2</span>
+    </div>
+    <div id="board-wrap">
+        <div id="col-btns" style="display:grid;grid-template-columns:repeat(7,56px);gap:8px;margin-bottom:6px"></div>
+        <div id="board"></div>
+    </div>
+    <div id="msg">Player 1's turn (Red)</div>
+    <button class="btn" id="newBtn">▶ New Game</button>
+    <script>
+        const ROWS = 6, COLS = 7;
+        let board, current, gameOver;
+
+        function init() { board = Array.from({ length: ROWS }, () => Array(COLS).fill(0)); current = 1; gameOver = false; document.getElementById('msg').textContent = "Player 1's turn (Red)"; render(); }
+
+        function drop(col) {
+            if (gameOver) return; let row = -1;
+            for (let r = ROWS - 1; r >= 0; r--) { if (!board[r][col]) { row = r; break; } }
+            if (row < 0) return;
+            board[row][col] = current;
+            const wins = checkWin(row, col);
+            if (wins) { gameOver = true; highlight(wins); document.getElementById('msg').textContent = `🏆 Player ${current} wins!`; return; }
+            if (board[0].every(c => c)) { gameOver = true; document.getElementById('msg').textContent = "🤝 It's a draw!"; return; }
+            current = current === 1 ? 2 : 1; updateTurnUI(); render();
+        }
+
+        function checkWin(r, c) { const p = board[r][c]; const dirs = [[0, 1], [1, 0], [1, 1], [1, -1]]; for (const [dr, dc] of dirs) { let cells = [[r, c]]; for (const sign of [-1, 1]) { let nr = r + dr * sign, nc = c + dc * sign; while (nr >= 0 && nr < ROWS && nc >= 0 && nc < COLS && board[nr][nc] === p) { cells.push([nr, nc]); nr += dr * sign; nc += dc * sign; } } if (cells.length >= 4) return cells; } return null; }
+
+        function highlight(cells) { cells.forEach(([r, c]) => { const disc = document.querySelector(`#disc-${r}-${c}`); if (disc) disc.classList.add('win'); }); }
+
+        function updateTurnUI() {
+            const p1 = document.getElementById('p1tag'), p2 = document.getElementById('p2tag');
+            if (current === 1) { p1.classList.add('active'); p1.style.color = '#f87171'; p2.classList.remove('active'); p2.style.color = '#64748b'; document.getElementById('msg').textContent = "Player 1's turn (Red)"; }
+            else { p2.classList.add('active'); p2.style.color = '#fde04d'; p1.classList.remove('active'); p1.style.color = '#64748b'; document.getElementById('msg').textContent = "Player 2's turn (Yellow)"; }
+        }
+
+        function render() {
+            // col buttons
+            const cb = document.getElementById('col-btns'); cb.innerHTML = '';
+            for (let c = 0; c < COLS; c++) { const b = document.createElement('button'); b.className = 'col-btn'; b.textContent = '▼'; b.addEventListener('click', () => drop(c)); cb.appendChild(b); }
+            const el = document.getElementById('board'); el.innerHTML = '';
+            for (let r = 0; r < ROWS; r++)for (let c = 0; c < COLS; c++) { const d = document.createElement('div'); d.className = 'disc' + ([' p1', ' p2', ''][board[r][c] > 0 ? board[r][c] - 1 : 2]); d.id = `disc-${r}-${c}`; el.appendChild(d); }
+        }
+
+        document.getElementById('newBtn').addEventListener('click', init);
+        init();
+    </script>
+</body>
+
+</html>

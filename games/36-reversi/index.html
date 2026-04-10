@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>Reversi | 100 HTML Games</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        body {
+            background: #0a0a0f;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Outfit', sans-serif;
+            color: #fff;
+            padding: 16px
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 900;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #475569, #e2e8f0);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text
+        }
+
+        .info {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 12px;
+            font-size: 14px;
+            align-items: center
+        }
+
+        .player-disp {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 14px;
+            border-radius: 999px;
+            border: 2px solid
+        }
+
+        .player-disp.white {
+            border-color: rgba(255, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.05)
+        }
+
+        .player-disp.black {
+            border-color: rgba(0, 0, 0, 0.5);
+            background: rgba(255, 255, 255, 0.05)
+        }
+
+        .player-disp.active {
+            border-color: #f59e0b;
+            box-shadow: 0 0 14px rgba(245, 158, 11, 0.3)
+        }
+
+        #board {
+            display: grid;
+            grid-template-columns: repeat(8, 60px);
+            gap: 3px;
+            background: rgba(0, 100, 40, 0.3);
+            border: 2px solid rgba(0, 200, 80, 0.2);
+            border-radius: 12px;
+            padding: 8px;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.5)
+        }
+
+        .sq {
+            width: 60px;
+            height: 60px;
+            background: rgba(0, 80, 30, 0.5);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            position: relative;
+            transition: background .1s
+        }
+
+        .sq:hover.playable {
+            background: rgba(245, 158, 11, 0.2)
+        }
+
+        .sq.playable::after {
+            content: '';
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: rgba(245, 158, 11, 0.4);
+            position: absolute
+        }
+
+        .disc {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            transition: transform .3s;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5)
+        }
+
+        .disc.W {
+            background: radial-gradient(circle, #fff, #d4d4d4)
+        }
+
+        .disc.B {
+            background: radial-gradient(circle, #475569, #1e293b)
+        }
+
+        .disc.flip {
+            animation: flip .3s ease
+        }
+
+        @keyframes flip {
+            0% {
+                transform: scaleX(1)
+            }
+
+            50% {
+                transform: scaleX(0)
+            }
+
+            100% {
+                transform: scaleX(1)
+            }
+        }
+
+        .mode-btns {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px
+        }
+
+        .mode-btn {
+            padding: 6px 14px;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 999px;
+            color: #94a3b8;
+            font-size: 13px;
+            cursor: pointer;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 600;
+            transition: all .2s
+        }
+
+        .mode-btn.active {
+            background: rgba(71, 85, 105, 0.4);
+            border-color: #94a3b8;
+            color: #fff
+        }
+
+        .btn {
+            padding: 10px 22px;
+            background: linear-gradient(135deg, #475569, #94a3b8);
+            border: none;
+            border-radius: 999px;
+            color: #fff;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform .15s;
+            font-family: 'Outfit', sans-serif;
+            margin-top: 12px
+        }
+
+        .btn:hover {
+            transform: scale(1.05)
+        }
+
+        #msg {
+            font-size: 1rem;
+            min-height: 24px;
+            margin: 6px 0;
+            text-align: center;
+            color: #64748b;
+            font-weight: 600
+        }
+
+        .back {
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            text-decoration: none;
+            color: #64748b;
+            font-size: 13px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 6px 14px;
+            border-radius: 999px
+        }
+
+        .back:hover {
+            color: #fff
+        }
+    </style>
+</head>
+
+<body>
+    <a href="../../index.html" class="back">← Back to Menu</a>
+    <h1>⬛ Reversi</h1>
+    <div class="mode-btns">
+        <button class="mode-btn active" id="pvpMode">👥 2 Players</button>
+        <button class="mode-btn" id="aiMode">🤖 vs AI</button>
+    </div>
+    <div class="info">
+        <div class="player-disp white active" id="whitePl">
+            <div style="width:20px;height:20px;border-radius:50%;background:#fff;box-shadow:0 2px 6px rgba(0,0,0,0.3)">
+            </div>White: <b id="wCount">2</b>
+        </div>
+        <div class="player-disp black" id="blackPl">
+            <div style="width:20px;height:20px;border-radius:50%;background:#1e293b;border:2px solid #475569"></div>
+            Black: <b id="bCount">2</b>
+        </div>
+    </div>
+    <div id="board"></div>
+    <div id="msg">White's turn</div>
+    <button class="btn" id="newBtn">▶ New Game</button>
+    <script>
+        let board, turn, vsAI = false;
+        const DIR = [[-1, -1], [-1, 0], [-1, 1], [0, -1], [0, 1], [1, -1], [1, 0], [1, 1]];
+
+        function init() {
+            board = Array.from({ length: 8 }, () => Array(8).fill(''));
+            board[3][3] = 'W'; board[4][4] = 'W'; board[3][4] = 'B'; board[4][3] = 'B';
+            turn = 'W'; document.getElementById('msg').textContent = "White's turn"; updateInfo(); render();
+            if (vsAI && turn === 'B') setTimeout(doAI, 400);
+        }
+
+        function opp(p) { return p === 'W' ? 'B' : 'W'; }
+
+        function getFlips(b, r, c, p) {
+            if (b[r][c]) return []; const flips = [];
+            for (const [dr, dc] of DIR) { let line = []; let nr = r + dr, nc = c + dc; while (nr >= 0 && nr < 8 && nc >= 0 && nc < 8 && b[nr][nc] === opp(p)) { line.push([nr, nc]); nr += dr; nc += dc; } if (nr >= 0 && nr < 8 && nc >= 0 && nc < 8 && b[nr][nc] === p && line.length) flips.push(...line); }
+            return flips;
+        }
+
+        function validMoves(b, p) { const moves = []; for (let r = 0; r < 8; r++)for (let c = 0; c < 8; c++)if (getFlips(b, r, c, p).length) moves.push([r, c]); return moves; }
+
+        function place(r, c) {
+            const flips = getFlips(board, r, c, turn); if (!flips.length) return;
+            board[r][c] = turn; flips.forEach(([fr, fc]) => board[fr][fc] = turn);
+            const next = opp(turn); const mv = validMoves(board, next);
+            if (mv.length) { turn = next; } else if (validMoves(board, turn).length) { document.getElementById('msg').textContent = `No moves for ${next === 'W' ? 'White' : 'Black'}. ${turn === 'W' ? 'White' : 'Black'} plays again.`; }
+            else { endGame(); return; }
+            updateInfo(); render(); if (!document.getElementById('msg').textContent.includes('No moves')) document.getElementById('msg').textContent = `${turn === 'W' ? 'White' : 'Black'}'s turn`;
+            if (vsAI && turn === 'B') setTimeout(doAI, 400);
+        }
+
+        function doAI() {
+            const moves = validMoves(board, 'B'); if (!moves.length) return;
+            // Greedy AI: pick move that flips the most
+            let best = null, bestN = 0; moves.forEach(([r, c]) => { const n = getFlips(board, r, c, 'B').length; if (n > bestN) { bestN = n; best = [r, c]; } }); if (best) place(...best);
+        }
+
+        function endGame() {
+            const w = board.flat().filter(v => v === 'W').length, b = board.flat().filter(v => v === 'B').length;
+            document.getElementById('msg').textContent = w > b ? `🏆 White wins! (${w}-${b})` : b > w ? `🏆 Black wins! (${b}-${w})` : `🤝 Draw! (${w}-${b})`;
+        }
+
+        function updateInfo() {
+            const w = board.flat().filter(v => v === 'W').length, b = board.flat().filter(v => v === 'B').length;
+            document.getElementById('wCount').textContent = w; document.getElementById('bCount').textContent = b;
+            document.getElementById('whitePl').classList.toggle('active', turn === 'W');
+            document.getElementById('blackPl').classList.toggle('active', turn === 'B');
+        }
+
+        function render() {
+            const el = document.getElementById('board'); el.innerHTML = ''; const vm = validMoves(board, turn);
+            for (let r = 0; r < 8; r++)for (let c = 0; c < 8; c++) {
+                const sq = document.createElement('div'); sq.className = 'sq';
+                if (vm.find(([vr, vc]) => vr === r && vc === c)) sq.classList.add('playable');
+                if (board[r][c]) { const disc = document.createElement('div'); disc.className = `disc ${board[r][c]}`; sq.appendChild(disc); }
+                sq.addEventListener('click', () => { if (!vsAI || turn === 'W') place(r, c); else if (!vsAI) place(r, c); });
+                el.appendChild(sq);
+            }
+        }
+
+        document.getElementById('pvpMode').addEventListener('click', () => { vsAI = false; document.getElementById('pvpMode').classList.add('active'); document.getElementById('aiMode').classList.remove('active'); init(); });
+        document.getElementById('aiMode').addEventListener('click', () => { vsAI = true; document.getElementById('aiMode').classList.add('active'); document.getElementById('pvpMode').classList.remove('active'); init(); });
+        document.getElementById('newBtn').addEventListener('click', init);
+        init();
+    </script>
+</body>
+
+</html>

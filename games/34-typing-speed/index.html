@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>Typing Speed | 100 HTML Games</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        body {
+            background: #0a0a0f;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Outfit', sans-serif;
+            color: #fff;
+            padding: 24px
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 900;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #06b6d4, #7c3aed);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin-bottom: 20px;
+            width: 580px;
+            max-width: 100%
+        }
+
+        .stat-box {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 10px;
+            text-align: center
+        }
+
+        .stat-label {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #64748b
+        }
+
+        .stat-val {
+            font-size: 1.5rem;
+            font-weight: 900;
+            color: #06b6d4
+        }
+
+        .text-display {
+            width: 580px;
+            max-width: 100%;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 16px;
+            font-size: 1.2rem;
+            line-height: 1.8;
+            letter-spacing: 0.5px;
+            font-family: 'Courier New', monospace;
+            min-height: 100px
+        }
+
+        .char {
+            color: #475569
+        }
+
+        .char.correct {
+            color: #22c55e
+        }
+
+        .char.wrong {
+            color: #ef4444;
+            background: rgba(239, 68, 68, 0.2);
+            border-radius: 2px
+        }
+
+        .char.cursor {
+            border-bottom: 2px solid #06b6d4
+        }
+
+        input[type=text] {
+            width: 580px;
+            max-width: 100%;
+            background: rgba(255, 255, 255, 0.06);
+            border: 2px solid rgba(6, 182, 212, 0.3);
+            color: #fff;
+            border-radius: 12px;
+            padding: 14px 18px;
+            font-size: 1.1rem;
+            font-family: 'Courier New', monospace;
+            outline: none;
+            transition: border-color .2s;
+            margin-bottom: 16px
+        }
+
+        input[type=text]:focus {
+            border-color: rgba(6, 182, 212, 0.7)
+        }
+
+        input[type=text]::placeholder {
+            color: #334155;
+            font-family: 'Outfit', sans-serif
+        }
+
+        .btns {
+            display: flex;
+            gap: 10px
+        }
+
+        .btn {
+            padding: 10px 22px;
+            background: linear-gradient(135deg, #06b6d4, #7c3aed);
+            border: none;
+            border-radius: 999px;
+            color: #fff;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform .15s;
+            font-family: 'Outfit', sans-serif
+        }
+
+        .btn:hover {
+            transform: scale(1.05)
+        }
+
+        .timer-bar {
+            width: 580px;
+            max-width: 100%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.07);
+            border-radius: 999px;
+            margin-bottom: 12px;
+            overflow: hidden
+        }
+
+        .timer-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #06b6d4, #7c3aed);
+            border-radius: 999px;
+            transition: width .1s
+        }
+
+        .back {
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            text-decoration: none;
+            color: #64748b;
+            font-size: 13px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 6px 14px;
+            border-radius: 999px
+        }
+
+        .back:hover {
+            color: #fff
+        }
+    </style>
+</head>
+
+<body>
+    <a href="../../index.html" class="back">← Back to Menu</a>
+    <h1>⌨️ Typing Speed</h1>
+    <div class="stats">
+        <div class="stat-box">
+            <div class="stat-label">WPM</div>
+            <div class="stat-val" id="wpm">0</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-label">Accuracy</div>
+            <div class="stat-val" id="acc">100%</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-label">Time</div>
+            <div class="stat-val" id="time">60s</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-label">Best WPM</div>
+            <div class="stat-val" id="best">0</div>
+        </div>
+    </div>
+    <div class="timer-bar">
+        <div class="timer-fill" id="timerFill" style="width:100%"></div>
+    </div>
+    <div class="text-display" id="textDisplay"></div>
+    <input type="text" id="typingInput" placeholder="Start typing to begin..." autocomplete="off" autocorrect="off"
+        autocapitalize="off" spellcheck="false" />
+    <div class="btns"><button class="btn" id="newBtn">🔄 New Text</button></div>
+    <script>
+        const TEXTS = [
+            "The quick brown fox jumps over the lazy dog while the sun shines brightly in the clear blue sky above.",
+            "Programming is the art of telling another human being what one wants the computer to do in a precise and unambiguous manner.",
+            "In the beginning there was code and the code was with the developer and the developer saw that it was good and pushed to main.",
+            "The universe is under no obligation to make sense to you but understanding it is what makes science such a beautiful adventure.",
+            "Life is what happens when you are busy making other plans and the best time to plant a tree was twenty years ago.",
+            "To be or not to be that is the question whether it is nobler in the mind to suffer the slings and arrows of outrageous fortune.",
+            "Success is not final failure is not fatal it is the courage to continue that counts in all aspects of life and coding.",
+        ];
+        let text, pos = 0, errors = 0, started = false, timeLeft = 60, timerInt, bestWPM = 0, totalTyped = 0, wrongTyped = 0;
+
+        function init() {
+            clearInterval(timerInt); text = TEXTS[Math.floor(Math.random() * TEXTS.length)]; pos = 0; errors = 0; started = false; timeLeft = 60; totalTyped = 0; wrongTyped = 0;
+            document.getElementById('typingInput').value = ''; document.getElementById('typingInput').disabled = false;
+            document.getElementById('wpm').textContent = 0; document.getElementById('acc').textContent = '100%'; document.getElementById('time').textContent = '60s'; document.getElementById('timerFill').style.width = '100%';
+            render();
+        }
+
+        function render() {
+            const el = document.getElementById('textDisplay'); el.innerHTML = '';
+            text.split('').forEach((ch, i) => { const span = document.createElement('span'); span.className = 'char'; if (i < pos) span.classList.add('correct'); else if (i === pos) span.classList.add('cursor'); span.textContent = ch; el.appendChild(span); });
+        }
+
+        function end() {
+            clearInterval(timerInt); document.getElementById('typingInput').disabled = true;
+            const wpm = Math.round((totalTyped / 5) / (60 / 60)); if (wpm > bestWPM) { bestWPM = wpm; document.getElementById('best').textContent = wpm; }
+            document.getElementById('wpm').textContent = wpm;
+        }
+
+        document.getElementById('typingInput').addEventListener('input', e => {
+            const val = e.target.value;
+            if (!started && val.length > 0) { started = true; timerInt = setInterval(() => { timeLeft--; document.getElementById('time').textContent = timeLeft + 's'; document.getElementById('timerFill').style.width = (timeLeft / 60 * 100) + '%'; const wpm = Math.round((totalTyped / 5) / Math.max(1, (60 - timeLeft) / 60)); document.getElementById('wpm').textContent = wpm; if (timeLeft <= 0) end(); }, 1000); }
+            if (val.length > 0) { const ch = val[val.length - 1]; if (ch === text[pos]) { pos++; totalTyped++; e.target.value = ''; } else { wrongTyped++; errors++; } const acc = Math.round((totalTyped / (totalTyped + wrongTyped || 1)) * 100); document.getElementById('acc').textContent = acc + '%'; }
+            if (pos >= text.length) { clearInterval(timerInt); end(); }
+            render();
+        });
+
+        document.getElementById('newBtn').addEventListener('click', init);
+        init();
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>Bubble Shooter | 100 HTML Games</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        body {
+            background: #0a0a0f;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Outfit', sans-serif;
+            color: #fff;
+            padding: 16px
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 900;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #06b6d4, #7c3aed);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text
+        }
+
+        .info {
+            display: flex;
+            gap: 32px;
+            margin-bottom: 12px;
+            font-size: 14px;
+            color: #64748b
+        }
+
+        .info span b {
+            color: #06b6d4;
+            font-size: 1.2em
+        }
+
+        canvas {
+            border: 2px solid rgba(6, 182, 212, 0.3);
+            border-radius: 12px;
+            background: #060d14;
+            box-shadow: 0 0 30px rgba(6, 182, 212, 0.1);
+            cursor: crosshair
+        }
+
+        #msg {
+            margin-top: 14px;
+            font-size: 1rem;
+            color: #64748b;
+            min-height: 24px;
+            text-align: center
+        }
+
+        .btn {
+            margin-top: 10px;
+            padding: 10px 28px;
+            background: linear-gradient(135deg, #06b6d4, #7c3aed);
+            border: none;
+            border-radius: 999px;
+            color: #fff;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform .15s;
+            font-family: 'Outfit', sans-serif
+        }
+
+        .btn:hover {
+            transform: scale(1.05)
+        }
+
+        .back {
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            text-decoration: none;
+            color: #64748b;
+            font-size: 13px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 6px 14px;
+            border-radius: 999px
+        }
+
+        .back:hover {
+            color: #fff
+        }
+
+        .hint {
+            font-size: 12px;
+            color: #334155;
+            margin-top: 8px
+        }
+    </style>
+</head>
+
+<body>
+    <a href="../../index.html" class="back">← Back to Menu</a>
+    <h1>🫧 Bubble Shooter</h1>
+    <div class="info">
+        <span>Score: <b id="score">0</b></span>
+        <span>Shots: <b id="shots">0</b></span>
+    </div>
+    <canvas id="c" width="380" height="520"></canvas>
+    <div id="msg">Click to shoot bubbles!</div>
+    <button class="btn" id="newBtn">▶ New Game</button>
+    <div class="hint">Aim and click to shoot | Match 3+ to pop</div>
+    <script>
+        const canvas = document.getElementById('c'), ctx = canvas.getContext('2d');
+        const W = 380, H = 520, R = 18, COLS = 10, ROWS = 8;
+        const COLORS = ['#ef4444', '#06b6d4', '#22c55e', '#f59e0b', '#7c3aed', '#ec4899'];
+        let grid = [], proj = null, score = 0, shots = 0, running = false, nextColor;
+        const cx0 = R + 2, cy0 = R + 2, colW = R * 2 + 2;
+
+        function rndColor() { return COLORS[Math.floor(Math.random() * COLORS.length)]; }
+
+        function initGrid() {
+            grid = [];
+            for (let r = 0; r < ROWS; r++) { const row = []; for (let c = 0; c < COLS; c++)row.push(r < 5 ? rndColor() : null); grid.push(row); }
+            nextColor = rndColor(); score = 0; shots = 0; running = true; proj = null;
+            document.getElementById('score').textContent = 0; document.getElementById('shots').textContent = 0; document.getElementById('msg').textContent = 'Click to shoot!'; draw();
+        }
+
+        function gridX(c, r) { return cx0 + c * colW + (r % 2 ? R : 0); }
+        function gridY(r) { return cy0 + r * (R * 1.8); }
+
+        function nearestCell(x, y) { let best = null, bd = Infinity; for (let r = 0; r < ROWS; r++)for (let c = 0; c < COLS; c++) { if (grid[r][c]) continue; const dx = x - gridX(c, r), dy = y - gridY(r); const d = dx * dx + dy * dy; if (d < bd && d < (R * 2) ** 2) { bd = d; best = [r, c]; } } return best; }
+        function hitBubble(x, y) { for (let r = 0; r < ROWS; r++)for (let c = 0; c < COLS; c++) { if (!grid[r][c]) continue; const dx = x - gridX(c, r), dy = y - gridY(r); if (dx * dx + dy * dy < (R * 1.8) ** 2) return true; } return false; }
+
+        function placeBubble(color, x, y) {
+            const cell = nearestCell(x, y); if (!cell) { end(); return; }
+            const [r, c] = cell; grid[r][c] = color;
+            // find connected same-color
+            const visited = new Set(); const toRemove = [];
+            function flood(r, c) { const k = `${r},${c}`; if (visited.has(k)) return; visited.add(k); if (!grid[r] || !grid[r][c] || grid[r][c] !== color) return; toRemove.push([r, c]); const nb = neighbors(r, c); nb.forEach(([nr, nc]) => flood(nr, nc)); }
+            flood(r, c);
+            if (toRemove.length >= 3) { toRemove.forEach(([r, c]) => { grid[r][c] = null; }); score += toRemove.length * 10; document.getElementById('score').textContent = score; }
+            if (grid.every(row => row.every(v => !v))) { document.getElementById('msg').textContent = `🏆 Cleared! ${score} pts`; running = false; }
+        }
+
+        function neighbors(r, c) { const nb = []; const odd = r % 2;[[-1, odd ? 0 : -1], [-1, odd ? 1 : 0], [0, -1], [0, 1], [1, odd ? 0 : -1], [1, odd ? 1 : 0]].forEach(([dr, dc]) => { const nr = r + dr, nc = c + dc; if (nr >= 0 && nr < ROWS && nc >= 0 && nc < COLS) nb.push([nr, nc]); }); return nb; }
+
+        let shooterX = W / 2, aimX = W / 2, aimY = cy0;
+
+        canvas.addEventListener('mousemove', e => { const r = canvas.getBoundingClientRect(); aimX = e.clientX - r.left; aimY = e.clientY - r.top; draw(); });
+        canvas.addEventListener('click', e => { if (!running || proj) return; const r = canvas.getBoundingClientRect(); const tx = e.clientX - r.left, ty = e.clientY - r.top; if (ty >= H - 60) return; const dx = tx - shooterX, dy = ty - (H - 40); const len = Math.hypot(dx, dy); proj = { x: shooterX, y: H - 40, vx: dx / len * 8, vy: dy / len * 8, color: nextColor }; nextColor = rndColor(); shots++; document.getElementById('shots').textContent = shots; });
+
+        function step() {
+            if (!proj) return; proj.x += proj.vx; proj.y += proj.vy; if (proj.x < R) { proj.x = R; proj.vx *= -1; } if (proj.x > W - R) { proj.x = W - R; proj.vx *= -1; } if (proj.y < R) { placeBubble(proj.color, proj.x, proj.y); proj = null; } else if (hitBubble(proj.x, proj.y)) { placeBubble(proj.color, proj.x, proj.y - proj.vy); proj = null; } if (proj && proj.y > H + 20) proj = null;
+        }
+
+        function draw() {
+            ctx.fillStyle = '#060d14'; ctx.fillRect(0, 0, W, H);
+            for (let r = 0; r < ROWS; r++)for (let c = 0; c < COLS; c++) {
+                if (!grid[r][c]) continue; const x = gridX(c, r), y = gridY(r);
+                const g = ctx.createRadialGradient(x - 5, y - 5, 2, x, y, R); g.addColorStop(0, 'rgba(255,255,255,0.3)'); g.addColorStop(1, grid[r][c]);
+                ctx.fillStyle = g; ctx.shadowColor = grid[r][c]; ctx.shadowBlur = 8; ctx.beginPath(); ctx.arc(x, y, R - 1, 0, Math.PI * 2); ctx.fill(); ctx.shadowBlur = 0;
+            }
+            if (proj) { const g2 = ctx.createRadialGradient(proj.x - 3, proj.y - 3, 1, proj.x, proj.y, R); g2.addColorStop(0, 'rgba(255,255,255,0.4)'); g2.addColorStop(1, proj.color); ctx.fillStyle = g2; ctx.shadowColor = proj.color; ctx.shadowBlur = 14; ctx.beginPath(); ctx.arc(proj.x, proj.y, R - 1, 0, Math.PI * 2); ctx.fill(); ctx.shadowBlur = 0; }
+            // shooter
+            const ang = Math.atan2(aimY - (H - 40), aimX - shooterX);
+            ctx.strokeStyle = 'rgba(255,255,255,0.15)'; ctx.lineWidth = 1; ctx.setLineDash([5, 8]); ctx.beginPath(); ctx.moveTo(shooterX, H - 40); ctx.lineTo(shooterX + Math.cos(ang) * 80, H - 40 + Math.sin(ang) * 80); ctx.stroke(); ctx.setLineDash([]);
+            const ng = ctx.createRadialGradient(shooterX - 3, H - 43, 1, shooterX, H - 40, R); ng.addColorStop(0, 'rgba(255,255,255,0.4)'); ng.addColorStop(1, nextColor); ctx.fillStyle = ng; ctx.shadowColor = nextColor; ctx.shadowBlur = 20; ctx.beginPath(); ctx.arc(shooterX, H - 40, R, 0, Math.PI * 2); ctx.fill(); ctx.shadowBlur = 0;
+            step();
+        }
+
+        function end() { document.getElementById('msg').textContent = '💀 The bubbles reached the bottom!'; running = false; }
+        document.getElementById('newBtn').addEventListener('click', initGrid);
+        initGrid();
+        function loop() { draw(); requestAnimationFrame(loop); } loop();
+    </script>
+</body>
+
+</html>

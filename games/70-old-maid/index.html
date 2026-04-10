@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>Old Maid | 100 HTML Games</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        body {
+            background: #0a0a0f;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Outfit', sans-serif;
+            color: #fff;
+            padding: 20px
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 900;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #ec4899, #7c3aed);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text
+        }
+
+        .info {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 10px;
+            font-size: 13px;
+            color: #64748b
+        }
+
+        .info b {
+            color: #ec4899
+        }
+
+        .hand {
+            display: flex;
+            gap: 4px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin: 8px 0;
+            max-width: 560px
+        }
+
+        .card {
+            width: 44px;
+            height: 62px;
+            border-radius: 6px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: .75rem;
+            font-weight: 900;
+            cursor: pointer;
+            border: 2px solid rgba(255, 255, 255, 0.12);
+            transition: all .15s;
+            background: #fff
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+            border-color: #ec4899
+        }
+
+        .card.red {
+            color: #dc2626
+        }
+
+        .card.black {
+            color: #1e293b
+        }
+
+        .card.face-down {
+            background: linear-gradient(135deg, #1e3a5f, #0f172a);
+            border-color: rgba(59, 130, 246, 0.2);
+            cursor: pointer
+        }
+
+        .card.face-down:hover {
+            border-color: #ec4899;
+            transform: scale(1.08)
+        }
+
+        .label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #64748b;
+            margin: 6px 0
+        }
+
+        #msg {
+            font-size: 1rem;
+            font-weight: 700;
+            min-height: 28px;
+            text-align: center;
+            margin: 8px 0;
+            color: #64748b
+        }
+
+        .btn {
+            padding: 10px 22px;
+            background: linear-gradient(135deg, #ec4899, #7c3aed);
+            border: none;
+            border-radius: 999px;
+            color: #fff;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: 'Outfit', sans-serif;
+            transition: transform .15s
+        }
+
+        .btn:hover {
+            transform: scale(1.05)
+        }
+
+        .back {
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            text-decoration: none;
+            color: #64748b;
+            font-size: 13px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 6px 14px;
+            border-radius: 999px
+        }
+
+        .back:hover {
+            color: #fff
+        }
+    </style>
+</head>
+
+<body>
+    <a href="../../index.html" class="back">← Back to Menu</a>
+    <h1>👵 Old Maid</h1>
+    <div class="info"><span>Your cards: <b id="yc">0</b></span><span>CPU cards: <b id="cc">0</b></span></div>
+    <div class="label">CPU's cards (pick one!)</div>
+    <div class="hand" id="cpuHand"></div>
+    <div id="msg">Draw a card from CPU's hand!</div>
+    <div class="label">Your hand</div>
+    <div class="hand" id="yourHand"></div>
+    <button class="btn" id="newBtn">🔄 New Game</button>
+    <script>
+        const SUITS = ['♥', '♦', '♣', '♠'], VALS = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
+        function isRed(s) { return s === '♥' || s === '♦'; }
+        function mk() { const d = []; SUITS.forEach(s => VALS.forEach(v => d.push({ s, v }))); d.push({ s: '🃏', v: 'Joker' }); return d.sort(() => Math.random() - .5); }
+
+        let you, cpu, turn;
+        function removePairs(hand) { let changed = true; while (changed) { changed = false; for (let i = 0; i < hand.length; i++) { const match = hand.findIndex((c, j) => j !== i && c.v === hand[i].v && c.v !== 'Joker'); if (match >= 0) { hand.splice(Math.max(i, match), 1); hand.splice(Math.min(i, match), 1); changed = true; break; } } } }
+
+        function init() { const d = mk(); you = d.splice(0, 27); cpu = d; removePairs(you); removePairs(cpu); turn = 'you'; document.getElementById('msg').textContent = 'Pick a card from CPU\'s hand!'; render(); }
+
+        function pickFromCPU(i) {
+            if (turn !== 'you') return; you.push(cpu.splice(i, 1)[0]); removePairs(you); render();
+            if (checkWin()) return; turn = 'cpu'; document.getElementById('msg').textContent = 'CPU is picking...';
+            setTimeout(() => { if (you.length === 0) { checkWin(); return; } const ri = Math.floor(Math.random() * you.length); cpu.push(you.splice(ri, 1)[0]); removePairs(cpu); render(); if (checkWin()) return; turn = 'you'; document.getElementById('msg').textContent = 'Pick a card from CPU!'; }, 800);
+        }
+
+        function checkWin() {
+            if (you.length === 0) { document.getElementById('msg').textContent = '🏆 You win! No cards left!'; return true; }
+            if (cpu.length === 0) { document.getElementById('msg').textContent = '💀 CPU wins!'; return true; }
+            if (you.length === 1 && you[0].v === 'Joker') { document.getElementById('msg').textContent = '💀 You\'re the Old Maid!'; return true; }
+            if (cpu.length === 1 && cpu[0].v === 'Joker') { document.getElementById('msg').textContent = '🏆 CPU is the Old Maid! You win!'; return true; }
+            return false;
+        }
+
+        function render() {
+            document.getElementById('yc').textContent = you.length; document.getElementById('cc').textContent = cpu.length;
+            const ch = document.getElementById('cpuHand'); ch.innerHTML = ''; cpu.forEach((c, i) => { const el = document.createElement('div'); el.className = 'card face-down'; el.textContent = '?'; el.addEventListener('click', () => pickFromCPU(i)); ch.appendChild(el); });
+            const yh = document.getElementById('yourHand'); yh.innerHTML = ''; you.forEach(c => { const el = document.createElement('div'); el.className = `card ${c.v === 'Joker' ? '' : isRed(c.s) ? 'red' : 'black'}`; el.innerHTML = c.v === 'Joker' ? '🃏' : `<div>${c.v}</div><div style="font-size:0.9rem">${c.s}</div>`; yh.appendChild(el); });
+        }
+
+        document.getElementById('newBtn').addEventListener('click', init); init();
+    </script>
+</body>
+
+</html>

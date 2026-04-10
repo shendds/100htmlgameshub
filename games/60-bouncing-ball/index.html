@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>Bouncing Ball | 100 HTML Games</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        body {
+            background: #0a0a0f;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Outfit', sans-serif;
+            color: #fff;
+            padding: 16px
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 900;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #22c55e, #06b6d4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text
+        }
+
+        .info {
+            display: flex;
+            gap: 24px;
+            margin-bottom: 10px;
+            font-size: 14px;
+            color: #64748b
+        }
+
+        .info span b {
+            color: #22c55e;
+            font-size: 1.2em
+        }
+
+        canvas {
+            border: 2px solid rgba(34, 197, 94, 0.3);
+            border-radius: 12px;
+            background: #050a08;
+            cursor: pointer;
+            box-shadow: 0 0 30px rgba(34, 197, 94, 0.1)
+        }
+
+        #msg {
+            margin-top: 10px;
+            font-size: 13px;
+            color: #64748b;
+            min-height: 22px;
+            text-align: center
+        }
+
+        .back {
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            text-decoration: none;
+            color: #64748b;
+            font-size: 13px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 6px 14px;
+            border-radius: 999px
+        }
+
+        .back:hover {
+            color: #fff
+        }
+    </style>
+</head>
+
+<body>
+    <a href="../../index.html" class="back">← Back to Menu</a>
+    <h1>⚽ Bouncing Ball</h1>
+    <div class="info"><span>Balls: <b id="count">1</b></span><span>Gravity: <b id="grav">0.3</b></span></div>
+    <canvas id="c" width="500" height="420"></canvas>
+    <div id="msg">Click anywhere to add bouncing balls! Drag to launch.</div>
+    <script>
+        const c = document.getElementById('c'), ctx = c.getContext('2d'), W = 500, H = 420;
+        const COLORS = ['#ef4444', '#f97316', '#eab308', '#22c55e', '#06b6d4', '#7c3aed', '#ec4899', '#10b981'];
+        let balls = [], gravity = 0.3, dragStart = null;
+
+        function addBall(x, y, vx = 0, vy = 0) {
+            const r = 8 + Math.random() * 12; const color = COLORS[Math.floor(Math.random() * COLORS.length)];
+            balls.push({ x, y, vx: vx || (Math.random() - .5) * 6, vy: vy || (-2 - Math.random() * 4), r, color, trail: [] });
+            document.getElementById('count').textContent = balls.length;
+        }
+
+        function update() {
+            balls.forEach(b => {
+                b.trail.push({ x: b.x, y: b.y }); if (b.trail.length > 12) b.trail.shift();
+                b.vy += gravity; b.x += b.vx; b.y += b.vy;
+                if (b.x - b.r < 0) { b.x = b.r; b.vx = Math.abs(b.vx) * 0.9; }
+                if (b.x + b.r > W) { b.x = W - b.r; b.vx = -Math.abs(b.vx) * 0.9; }
+                if (b.y + b.r > H) { b.y = H - b.r; b.vy = -Math.abs(b.vy) * 0.85; b.vx *= 0.99; }
+                if (b.y - b.r < 0) { b.y = b.r; b.vy = Math.abs(b.vy) * 0.9; }
+            });
+            // ball-ball collision
+            for (let i = 0; i < balls.length; i++)for (let j = i + 1; j < balls.length; j++) {
+                const a = balls[i], b = balls[j]; const dx = b.x - a.x, dy = b.y - a.y, d = Math.hypot(dx, dy);
+                if (d < a.r + b.r && d > 0) { const nx = dx / d, ny = dy / d; const dvx = a.vx - b.vx, dvy = a.vy - b.vy; const dvn = dvx * nx + dvy * ny; if (dvn > 0) { a.vx -= nx * dvn * 0.5; a.vy -= ny * dvn * 0.5; b.vx += nx * dvn * 0.5; b.vy += ny * dvn * 0.5; const overlap = (a.r + b.r - d) / 2; a.x -= nx * overlap; a.y -= ny * overlap; b.x += nx * overlap; b.y += ny * overlap; } }
+            }
+        }
+
+        function draw() {
+            ctx.fillStyle = 'rgba(5,10,8,0.25)'; ctx.fillRect(0, 0, W, H);
+            balls.forEach(b => {
+                b.trail.forEach((t, i) => { ctx.globalAlpha = i / b.trail.length * 0.3; ctx.fillStyle = b.color; ctx.beginPath(); ctx.arc(t.x, t.y, b.r * (i / b.trail.length), 0, Math.PI * 2); ctx.fill(); }); ctx.globalAlpha = 1;
+                const g = ctx.createRadialGradient(b.x - b.r * 0.3, b.y - b.r * 0.3, 1, b.x, b.y, b.r); g.addColorStop(0, 'rgba(255,255,255,0.3)'); g.addColorStop(1, b.color); ctx.fillStyle = g; ctx.shadowColor = b.color; ctx.shadowBlur = 14; ctx.beginPath(); ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2); ctx.fill(); ctx.shadowBlur = 0;
+            });
+            if (dragStart) { ctx.strokeStyle = 'rgba(255,255,255,0.3)'; ctx.lineWidth = 2; ctx.setLineDash([5, 5]); ctx.beginPath(); ctx.moveTo(dragStart.x, dragStart.y); ctx.lineTo(dragStart.mx, dragStart.my); ctx.stroke(); ctx.setLineDash([]); }
+        }
+
+        c.addEventListener('mousedown', e => { const r = c.getBoundingClientRect(); dragStart = { x: e.clientX - r.left, y: e.clientY - r.top, mx: e.clientX - r.left, my: e.clientY - r.top }; });
+        c.addEventListener('mousemove', e => { if (dragStart) { const r = c.getBoundingClientRect(); dragStart.mx = e.clientX - r.left; dragStart.my = e.clientY - r.top; } });
+        c.addEventListener('mouseup', e => { if (dragStart) { const r = c.getBoundingClientRect(); const mx = e.clientX - r.left, my = e.clientY - r.top; addBall(dragStart.x, dragStart.y, (mx - dragStart.x) * -0.1, (my - dragStart.y) * -0.1); dragStart = null; } });
+        c.addEventListener('click', e => { });
+
+        function loop() { update(); draw(); requestAnimationFrame(loop); }
+        addBall(W / 2, H / 2); loop();
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>Go Fish | 100 HTML Games</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        body {
+            background: #0a0a0f;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Outfit', sans-serif;
+            color: #fff;
+            padding: 16px
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 900;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #06b6d4, #22c55e);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text
+        }
+
+        .info {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 10px;
+            font-size: 13px;
+            color: #64748b;
+            flex-wrap: wrap
+        }
+
+        .info b {
+            color: #06b6d4
+        }
+
+        .hand {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin: 10px 0;
+            max-width: 540px
+        }
+
+        .card {
+            width: 50px;
+            height: 70px;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+            font-weight: 900;
+            cursor: pointer;
+            border: 2px solid rgba(255, 255, 255, 0.15);
+            transition: all .15s;
+            background: #fff
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+            border-color: #06b6d4
+        }
+
+        .card.red {
+            color: #dc2626
+        }
+
+        .card.black {
+            color: #1e293b
+        }
+
+        .card.face-down {
+            background: linear-gradient(135deg, #1e3a5f, #0f172a);
+            cursor: default;
+            border-color: rgba(59, 130, 246, 0.3)
+        }
+
+        .cpu-cards {
+            display: flex;
+            gap: 4px;
+            justify-content: center;
+            margin-bottom: 10px
+        }
+
+        .mini {
+            width: 32px;
+            height: 44px;
+            border-radius: 5px;
+            background: linear-gradient(135deg, #1e3a5f, #0f172a);
+            border: 1px solid rgba(59, 130, 246, 0.2)
+        }
+
+        .label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #64748b;
+            margin: 6px 0
+        }
+
+        #msg {
+            font-size: 1rem;
+            font-weight: 700;
+            min-height: 28px;
+            text-align: center;
+            margin: 8px 0;
+            color: #64748b
+        }
+
+        .btn {
+            padding: 10px 22px;
+            background: linear-gradient(135deg, #06b6d4, #22c55e);
+            border: none;
+            border-radius: 999px;
+            color: #fff;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: 'Outfit', sans-serif;
+            transition: transform .15s;
+            margin: 4px
+        }
+
+        .btn:hover {
+            transform: scale(1.05)
+        }
+
+        .back {
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            text-decoration: none;
+            color: #64748b;
+            font-size: 13px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 6px 14px;
+            border-radius: 999px
+        }
+
+        .back:hover {
+            color: #fff
+        }
+
+        .sets {
+            font-size: 13px;
+            color: #94a3b8;
+            margin: 4px 0
+        }
+    </style>
+</head>
+
+<body>
+    <a href="../../index.html" class="back">← Back to Menu</a>
+    <h1>🐟 Go Fish</h1>
+    <div class="info"><span>Your Sets: <b id="yourSets">0</b></span><span>CPU Sets: <b
+                id="cpuSets">0</b></span><span>Pool: <b id="pool">0</b></span></div>
+    <div class="label">CPU's Hand</div>
+    <div class="cpu-cards" id="cpuHand"></div>
+    <div id="msg">Click one of your cards to ask CPU for that rank!</div>
+    <div class="label">Your Hand</div>
+    <div class="hand" id="yourHand"></div>
+    <button class="btn" id="newBtn">🔄 New Game</button>
+    <script>
+        const SUITS = ['♥', '♦', '♣', '♠'], VALS = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
+        function isRed(s) { return s === '♥' || s === '♦'; }
+        function mkDeck() { const d = []; SUITS.forEach(s => VALS.forEach(v => d.push({ s, v }))); return d.sort(() => Math.random() - .5); }
+
+        let deck, you, cpu, yourSets, cpuSets;
+
+        function init() { deck = mkDeck(); you = deck.splice(0, 7); cpu = deck.splice(0, 7); yourSets = 0; cpuSets = 0; document.getElementById('yourSets').textContent = 0; document.getElementById('cpuSets').textContent = 0; document.getElementById('msg').textContent = 'Click a card to ask for its rank!'; render(); }
+
+        function checkSets(hand, isYou) {
+            const counts = {}; hand.forEach(c => counts[c.v] = (counts[c.v] || 0) + 1);
+            Object.keys(counts).forEach(v => {
+                if (counts[v] >= 4) {
+                    if (isYou) { yourSets++; document.getElementById('yourSets').textContent = yourSets; } else { cpuSets++; document.getElementById('cpuSets').textContent = cpuSets; }
+                    for (let i = hand.length - 1; i >= 0; i--)if (hand[i].v === v) hand.splice(i, 1);
+                }
+            });
+        }
+
+        function draw() { if (deck.length) { const c = deck.pop(); you.push(c); document.getElementById('pool').textContent = deck.length; } }
+
+        function ask(val) {
+            const got = cpu.filter(c => c.v === val); if (got.length) { got.forEach(c => { cpu.splice(cpu.indexOf(c), 1); you.push(c); }); document.getElementById('msg').textContent = `✅ Got ${got.length} ${val}(s) from CPU!`; }
+            else { document.getElementById('msg').textContent = `🐟 Go Fish!`; if (deck.length) draw(); }
+            checkSets(you, true); render();
+            if (you.length === 0 && deck.length) draw();
+            setTimeout(cpuTurn, 800);
+        }
+
+        function cpuTurn() {
+            if (cpu.length === 0 && deck.length) { cpu.push(deck.pop()); document.getElementById('pool').textContent = deck.length; }
+            if (cpu.length === 0) { endGame(); return; }
+            const val = cpu[Math.floor(Math.random() * cpu.length)].v; const got = you.filter(c => c.v === val);
+            if (got.length) { got.forEach(c => { you.splice(you.indexOf(c), 1); cpu.push(c); }); document.getElementById('msg').textContent += ` | CPU takes your ${val}(s)!`; }
+            else { if (deck.length) { cpu.push(deck.pop()); document.getElementById('pool').textContent = deck.length; } document.getElementById('msg').textContent += ` | CPU goes fishing.`; }
+            checkSets(cpu, false); render();
+            if (you.length === 0 && cpu.length === 0) endGame();
+        }
+
+        function endGame() { document.getElementById('msg').textContent = yourSets > cpuSets ? `🏆 You win! ${yourSets}-${cpuSets}` : `💀 CPU wins! ${cpuSets}-${yourSets}`; }
+
+        function render() {
+            document.getElementById('pool').textContent = deck.length;
+            const yh = document.getElementById('yourHand'); yh.innerHTML = '';
+            you.forEach(c => { const el = document.createElement('div'); el.className = `card ${isRed(c.s) ? 'red' : 'black'}`; el.innerHTML = `<div>${c.v}</div><div>${c.s}</div>`; el.addEventListener('click', () => ask(c.v)); yh.appendChild(el); });
+            const ch = document.getElementById('cpuHand'); ch.innerHTML = ''; cpu.forEach(() => { const el = document.createElement('div'); el.className = 'mini'; ch.appendChild(el); });
+        }
+
+        document.getElementById('newBtn').addEventListener('click', init); init();
+    </script>
+</body>
+
+</html>

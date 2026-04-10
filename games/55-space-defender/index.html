@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>Space Defender | 100 HTML Games</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        body {
+            background: #0a0a0f;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Outfit', sans-serif;
+            color: #fff;
+            padding: 16px
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 900;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #06b6d4, #7c3aed);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text
+        }
+
+        .info {
+            display: flex;
+            gap: 24px;
+            margin-bottom: 10px;
+            font-size: 14px;
+            color: #64748b
+        }
+
+        .info span b {
+            color: #06b6d4;
+            font-size: 1.2em
+        }
+
+        canvas {
+            border: 2px solid rgba(6, 182, 212, 0.3);
+            border-radius: 12px;
+            background: #020818;
+            cursor: crosshair;
+            box-shadow: 0 0 30px rgba(6, 182, 212, 0.1)
+        }
+
+        .btn {
+            margin-top: 12px;
+            padding: 10px 28px;
+            background: linear-gradient(135deg, #06b6d4, #7c3aed);
+            border: none;
+            border-radius: 999px;
+            color: #fff;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: 'Outfit', sans-serif;
+            transition: transform .15s
+        }
+
+        .btn:hover {
+            transform: scale(1.05)
+        }
+
+        #msg {
+            margin-top: 10px;
+            font-size: 13px;
+            color: #64748b;
+            min-height: 22px;
+            text-align: center
+        }
+
+        .back {
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            text-decoration: none;
+            color: #64748b;
+            font-size: 13px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 6px 14px;
+            border-radius: 999px
+        }
+
+        .back:hover {
+            color: #fff
+        }
+    </style>
+</head>
+
+<body>
+    <a href="../../index.html" class="back">← Back to Menu</a>
+    <h1>🛸 Space Defender</h1>
+    <div class="info"><span>Score: <b id="score">0</b></span><span>Shield: <b id="shield">100</b>%</span><span>Wave: <b
+                id="wave">1</b></span></div>
+    <canvas id="c" width="500" height="420"></canvas>
+    <div id="msg">Move mouse to aim, click to fire! Protect the base.</div>
+    <button class="btn" id="startBtn">▶ Start</button>
+    <script>
+        const c = document.getElementById('c'), ctx = c.getContext('2d'), W = 500, H = 420;
+        const BASE_Y = H - 30; let turret = { x: W / 2, y: BASE_Y, angle: 0 }, bullets = [], enemies = [], particles = [], score = 0, shield = 100, wave = 1, running = false, animId, frame = 0, mouseX = W / 2, mouseY = 0;
+
+        function spawnEnemy() { const type = Math.random() < 0.3 ? 'fast' : 'normal'; const x = Math.random() * W; enemies.push({ x, y: -20, vx: (Math.random() - .5) * 2, vy: type === 'fast' ? 3 : 1.5, r: type === 'fast' ? 10 : 16, hp: type === 'fast' ? 1 : 2, type, color: type === 'fast' ? '#f97316' : '#ef4444' }); }
+
+        function update() {
+            frame++; turret.angle = Math.atan2(mouseY - turret.y, mouseX - turret.x);
+            if (frame % Math.max(20, 60 - wave * 3) === 0) spawnEnemy();
+            bullets.forEach(b => { b.x += Math.cos(b.a) * 10; b.y += Math.sin(b.a) * 10; }); bullets = bullets.filter(b => b.x > 0 && b.x < W && b.y > 0 && b.y < H);
+            enemies.forEach(e => { e.x += e.vx; e.y += e.vy; if (e.x < 10 || e.x > W - 10) e.vx *= -1; if (e.y > BASE_Y - 10) { e.dead = true; shield -= e.type === 'fast' ? 5 : 10; document.getElementById('shield').textContent = Math.max(0, shield); if (shield <= 0) { running = false; document.getElementById('msg').textContent = `💀 Base destroyed! Score: ${score}`; } } });
+            // hit detection
+            bullets.forEach(b => { enemies.forEach(e => { if (!e.dead && Math.hypot(b.x - e.x, b.y - e.y) < e.r + 4) { e.hp--; b.done = true; if (e.hp <= 0) { e.dead = true; score += e.type === 'fast' ? 5 : 10; document.getElementById('score').textContent = score; for (let i = 0; i < 6; i++)particles.push({ x: e.x, y: e.y, vx: (Math.random() - .5) * 4, vy: (Math.random() - .5) * 4, life: 15, color: e.color }); } } }); });
+            bullets = bullets.filter(b => !b.done); enemies = enemies.filter(e => !e.dead);
+            particles.forEach(p => { p.x += p.vx; p.y += p.vy; p.life--; }); particles = particles.filter(p => p.life > 0);
+            if (frame % 300 === 0 && running) { wave++; document.getElementById('wave').textContent = wave; }
+        }
+
+        function draw() {
+            ctx.fillStyle = 'rgba(2,8,24,0.3)'; ctx.fillRect(0, 0, W, H);
+            // stars
+            if (frame % 3 === 0) for (let i = 0; i < 2; i++) { ctx.fillStyle = `rgba(255,255,255,${Math.random() * 0.3})`; ctx.fillRect(Math.random() * W, Math.random() * H, 1, 1); }
+            // base
+            ctx.fillStyle = 'rgba(6,182,212,0.15)'; ctx.fillRect(0, BASE_Y, W, H - BASE_Y); ctx.strokeStyle = 'rgba(6,182,212,0.4)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(0, BASE_Y); ctx.lineTo(W, BASE_Y); ctx.stroke();
+            // turret
+            ctx.save(); ctx.translate(turret.x, turret.y); ctx.rotate(turret.angle); ctx.fillStyle = '#06b6d4'; ctx.fillRect(0, -3, 30, 6); ctx.restore(); ctx.fillStyle = '#06b6d4'; ctx.beginPath(); ctx.arc(turret.x, turret.y, 12, 0, Math.PI * 2); ctx.fill();
+            // enemies
+            enemies.forEach(e => { ctx.fillStyle = e.color; ctx.shadowColor = e.color; ctx.shadowBlur = 8; ctx.beginPath(); ctx.arc(e.x, e.y, e.r, 0, Math.PI * 2); ctx.fill(); ctx.shadowBlur = 0; });
+            // bullets
+            ctx.fillStyle = '#67e8f9'; ctx.shadowColor = '#06b6d4'; ctx.shadowBlur = 8; bullets.forEach(b => { ctx.beginPath(); ctx.arc(b.x, b.y, 3, 0, Math.PI * 2); ctx.fill(); }); ctx.shadowBlur = 0;
+            particles.forEach(p => { ctx.globalAlpha = p.life / 15; ctx.fillStyle = p.color; ctx.beginPath(); ctx.arc(p.x, p.y, 2, 0, Math.PI * 2); ctx.fill(); ctx.globalAlpha = 1; });
+        }
+
+        function loop() { if (!running) return; update(); draw(); animId = requestAnimationFrame(loop); }
+        c.addEventListener('mousemove', e => { const r = c.getBoundingClientRect(); mouseX = e.clientX - r.left; mouseY = e.clientY - r.top; });
+        c.addEventListener('click', () => { if (!running) return; bullets.push({ x: turret.x, y: turret.y, a: turret.angle }); });
+        function start() { cancelAnimationFrame(animId); score = 0; shield = 100; wave = 1; frame = 0; bullets = []; enemies = []; particles = []; running = true;['score', 'wave'].forEach(id => document.getElementById(id).textContent = id === 'wave' ? 1 : 0); document.getElementById('shield').textContent = 100; document.getElementById('msg').textContent = ''; document.getElementById('startBtn').textContent = '↩ Restart'; loop(); }
+        document.getElementById('startBtn').addEventListener('click', start); ctx.fillStyle = '#020818'; ctx.fillRect(0, 0, W, H);
+    </script>
+</body>
+
+</html>

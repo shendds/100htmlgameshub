@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>Logic Gates | 100 HTML Games</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        body {
+            background: #0a0a0f;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Outfit', sans-serif;
+            color: #fff;
+            padding: 24px
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 900;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #06b6d4, #22c55e);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text
+        }
+
+        .info {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 16px;
+            font-size: 14px;
+            color: #64748b
+        }
+
+        .info b {
+            color: #06b6d4;
+            font-size: 1.2em
+        }
+
+        .gate-box {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            padding: 24px;
+            max-width: 460px;
+            width: 100%;
+            text-align: center;
+            margin-bottom: 14px
+        }
+
+        .gate-name {
+            font-size: 2rem;
+            font-weight: 900;
+            color: #06b6d4;
+            margin-bottom: 8px
+        }
+
+        .gate-desc {
+            font-size: 13px;
+            color: #64748b;
+            margin-bottom: 16px
+        }
+
+        .inputs {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            margin-bottom: 16px
+        }
+
+        .input-box {
+            width: 80px;
+            height: 80px;
+            border-radius: 14px;
+            font-size: 2rem;
+            font-weight: 900;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all .2s;
+            border: 3px solid
+        }
+
+        .input-box.off {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(255, 255, 255, 0.1);
+            color: #64748b
+        }
+
+        .input-box.on {
+            background: rgba(6, 182, 212, 0.2);
+            border-color: #06b6d4;
+            color: #06b6d4;
+            box-shadow: 0 0 20px rgba(6, 182, 212, 0.3)
+        }
+
+        .arrow {
+            font-size: 2rem;
+            margin-bottom: 12px;
+            color: #334155
+        }
+
+        .output-box {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            font-size: 3rem;
+            font-weight: 900;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 16px;
+            border: 4px solid;
+            transition: all .3s
+        }
+
+        .output-box.off {
+            background: rgba(239, 68, 68, 0.1);
+            border-color: #ef4444;
+            color: #ef4444
+        }
+
+        .output-box.on {
+            background: rgba(34, 197, 94, 0.2);
+            border-color: #22c55e;
+            color: #22c55e;
+            box-shadow: 0 0 30px rgba(34, 197, 94, 0.3)
+        }
+
+        .target {
+            font-size: 1rem;
+            font-weight: 700;
+            margin-bottom: 12px
+        }
+
+        .btn {
+            padding: 10px 24px;
+            background: linear-gradient(135deg, #06b6d4, #22c55e);
+            border: none;
+            border-radius: 999px;
+            color: #fff;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: 'Outfit', sans-serif;
+            transition: transform .15s;
+            margin: 4px
+        }
+
+        .btn:hover {
+            transform: scale(1.05)
+        }
+
+        #msg {
+            font-size: 1rem;
+            font-weight: 700;
+            min-height: 28px;
+            text-align: center;
+            margin-bottom: 8px;
+            color: #64748b
+        }
+
+        .back {
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            text-decoration: none;
+            color: #64748b;
+            font-size: 13px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 6px 14px;
+            border-radius: 999px
+        }
+
+        .back:hover {
+            color: #fff
+        }
+    </style>
+</head>
+
+<body>
+    <a href="../../index.html" class="back">← Back to Menu</a>
+    <h1>⚡ Logic Gates</h1>
+    <div class="info"><span>Score: <b id="score">0</b></span><span>Level: <b id="level">1</b></span><span>Streak: <b
+                id="streak">0</b>🔥</span></div>
+    <div class="gate-box">
+        <div class="gate-name" id="gateName">AND</div>
+        <div class="gate-desc" id="gateDesc">Output is 1 only when ALL inputs are 1</div>
+        <div class="inputs" id="inputs"></div>
+        <div class="arrow">↓</div>
+        <div class="output-box off" id="output">?</div>
+        <div class="target" id="target">Set inputs to get output: <b>1</b></div>
+    </div>
+    <div id="msg">Click inputs to toggle them!</div>
+    <div style="display:flex;gap:8px"><button class="btn" id="checkBtn">✓ Check</button><button class="btn"
+            style="background:linear-gradient(135deg,#475569,#64748b)" id="nextBtn">⏭ Next</button></div>
+    <script>
+        const GATES = [
+            { name: 'AND', desc: 'Output 1 when ALL inputs are 1', fn: (...a) => a.every(v => v) ? 1 : 0 },
+            { name: 'OR', desc: 'Output 1 when ANY input is 1', fn: (...a) => a.some(v => v) ? 1 : 0 },
+            { name: 'NOT', desc: 'Inverts the input', fn: (a) => a ? 0 : 1, inputs: 1 },
+            { name: 'XOR', desc: 'Output 1 when inputs DIFFER', fn: (a, b) => a !== b ? 1 : 0 },
+            { name: 'NAND', desc: 'Output 0 only when ALL inputs are 1', fn: (...a) => a.every(v => v) ? 0 : 1 },
+            { name: 'NOR', desc: 'Output 1 only when ALL inputs are 0', fn: (...a) => a.some(v => v) ? 0 : 1 },
+        ];
+        let gate, inputs, targetOut, score = 0, streak = 0, level = 1;
+
+        function newRound() {
+            gate = GATES[Math.floor(Math.random() * Math.min(GATES.length, 2 + Math.floor(level / 3)))];
+            const numInputs = gate.inputs || 2; inputs = Array(numInputs).fill(0);
+            targetOut = Math.random() < 0.5 ? 1 : 0;
+            document.getElementById('gateName').textContent = gate.name; document.getElementById('gateDesc').textContent = gate.desc; document.getElementById('target').innerHTML = `Set inputs to get output: <b style="color:${targetOut ? '#22c55e' : '#ef4444'}">${targetOut}</b>`;
+            document.getElementById('msg').textContent = 'Toggle inputs, then check!'; renderInputs(); updateOutput();
+        }
+
+        function renderInputs() {
+            const el = document.getElementById('inputs'); el.innerHTML = '';
+            inputs.forEach((v, i) => { const box = document.createElement('div'); box.className = `input-box ${v ? 'on' : 'off'}`; box.textContent = v; box.addEventListener('click', () => { inputs[i] = inputs[i] ? 0 : 1; renderInputs(); updateOutput(); }); el.appendChild(box); });
+        }
+
+        function updateOutput() {
+            const out = gate.fn(...inputs); const el = document.getElementById('output'); el.textContent = out; el.className = `output-box ${out ? 'on' : 'off'}`;
+        }
+
+        document.getElementById('checkBtn').addEventListener('click', () => {
+            const out = gate.fn(...inputs);
+            if (out === targetOut) { score += 10 + streak * 3; streak++; level = Math.floor(score / 40) + 1; document.getElementById('msg').textContent = '✅ Correct!'; document.getElementById('msg').style.color = '#22c55e'; }
+            else { streak = 0; document.getElementById('msg').textContent = '❌ Wrong output!'; document.getElementById('msg').style.color = '#ef4444'; }
+            document.getElementById('score').textContent = score; document.getElementById('streak').textContent = streak; document.getElementById('level').textContent = level;
+            setTimeout(newRound, 900);
+        });
+        document.getElementById('nextBtn').addEventListener('click', () => { streak = 0; document.getElementById('streak').textContent = 0; newRound(); });
+        newRound();
+    </script>
+</body>
+
+</html>

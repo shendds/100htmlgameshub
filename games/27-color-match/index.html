@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>Color Match | 100 HTML Games</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        body {
+            background: #0a0a0f;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Outfit', sans-serif;
+            color: #fff;
+            padding: 24px
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 900;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #ec4899, #f97316, #eab308);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text
+        }
+
+        .info {
+            display: flex;
+            gap: 24px;
+            margin-bottom: 16px;
+            font-size: 14px;
+            color: #64748b
+        }
+
+        .info span b {
+            color: #ec4899;
+            font-size: 1.2em
+        }
+
+        .timer-bar {
+            width: 400px;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.07);
+            border-radius: 999px;
+            margin-bottom: 20px;
+            overflow: hidden
+        }
+
+        .timer-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #22c55e, #f59e0b, #ef4444);
+            border-radius: 999px;
+            transition: width .1s
+        }
+
+        .target-area {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 20px;
+            gap: 8px
+        }
+
+        .color-word {
+            font-size: 3.5rem;
+            font-weight: 900;
+            letter-spacing: 2px;
+            text-shadow: 0 0 20px currentColor;
+            transition: all .2s
+        }
+
+        .instruction {
+            font-size: 14px;
+            color: #64748b
+        }
+
+        .choices {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 14px;
+            width: 400px;
+            max-width: 100%;
+            margin-bottom: 16px
+        }
+
+        .choice {
+            height: 90px;
+            border-radius: 16px;
+            border: 2px solid rgba(255, 255, 255, 0.15);
+            cursor: pointer;
+            transition: all .15s;
+            font-size: 1rem;
+            font-weight: 700;
+            color: rgba(255, 255, 255, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3)
+        }
+
+        .choice:hover {
+            transform: scale(1.04);
+            border-color: rgba(255, 255, 255, 0.4);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4)
+        }
+
+        .choice.correct {
+            animation: correct .3s ease
+        }
+
+        .choice.wrong {
+            animation: wrong .3s ease
+        }
+
+        @keyframes correct {
+
+            0%,
+            100% {
+                transform: scale(1)
+            }
+
+            50% {
+                transform: scale(1.1)
+            }
+        }
+
+        @keyframes wrong {
+
+            0%,
+            100% {
+                transform: translateX(0)
+            }
+
+            25% {
+                transform: translateX(-8px)
+            }
+
+            75% {
+                transform: translateX(8px)
+            }
+        }
+
+        .btn {
+            padding: 10px 28px;
+            background: linear-gradient(135deg, #ec4899, #f97316);
+            border: none;
+            border-radius: 999px;
+            color: #fff;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform .15s;
+            font-family: 'Outfit', sans-serif
+        }
+
+        .btn:hover {
+            transform: scale(1.05)
+        }
+
+        #msg {
+            font-size: 1rem;
+            min-height: 24px;
+            text-align: center;
+            margin-bottom: 12px;
+            color: #64748b;
+            font-weight: 700
+        }
+
+        .back {
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            text-decoration: none;
+            color: #64748b;
+            font-size: 13px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 6px 14px;
+            border-radius: 999px
+        }
+
+        .back:hover {
+            color: #fff
+        }
+    </style>
+</head>
+
+<body>
+    <a href="../../index.html" class="back">← Back to Menu</a>
+    <h1>🎨 Color Match</h1>
+    <div class="info">
+        <span>Score: <b id="score">0</b></span>
+        <span>Best: <b id="best">0</b></span>
+        <span>Streak: <b id="streak">0</b>🔥</span>
+    </div>
+    <div class="timer-bar">
+        <div class="timer-fill" id="timerFill" style="width:100%"></div>
+    </div>
+    <div class="target-area">
+        <div class="color-word" id="colorWord">RED</div>
+        <div class="instruction" id="instruction">Match the TEXT COLOR, not the word!</div>
+    </div>
+    <div class="choices" id="choices"></div>
+    <div id="msg">Press Start to play!</div>
+    <button class="btn" id="startBtn">▶ Start</button>
+    <script>
+        const COLORS = { red: '#ef4444', orange: '#f97316', yellow: '#eab308', green: '#22c55e', blue: '#3b82f6', purple: '#7c3aed', pink: '#ec4899', cyan: '#06b6d4' };
+        const NAMES = Object.keys(COLORS); let score = 0, best = 0, streak = 0, qTimer, timeLeft, running = false, answer;
+
+        function shuffle(a) { return a.sort(() => Math.random() - .5); }
+
+        function nextQ() {
+            // Pick a word (name) and a display color (possibly different - Stroop effect)
+            const wordName = NAMES[Math.floor(Math.random() * NAMES.length)];
+            const displayColor = NAMES[Math.floor(Math.random() * NAMES.length)];
+            answer = displayColor; // answer is the COLOR the word is displayed in
+            document.getElementById('colorWord').textContent = wordName.toUpperCase();
+            document.getElementById('colorWord').style.color = COLORS[displayColor];
+            // 50% chance: ask for text color, 50% ask for word meaning
+            const askWord = Math.random() < 0.5;
+            document.getElementById('instruction').textContent = askWord ? 'Click the COLOR NAME of the TEXT' : 'Click the FONT COLOR displayed';
+            if (askWord) answer = wordName; else answer = displayColor;
+            // Choices: 4 color buttons
+            const choices = shuffle([answer, ...shuffle(NAMES.filter(n => n !== answer)).slice(0, 3)]);
+            const el = document.getElementById('choices'); el.innerHTML = '';
+            choices.forEach(name => { const b = document.createElement('div'); b.className = 'choice'; b.style.background = COLORS[name]; b.style.borderColor = COLORS[name] + '88'; b.textContent = name.toUpperCase(); b.addEventListener('click', () => pick(name, b)); el.appendChild(b); });
+            timeLeft = 8; clearInterval(qTimer); document.getElementById('timerFill').style.width = '100%';
+            qTimer = setInterval(() => { timeLeft -= 0.1; document.getElementById('timerFill').style.width = Math.max(0, timeLeft / 8 * 100) + '%'; if (timeLeft <= 0) { clearInterval(qTimer); pick(null, null); } }, 100);
+        }
+
+        function pick(name, btn) {
+            clearInterval(qTimer); document.querySelectorAll('.choice').forEach(b => b.style.pointerEvents = 'none');
+            if (name === answer) { score += 10 + streak * 2; streak++; btn.classList.add('correct'); document.getElementById('msg').textContent = `✅ Correct!`; document.getElementById('msg').style.color = '#22c55e'; }
+            else { streak = 0; if (btn) btn.classList.add('wrong'); document.getElementById('msg').textContent = name === null ? `⏰ Time's up! Answer: ${answer}` : `❌ Wrong! It was ${answer.toUpperCase()}`; document.getElementById('msg').style.color = '#ef4444'; }
+            if (score > best) { best = score; document.getElementById('best').textContent = best; }
+            document.getElementById('score').textContent = score; document.getElementById('streak').textContent = streak;
+            setTimeout(nextQ, 900);
+        }
+
+        function start() { score = 0; streak = 0; running = true; document.getElementById('score').textContent = 0; document.getElementById('streak').textContent = 0; document.getElementById('startBtn').textContent = '…'; nextQ(); }
+        document.getElementById('startBtn').addEventListener('click', start);
+    </script>
+</body>
+
+</html>

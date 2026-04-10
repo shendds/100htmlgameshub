@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>Solitaire | 100 HTML Games</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        body {
+            background: #0a0f07;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Outfit', sans-serif;
+            color: #fff;
+            padding: 12px;
+            overflow-x: auto
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            font-weight: 900;
+            margin-bottom: 6px;
+            background: linear-gradient(135deg, #22c55e, #eab308);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text
+        }
+
+        .top-row {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 10px;
+            align-items: flex-end
+        }
+
+        .foundation {
+            width: 64px;
+            height: 90px;
+            border: 2px dashed rgba(255, 255, 255, 0.15);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: rgba(255, 255, 255, 0.2)
+        }
+
+        .stock {
+            width: 64px;
+            height: 90px;
+            background: linear-gradient(135deg, #1e3a5f, #0f172a);
+            border: 2px solid rgba(59, 130, 246, 0.4);
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.6rem;
+            color: #93c5fd;
+            font-weight: 900;
+            transition: all .15s
+        }
+
+        .stock:hover {
+            border-color: #3b82f6;
+            box-shadow: 0 0 14px rgba(59, 130, 246, 0.3)
+        }
+
+        .tableau {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 10px
+        }
+
+        .col {
+            display: flex;
+            flex-direction: column;
+            min-width: 64px;
+            min-height: 90px;
+            position: relative;
+            gap: 0
+        }
+
+        .card {
+            width: 64px;
+            height: 90px;
+            border-radius: 8px;
+            border: 2px solid rgba(255, 255, 255, 0.15);
+            display: flex;
+            flex-direction: column;
+            padding: 4px 6px;
+            font-size: 1rem;
+            font-weight: 900;
+            cursor: pointer;
+            user-select: none;
+            transition: transform .08s;
+            background: #fff;
+            position: relative;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.4)
+        }
+
+        .card.red {
+            color: #dc2626
+        }
+
+        .card.black {
+            color: #1e293b
+        }
+
+        .card.face-down {
+            background: linear-gradient(135deg, #1e3a5f, #0f172a);
+            border-color: rgba(59, 130, 246, 0.3);
+            cursor: default
+        }
+
+        .card.selected {
+            border-color: #f59e0b;
+            box-shadow: 0 0 18px rgba(245, 158, 11, 0.5);
+            transform: scale(1.04)
+        }
+
+        .card.stacked {
+            position: absolute;
+            height: auto;
+            min-height: 22px;
+            max-height: 22px;
+            border-radius: 8px 8px 0 0
+        }
+
+        .card.stacked.last {
+            height: 90px;
+            max-height: 90px;
+            border-radius: 8px
+        }
+
+        .suit {
+            position: absolute;
+            bottom: 4px;
+            right: 5px;
+            font-size: 1.1rem
+        }
+
+        .rest-card {
+            width: 64px;
+            height: 90px;
+            border: 2px dashed rgba(255, 255, 255, 0.08);
+            border-radius: 8px
+        }
+
+        .info {
+            font-size: 13px;
+            color: #64748b;
+            margin-bottom: 8px
+        }
+
+        .btn {
+            padding: 8px 18px;
+            background: linear-gradient(135deg, #22c55e, #eab308);
+            border: none;
+            border-radius: 999px;
+            color: #000;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            margin-left: 8px;
+            font-family: 'Outfit', sans-serif;
+            transition: transform .15s
+        }
+
+        .btn:hover {
+            transform: scale(1.05)
+        }
+
+        #msg {
+            font-size: 12px;
+            min-height: 22px;
+            color: #64748b;
+            margin-bottom: 6px;
+            text-align: center
+        }
+
+        .back {
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            text-decoration: none;
+            color: #64748b;
+            font-size: 13px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 6px 14px;
+            border-radius: 999px
+        }
+
+        .back:hover {
+            color: #fff
+        }
+    </style>
+</head>
+
+<body>
+    <a href="../../index.html" class="back">← Back to Menu</a>
+    <h1>♠️ Solitaire (Klondike)</h1>
+    <div class="info">Moves: <b id="moves">0</b> <button class="btn" id="newBtn">🔄 New Game</button></div>
+    <div id="msg">Click a card to select, then click destination</div>
+    <div class="top-row">
+        <div class="stock" id="stock">🂠</div>
+        <div id="waste" style="position:relative;width:64px;height:90px"></div>
+        <div style="width:8px"></div>
+        <div class="foundation" id="f0">♥</div>
+        <div class="foundation" id="f1">♦</div>
+        <div class="foundation" id="f2">♣</div>
+        <div class="foundation" id="f3">♠</div>
+    </div>
+    <div class="tableau" id="tableau"></div>
+    <script>
+        const SUITS = ['♥', '♦', '♣', '♠'], VALS = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
+        const ORD = { 'A': 1, '2': 2, '3': 3, '4': 4, '5': 5, '6': 6, '7': 7, '8': 8, '9': 9, '10': 10, 'J': 11, 'Q': 12, 'K': 13 };
+        function isRed(s) { return s === '♥' || s === '♦'; }
+
+        let stock, waste, tableau, foundations, selected, selSrc, moves;
+
+        function mk() { const d = []; for (const s of SUITS) for (const v of VALS) d.push({ s, v, face: false }); return d.sort(() => Math.random() - .5); }
+
+        function init() {
+            const d = mk(); tableau = Array.from({ length: 7 }, (_, i) => { const col = d.splice(0, i + 1); col.forEach((c, ci) => c.face = ci === i); return col; });
+            stock = d.map(c => { c.face = false; return c; }); waste = []; foundations = [0, 1, 2, 3].map(() => []); selected = null; selSrc = null; moves = 0; document.getElementById('moves').textContent = 0; document.getElementById('msg').textContent = 'Click a card to select it'; render();
+        }
+
+        function render() {
+            // Stock
+            const stockEl = document.getElementById('stock'); stockEl.textContent = stock.length ? '🂠' : '↩';
+            // Waste
+            const wasteEl = document.getElementById('waste'); wasteEl.innerHTML = ''; if (waste.length) { const wc = waste[waste.length - 1]; const w = mkCardEl(wc, 'waste', waste.length - 1); wasteEl.appendChild(w); }
+            // Foundations
+            [0, 1, 2, 3].forEach(i => { const el = document.getElementById(`f${i}`); el.innerHTML = ''; if (foundations[i].length) { const c = foundations[i][foundations[i].length - 1]; const ce = mkCardEl(c, 'f', i); el.appendChild(ce); } else el.textContent = ['♥', '♦', '♣', '♠'][i]; });
+            // Tableau
+            const tab = document.getElementById('tableau'); tab.innerHTML = '';
+            tableau.forEach((col, ci) => {
+                const el = document.createElement('div'); el.className = 'col'; if (!col.length) { const ph = document.createElement('div'); ph.className = 'rest-card'; ph.addEventListener('click', () => placeHere('tab', ci, 0)); el.appendChild(ph); }
+                col.forEach((card, ri) => { const ce = mkCardEl(card, 'tab', ci, ri, col.length); el.appendChild(ce); }); tab.appendChild(el);
+            });
+            // Win check
+            if (foundations.every(f => f.length === 13)) document.getElementById('msg').textContent = '🏆 Congratulations! You won!';
+        }
+
+        function mkCardEl(card, src, idx, ri = 0, total = 1) {
+            const el = document.createElement('div');
+            if (src === 'tab') { el.style.top = (ri * 22) + 'px'; el.style.position = 'absolute'; if (ri === total - 1) el.style.bottom = '0px'; }
+            if (!card.face) { el.className = 'card face-down'; if (src === 'tab') { el.style.height = '22px'; if (ri === total - 1) el.style.height = '90px'; } return el; }
+            el.className = `card ${isRed(card.s) ? 'red' : 'black'}${(selected && selected === card) ? ' selected' : ''}`;
+            if (src === 'tab') { el.style.height = '22px'; if (ri === total - 1) el.style.height = '90px'; el.style.overflow = 'hidden'; }
+            el.innerHTML = `<span>${card.v}</span><span style="font-size:1.1rem">${card.s}</span>`;
+            if (ri === total - 1 || src !== 'tab') { const suit = document.createElement('span'); suit.className = 'suit'; suit.textContent = card.s; el.appendChild(suit); }
+            el.addEventListener('click', e => {
+                e.stopPropagation(); if (!card.face) return;
+                if (selected) { tryPlace(src, idx, ri, card); } else { selected = card; selSrc = { src, idx, ri }; render(); }
+            });
+            return el;
+        }
+
+        function tryPlace(dstSrc, dstIdx, dstRi, dstCard) {
+            if (!selected) { render(); return; }
+            const sc = selected, ss = selSrc; selected = null;
+            // Foundation
+            if (dstSrc === 'f') {
+                const fi = dstIdx; const f = foundations[fi]; const ok = (!f.length && sc.v === 'A' && ['♥', '♦', '♣', '♠'][fi] === sc.s) || (f.length && f[f.length - 1].s === sc.s && ORD[sc.v] === ORD[f[f.length - 1].v] + 1);
+                if (ok) { move(sc, ss, 'f', fi); return; }
+            }
+            // Tableau
+            if (dstSrc === 'tab') {
+                const col = tableau[dstIdx]; const top = col[col.length - 1]; const fromCol = ss.src === 'tab' ? tableau[ss.idx] : null;
+                const ok = (!col.length && sc.v === 'K') || (top && isRed(top.s) !== isRed(sc.s) && ORD[top.v] === ORD[sc.v] + 1);
+                if (ok) {// move card(s) from source
+                    if (ss.src === 'tab') { const cards = tableau[ss.idx].splice(ss.ri); cards.forEach(c => { tableau[dstIdx].push(c); }); if (tableau[ss.idx].length) tableau[ss.idx][tableau[ss.idx].length - 1].face = true; }
+                    else if (ss.src === 'waste') { waste.pop(); tableau[dstIdx].push(sc); }
+                    moves++; document.getElementById('moves').textContent = moves; render(); return;
+                }
+            }
+            render();
+        }
+
+        function move(card, src, dst, idx) {
+            if (src.src === 'waste') waste.pop(); else if (src.src === 'tab') { tableau[src.idx].pop(); if (tableau[src.idx].length) tableau[src.idx][tableau[src.idx].length - 1].face = true; }
+            if (dst === 'f') foundations[idx].push(card); moves++; document.getElementById('moves').textContent = moves; render();
+        }
+
+        document.getElementById('stock').addEventListener('click', () => { if (stock.length) { const c = stock.pop(); c.face = true; waste.push(c); } else { stock = waste.reverse(); stock.forEach(c => c.face = false); waste = []; } render(); });
+        [0, 1, 2, 3].forEach(i => { document.getElementById(`f${i}`).addEventListener('click', () => { if (selected) { const sc = selected, ss = selSrc; const f = foundations[i]; const ok = (!f.length && sc.v === 'A' && ['♥', '♦', '♣', '♠'][i] === sc.s) || (f.length && f[f.length - 1].s === sc.s && ORD[sc.v] === ORD[f[f.length - 1].v] + 1); if (ok) { selected = null; move(sc, ss, 'f', i); } else { selected = null; render(); } } }); });
+        document.getElementById('newBtn').addEventListener('click', init);
+        document.getElementById('waste').addEventListener('click', () => { if (waste.length && !selected) { selected = waste[waste.length - 1]; selSrc = { src: 'waste', idx: -1, ri: -1 }; render(); } });
+        init();
+    </script>
+</body>
+
+</html>

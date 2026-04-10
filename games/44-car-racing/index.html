@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>Car Racing | 100 HTML Games</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        body {
+            background: #0a0a0f;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Outfit', sans-serif;
+            color: #fff;
+            padding: 16px
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 900;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #ef4444, #f97316);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text
+        }
+
+        .info {
+            display: flex;
+            gap: 32px;
+            margin-bottom: 12px;
+            font-size: 14px;
+            color: #64748b
+        }
+
+        .info span b {
+            color: #ef4444;
+            font-size: 1.2em
+        }
+
+        canvas {
+            border: 2px solid rgba(239, 68, 68, 0.3);
+            border-radius: 12px;
+            background: #1a1205;
+            box-shadow: 0 0 30px rgba(239, 68, 68, 0.1)
+        }
+
+        #msg {
+            margin-top: 14px;
+            font-size: 1rem;
+            color: #64748b;
+            min-height: 24px;
+            text-align: center
+        }
+
+        .btn {
+            margin-top: 10px;
+            padding: 10px 28px;
+            background: linear-gradient(135deg, #ef4444, #f97316);
+            border: none;
+            border-radius: 999px;
+            color: #fff;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform .15s;
+            font-family: 'Outfit', sans-serif
+        }
+
+        .btn:hover {
+            transform: scale(1.05)
+        }
+
+        .back {
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            text-decoration: none;
+            color: #64748b;
+            font-size: 13px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 6px 14px;
+            border-radius: 999px
+        }
+
+        .back:hover {
+            color: #fff
+        }
+
+        .hint {
+            font-size: 12px;
+            color: #334155;
+            margin-top: 6px
+        }
+    </style>
+</head>
+
+<body>
+    <a href="../../index.html" class="back">← Back to Menu</a>
+    <h1>🏎️ Car Racing</h1>
+    <div class="info">
+        <span>Score: <b id="score">0</b></span>
+        <span>Speed: <b id="speed">0</b></span>
+        <span>Lives: <b id="lives">3</b></span>
+    </div>
+    <canvas id="c" width="360" height="540"></canvas>
+    <div id="msg">Press Start or SPACE to begin</div>
+    <button class="btn" id="startBtn">▶ Start</button>
+    <div class="hint">← → Arrow keys or A/D to steer | Dodge traffic!</div>
+    <script>
+        const c = document.getElementById('c'), ctx = c.getContext('2d');
+        const W = 360, H = 540, LANE_W = 80, LANES = 3, LANE_X = [60, 160, 260];
+        let player, obstacles, score, lives, speed, running = false, animId, scrollY = 0, frame = 0;
+        const keys = {};
+
+        const COLORS = ['#ef4444', '#3b82f6', '#22c55e', '#f97316', '#7c3aed', '#eab308'];
+
+        function init() {
+            player = { x: LANE_X[1], y: H - 100, w: 40, h: 70, lane: 1, moving: false }; obstacles = []; score = 0; lives = 3; speed = 3; frame = 0; running = true;
+            ['score', 'lives'].forEach(id => document.getElementById(id).textContent = id === 'lives' ? 3 : 0); document.getElementById('speed').textContent = 3; document.getElementById('msg').textContent = ''; document.getElementById('startBtn').textContent = '↩ Restart';
+        }
+
+        function spawnObstacle() {
+            const lane = Math.floor(Math.random() * LANES); const color = COLORS[Math.floor(Math.random() * COLORS.length)];
+            obstacles.push({ x: LANE_X[lane], y: -80, w: 40, h: 70, color, lane, passed: false });
+        }
+
+        function update() {
+            frame++; scrollY = (scrollY + speed) % 60; score++; if (score % 200 === 0) { speed = Math.min(12, speed + 0.5); document.getElementById('speed').textContent = Math.round(speed); }
+            if (frame % Math.max(30, 80 - score / 100) === 0) spawnObstacle();
+            // player movement
+            const targetX = LANE_X[player.lane]; player.x += (targetX - player.x) * 0.2;
+            obstacles = obstacles.filter(o => {
+                o.y += speed; if (!o.passed && o.y > H) { o.passed = true; return false; } if (o.y > H + 100) return false;
+                // collision
+                if (Math.abs(o.x - player.x) < 35 && Math.abs(o.y - player.y) < 65) { lives--; document.getElementById('lives').textContent = lives; obstacles = obstacles.filter(x => x !== o); if (lives <= 0) end(); return false; }
+                return true;
+            });
+            document.getElementById('score').textContent = Math.floor(score / 10);
+        }
+
+        function draw() {
+            // road
+            ctx.fillStyle = '#2d2d2d'; ctx.fillRect(40, 0, W - 80, H); ctx.fillStyle = '#1a1a1a'; ctx.fillRect(0, 0, 40, H); ctx.fillRect(W - 40, 0, 40, H);
+            // lane marks
+            ctx.setLineDash([40, 20]); ctx.strokeStyle = 'rgba(255,255,255,0.3)'; ctx.lineWidth = 4;
+            [120, 200].forEach(x => { ctx.beginPath(); ctx.moveTo(x, scrollY - 60); ctx.lineTo(x, H); ctx.stroke(); }); ctx.setLineDash([]);
+            // scenery (trees)
+            for (let y = -60 + scrollY % 80; y < H; y += 80) { ctx.fillStyle = '#0a2000'; ctx.fillRect(2, y, 28, 28); ctx.fillRect(W - 32, y, 28, 28); }
+            // obstacles
+            obstacles.forEach(o => {
+                ctx.fillStyle = o.color; ctx.shadowColor = o.color; ctx.shadowBlur = 10; ctx.beginPath(); ctx.roundRect(o.x - 18, o.y - 30, 36, 60, 6); ctx.fill(); ctx.shadowBlur = 0;
+                ctx.fillStyle = 'rgba(0,0,0,0.4)'; ctx.beginPath(); ctx.roundRect(o.x - 12, o.y - 20, 24, 12, 3); ctx.fill(); ctx.fillStyle = 'rgba(255,255,150,0.7)';[o.x - 14, o.x + 6].forEach(wx => { ctx.beginPath(); ctx.ellipse(wx, o.y + 25, 4, 6, 0, 0, Math.PI * 2); ctx.fill(); });
+            });
+            // player
+            ctx.fillStyle = '#f97316'; ctx.shadowColor = '#f97316'; ctx.shadowBlur = 14; ctx.beginPath(); ctx.roundRect(player.x - 18, player.y - 35, 36, 70, 8); ctx.fill(); ctx.shadowBlur = 0;
+            ctx.fillStyle = 'rgba(0,0,0,0.5)'; ctx.beginPath(); ctx.roundRect(player.x - 12, player.y - 22, 24, 14, 3); ctx.fill(); ctx.fillStyle = 'rgba(255,255,100,0.9)'; ctx.beginPath(); ctx.ellipse(player.x - 14, player.y - 30, 4, 6, 0, 0, Math.PI * 2); ctx.fill(); ctx.beginPath(); ctx.ellipse(player.x + 10, player.y - 30, 4, 6, 0, 0, Math.PI * 2); ctx.fill();
+        }
+
+        function loop() { if (!running) return; update(); draw(); animId = requestAnimationFrame(loop); }
+        function end() { clearInterval(animId); running = false; document.getElementById('msg').textContent = `💀 Game Over! Score: ${Math.floor(score / 10)}`; document.getElementById('startBtn').textContent = '▶ Play Again'; }
+        function start() { cancelAnimationFrame(animId); init(); loop(); }
+
+        document.addEventListener('keydown', e => { keys[e.key] = true; if ((e.key === 'ArrowLeft' || e.key === 'a') && player.lane > 0) player.lane--; if ((e.key === 'ArrowRight' || e.key === 'd') && player.lane < 2) player.lane++; if (e.key === ' ' && !running) start(); e.preventDefault && ['ArrowLeft', 'ArrowRight', 'ArrowUp', ' '].includes(e.key) && e.preventDefault(); });
+        document.addEventListener('keyup', e => keys[e.key] = false);
+        document.getElementById('startBtn').addEventListener('click', start);
+        // Touch/mobile
+        let touchX = 0; c.addEventListener('touchstart', e => { touchX = e.touches[0].clientX; });
+        c.addEventListener('touchend', e => { const dx = e.changedTouches[0].clientX - touchX; if (dx < -30 && player.lane > 0) player.lane--; if (dx > 30 && player.lane < 2) player.lane++; });
+        ctx.fillStyle = '#1a1205'; ctx.fillRect(0, 0, W, H);
+    </script>
+</body>
+
+</html>

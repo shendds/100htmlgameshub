@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>Battleship | 100 HTML Games</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        body {
+            background: #0a0a0f;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Outfit', sans-serif;
+            color: #fff;
+            padding: 16px
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 900;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #06b6d4, #1e3a5f);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text
+        }
+
+        .info {
+            display: flex;
+            gap: 24px;
+            margin-bottom: 12px;
+            font-size: 14px;
+            color: #64748b
+        }
+
+        .info span b {
+            color: #06b6d4;
+            font-size: 1.2em
+        }
+
+        .boards {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            justify-content: center
+        }
+
+        .board-wrap {
+            text-align: center
+        }
+
+        .board-title {
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #64748b;
+            margin-bottom: 8px;
+            font-weight: 700
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(10, 36px);
+            grid-template-rows: repeat(10, 36px);
+            gap: 2px;
+            border: 2px solid rgba(6, 182, 212, 0.2);
+            border-radius: 10px;
+            background: rgba(6, 182, 212, 0.05);
+            padding: 4px
+        }
+
+        .cell {
+            width: 36px;
+            height: 36px;
+            border-radius: 4px;
+            background: rgba(0, 40, 80, 0.5);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            transition: all .1s;
+            border: 1px solid rgba(6, 182, 212, 0.1)
+        }
+
+        .cell:hover {
+            background: rgba(6, 182, 212, 0.2)
+        }
+
+        .cell.ship {
+            background: rgba(71, 85, 105, 0.5)
+        }
+
+        .cell.hit {
+            background: rgba(239, 68, 68, 0.3);
+            border-color: rgba(239, 68, 68, 0.5)
+        }
+
+        .cell.miss {
+            background: rgba(255, 255, 255, 0.06);
+            border-color: rgba(255, 255, 255, 0.08)
+        }
+
+        .cell.sunk {
+            background: rgba(239, 68, 68, 0.5);
+            animation: sunk .5s ease
+        }
+
+        @keyframes sunk {
+
+            0%,
+            100% {
+                transform: scale(1)
+            }
+
+            50% {
+                transform: scale(1.2)
+            }
+        }
+
+        #msg {
+            font-size: 1rem;
+            min-height: 28px;
+            text-align: center;
+            margin: 10px 0;
+            color: #64748b;
+            font-weight: 700;
+            padding: 6px 12px;
+            border-radius: 8px
+        }
+
+        .btns {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center
+        }
+
+        .btn {
+            padding: 10px 22px;
+            background: linear-gradient(135deg, #06b6d4, #1e3a5f);
+            border: none;
+            border-radius: 999px;
+            color: #fff;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform .15s;
+            font-family: 'Outfit', sans-serif
+        }
+
+        .btn:hover {
+            transform: scale(1.05)
+        }
+
+        .back {
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            text-decoration: none;
+            color: #64748b;
+            font-size: 13px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 6px 14px;
+            border-radius: 999px
+        }
+
+        .back:hover {
+            color: #fff
+        }
+
+        .legend {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 10px;
+            font-size: 11px;
+            color: #64748b;
+            flex-wrap: wrap;
+            justify-content: center
+        }
+
+        .l {
+            display: flex;
+            align-items: center;
+            gap: 4px
+        }
+
+        .ld {
+            width: 14px;
+            height: 14px;
+            border-radius: 3px
+        }
+    </style>
+</head>
+
+<body>
+    <a href="../../index.html" class="back">← Back to Menu</a>
+    <h1>🚢 Battleship</h1>
+    <div class="info">
+        <span>Shots: <b id="shotCount">0</b></span>
+        <span>Hits: <b id="hitCount">0</b></span>
+        <span>Sunk: <b id="sunkCount">0</b>/5</span>
+    </div>
+    <div class="legend">
+        <div class="l">
+            <div class="ld" style="background:rgba(71,85,105,0.5)"></div>Your ships
+        </div>
+        <div class="l">
+            <div class="ld" style="background:rgba(239,68,68,0.4)"></div>Hit
+        </div>
+        <div class="l">
+            <div class="ld" style="background:rgba(255,255,255,0.08)"></div>Miss
+        </div>
+    </div>
+    <div class="boards">
+        <div class="board-wrap">
+            <div class="board-title">🎯 Enemy Waters (click to fire!)</div>
+            <div class="grid" id="enemyGrid"></div>
+        </div>
+        <div class="board-wrap">
+            <div class="board-title">🛡️ Your Fleet</div>
+            <div class="grid" id="myGrid"></div>
+        </div>
+    </div>
+    <div id="msg">Click anywhere on enemy waters to fire!</div>
+    <div class="btns"><button class="btn" id="newBtn">🔀 New Game</button></div>
+    <script>
+        const SHIP_SIZES = [5, 4, 3, 3, 2], SIZE = 10;
+        let enemyShips, myShips, myHits, enemySalvo, shots, hits, sunk, gameOver, aiQ = [];
+
+        function placeShips() {
+            const grid = Array.from({ length: SIZE }, () => Array(SIZE).fill(0));
+            const placed = [];
+            SHIP_SIZES.forEach(sz => { let ok = false; while (!ok) { const hor = Math.random() < 0.5; const r = Math.floor(Math.random() * (hor ? SIZE : SIZE - sz)); const c = Math.floor(Math.random() * (hor ? SIZE - sz : SIZE)); const cells = []; let valid = true; for (let i = 0; i < sz; i++) { const nr = hor ? r : r + i, nc = hor ? c + i : c; if (grid[nr][nc]) { valid = false; break; } cells.push([nr, nc]); } if (valid) { const ship = { cells, hit: [] }; cells.forEach(([nr, nc]) => { grid[nr][nc] = 1; }); placed.push(ship); ok = true; } } }); return placed;
+        }
+
+        function init() {
+            enemyShips = placeShips(); myShips = placeShips(); myHits = Array.from({ length: SIZE }, () => Array(SIZE).fill(0)); enemySalvo = Array.from({ length: SIZE }, () => Array(SIZE).fill(0)); shots = 0; hits = 0; sunk = 0; gameOver = false; aiQ = [];['shotCount', 'hitCount', 'sunkCount'].forEach(id => document.getElementById(id).textContent = id === 'sunkCount' ? '0/5' : '0'); document.getElementById('msg').textContent = 'Click on enemy waters to fire!'; renderGrids();
+        }
+
+        function fireAt(r, c) {
+            if (gameOver || myHits[r][c]) return; shots++; myHits[r][c] = 1; document.getElementById('shotCount').textContent = shots;
+            let hit = false;
+            for (const ship of enemyShips) { const cell = ship.cells.find(([sr, sc]) => sr === r && sc === c); if (cell) { hit = true; ship.hit.push(cell); hits++; document.getElementById('hitCount').textContent = hits; if (ship.hit.length === ship.cells.length) { sunk++; document.getElementById('sunkCount').textContent = sunk + '/5'; document.getElementById('msg').textContent = `💥 Ship sunk! ${5 - sunk} enemy ships remaining.`; if (sunk === 5) { gameOver = true; document.getElementById('msg').textContent = '🏆 Victory! All enemy ships destroyed!'; } } else document.getElementById('msg').textContent = '💥 Hit!'; break; } }
+            if (!hit) document.getElementById('msg').textContent = '💦 Miss...';
+            renderGrids(); if (!gameOver) setTimeout(aiTurn, 600);
+        }
+
+        function aiTurn() {
+            let r, c;
+            if (aiQ.length) { const next = aiQ.shift();[r, c] = next; }
+            else { do { r = Math.floor(Math.random() * SIZE); c = Math.floor(Math.random() * SIZE); } while (enemySalvo[r][c]); }
+            enemySalvo[r][c] = 1;
+            for (const ship of myShips) { const cell = ship.cells.find(([sr, sc]) => sr === r && sc === c); if (cell) { ship.hit.push(cell);[[r - 1, c], [r + 1, c], [r, c - 1], [r, c + 1]].forEach(([nr, nc]) => { if (nr >= 0 && nr < SIZE && nc >= 0 && nc < SIZE && !enemySalvo[nr][nc]) aiQ.push([nr, nc]); }); if (ship.hit.length === ship.cells.length && myShips.every(s => s.hit.length === s.cells.length)) { gameOver = true; document.getElementById('msg').textContent = '💀 Your fleet is destroyed! CPU wins.'; renderGrids(); return; } break; } }
+            renderGrids();
+        }
+
+        function renderGrids() {
+            // Enemy grid
+            const eg = document.getElementById('enemyGrid'); eg.innerHTML = '';
+            for (let r = 0; r < SIZE; r++)for (let c = 0; c < SIZE; c++) {
+                const cell = document.createElement('div'); cell.className = 'cell'; const hit = myHits[r][c]; const isShip = enemyShips.some(s => s.cells.some(([sr, sc]) => sr === r && sc === c)); const isSunk = enemyShips.some(s => s.cells.some(([sr, sc]) => sr === r && sc === c) && s.hit.length === s.cells.length);
+                if (hit && isShip) { cell.textContent = isSunk ? '💥' : '🔴'; cell.className = 'cell ' + (isSunk ? 'sunk' : 'hit'); } else if (hit) { cell.textContent = '💧'; cell.className = 'cell miss'; }
+                cell.addEventListener('click', () => fireAt(r, c)); eg.appendChild(cell);
+            }
+            // My grid
+            const mg = document.getElementById('myGrid'); mg.innerHTML = '';
+            for (let r = 0; r < SIZE; r++)for (let c = 0; c < SIZE; c++) {
+                const cell = document.createElement('div'); cell.className = 'cell'; const isShip = myShips.some(s => s.cells.some(([sr, sc]) => sr === r && sc === c)); const isHit = enemySalvo[r][c];
+                if (isHit && isShip) { cell.textContent = '💥'; cell.className = 'cell hit'; } else if (isHit) { cell.textContent = '💧'; cell.className = 'cell miss'; } else if (isShip) { cell.className = 'cell ship'; cell.textContent = '🚢'; }
+                mg.appendChild(cell);
+            }
+        }
+
+        document.getElementById('newBtn').addEventListener('click', init);
+        init();
+    </script>
+</body>
+
+</html>

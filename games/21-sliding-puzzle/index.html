@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>Sliding Puzzle | 100 HTML Games</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        body {
+            background: #0a0a0f;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Outfit', sans-serif;
+            color: #fff
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 900;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #06b6d4, #7c3aed);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text
+        }
+
+        .info {
+            display: flex;
+            gap: 24px;
+            margin-bottom: 14px;
+            font-size: 14px;
+            color: #64748b
+        }
+
+        .info span b {
+            color: #06b6d4;
+            font-size: 1.2em
+        }
+
+        #grid {
+            display: grid;
+            grid-template-columns: repeat(4, 90px);
+            gap: 6px;
+            margin-bottom: 16px
+        }
+
+        .tile {
+            width: 90px;
+            height: 90px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            font-weight: 900;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: transform .15s;
+            background: linear-gradient(135deg, #1e1b4b, #2e1065);
+            border: 2px solid rgba(124, 58, 237, 0.3);
+            color: #c4b5fd;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3)
+        }
+
+        .tile:hover {
+            transform: scale(1.05);
+            border-color: rgba(124, 58, 237, 0.7)
+        }
+
+        .tile.empty {
+            background: rgba(255, 255, 255, 0.03);
+            border-color: rgba(255, 255, 255, 0.05);
+            cursor: default;
+            box-shadow: none
+        }
+
+        .tile.solved {
+            background: linear-gradient(135deg, #14532d, #15803d);
+            border-color: rgba(34, 197, 94, 0.4);
+            color: #86efac
+        }
+
+        .btns {
+            display: flex;
+            gap: 10px
+        }
+
+        .btn {
+            padding: 10px 22px;
+            background: linear-gradient(135deg, #06b6d4, #7c3aed);
+            border: none;
+            border-radius: 999px;
+            color: #fff;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform .15s;
+            font-family: 'Outfit', sans-serif
+        }
+
+        .btn:hover {
+            transform: scale(1.05)
+        }
+
+        #msg {
+            font-size: 1rem;
+            min-height: 24px;
+            margin-bottom: 12px;
+            text-align: center;
+            color: #64748b
+        }
+
+        .back {
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            text-decoration: none;
+            color: #64748b;
+            font-size: 13px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 6px 14px;
+            border-radius: 999px
+        }
+
+        .back:hover {
+            color: #fff
+        }
+    </style>
+</head>
+
+<body>
+    <a href="../../index.html" class="back">← Back to Menu</a>
+    <h1>🔀 Sliding Puzzle</h1>
+    <div class="info">
+        <span>Moves: <b id="moves">0</b></span>
+        <span>Time: <b id="timer">0</b>s</span>
+    </div>
+    <div id="grid"></div>
+    <div id="msg">Click tiles adjacent to the empty space</div>
+    <div class="btns"><button class="btn" id="newBtn">🔀 Shuffle</button></div>
+    <script>
+        const SIZE = 4, TOTAL = SIZE * SIZE;
+        let tiles, moves, elapsed, timerInt, started, solved;
+
+        function isSolvable(arr) {
+            let inv = 0; const flat = arr.filter(x => x !== 0);
+            for (let i = 0; i < flat.length; i++)for (let j = i + 1; j < flat.length; j++)if (flat[i] > flat[j]) inv++;
+            const emptyRow = Math.floor(arr.indexOf(0) / SIZE);
+            if (SIZE % 2 === 1) return inv % 2 === 0; else return (inv + emptyRow) % 2 === 1;
+        }
+
+        function init() {
+            clearInterval(timerInt); moves = 0; elapsed = 0; started = false; solved = false;
+            document.getElementById('moves').textContent = 0; document.getElementById('timer').textContent = 0; document.getElementById('msg').textContent = 'Click tiles adjacent to the empty space';
+            let arr; do { arr = [...Array.from({ length: TOTAL - 1 }, (_, i) => i + 1), 0]; for (let i = arr.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1));[arr[i], arr[j]] = [arr[j], arr[i]]; } } while (!isSolvable(arr));
+            tiles = arr; render();
+        }
+
+        function click(i) {
+            if (solved) return; const empty = tiles.indexOf(0); const er = Math.floor(empty / SIZE), ec = empty % SIZE; const tr = Math.floor(i / SIZE), tc = i % SIZE;
+            if (Math.abs(er - tr) + Math.abs(ec - tc) !== 1) return;
+            if (!started) { started = true; timerInt = setInterval(() => { elapsed++; document.getElementById('timer').textContent = elapsed; }, 1000); }
+            [tiles[empty], tiles[i]] = [tiles[i], tiles[empty]]; moves++; document.getElementById('moves').textContent = moves;
+            if (tiles.slice(0, -1).every((v, i) => v === i + 1) && tiles[TOTAL - 1] === 0) { solved = true; clearInterval(timerInt); document.getElementById('msg').textContent = `🏆 Solved! ${moves} moves in ${elapsed}s`; }
+            render();
+        }
+
+        function render() {
+            const el = document.getElementById('grid'); el.innerHTML = '';
+            tiles.forEach((v, i) => { const t = document.createElement('div'); t.className = 'tile' + (v === 0 ? ' empty' : solved && v ? ' solved' : ''); t.textContent = v || ''; t.addEventListener('click', () => click(i)); el.appendChild(t); });
+        }
+
+        document.getElementById('newBtn').addEventListener('click', init);
+        init();
+    </script>
+</body>
+
+</html>

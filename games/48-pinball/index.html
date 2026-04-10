@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>Pinball | 100 HTML Games</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        body {
+            background: #0a0a0f;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Outfit', sans-serif;
+            color: #fff;
+            padding: 16px
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 900;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #f59e0b, #ec4899);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text
+        }
+
+        .info {
+            display: flex;
+            gap: 24px;
+            margin-bottom: 10px;
+            font-size: 14px;
+            color: #64748b
+        }
+
+        .info span b {
+            color: #f59e0b;
+            font-size: 1.2em
+        }
+
+        canvas {
+            border: 2px solid rgba(245, 158, 11, 0.3);
+            border-radius: 12px;
+            background: #050508;
+            box-shadow: 0 0 30px rgba(245, 158, 11, 0.1)
+        }
+
+        .btn {
+            margin-top: 12px;
+            padding: 10px 28px;
+            background: linear-gradient(135deg, #f59e0b, #ec4899);
+            border: none;
+            border-radius: 999px;
+            color: #fff;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: 'Outfit', sans-serif;
+            transition: transform .15s
+        }
+
+        .btn:hover {
+            transform: scale(1.05)
+        }
+
+        #msg {
+            margin-top: 10px;
+            font-size: 13px;
+            color: #64748b;
+            min-height: 22px;
+            text-align: center
+        }
+
+        .back {
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            text-decoration: none;
+            color: #64748b;
+            font-size: 13px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 6px 14px;
+            border-radius: 999px
+        }
+
+        .back:hover {
+            color: #fff
+        }
+
+        .hint {
+            font-size: 12px;
+            color: #334155;
+            margin-top: 6px
+        }
+    </style>
+</head>
+
+<body>
+    <a href="../../index.html" class="back">← Back to Menu</a>
+    <h1>🎰 Pinball</h1>
+    <div class="info"><span>Score: <b id="score">0</b></span><span>Balls: <b id="balls">3</b></span></div>
+    <canvas id="c" width="320" height="520"></canvas>
+    <div id="msg">Press Z/X or ←/→ for flippers | Space to launch</div>
+    <button class="btn" id="startBtn">▶ Start</button>
+    <div class="hint">Z or ← = Left flipper | X or → = Right flipper | Space = Launch</div>
+    <script>
+        const c = document.getElementById('c'), ctx = c.getContext('2d'), W = 320, H = 520;
+        const G = 0.2, BALL_R = 8;
+        let ball, flipperL = { x: 90, y: H - 60, angle: 0.3, target: 0.3 }, flipperR = { x: 230, y: H - 60, angle: Math.PI - 0.3, target: Math.PI - 0.3 };
+        let bumpers = [{ x: 100, y: 180, r: 20, pts: 100 }, { x: 220, y: 180, r: 20, pts: 100 }, { x: 160, y: 120, r: 20, pts: 200 }, { x: 80, y: 280, r: 16, pts: 50 }, { x: 240, y: 280, r: 16, pts: 50 }];
+        let score = 0, ballsLeft = 3, running = false, launched = false, animId;
+        const keys = {};
+
+        function init() { ball = { x: W - 25, y: H - 100, vx: 0, vy: 0 }; score = 0; ballsLeft = 3; launched = false; running = true; document.getElementById('score').textContent = 0; document.getElementById('balls').textContent = 3; document.getElementById('msg').textContent = 'Press SPACE to launch!'; document.getElementById('startBtn').textContent = '↩ Restart'; }
+
+        function launch() { if (launched) return; launched = true; ball.vy = -12 - Math.random() * 3; ball.vx = -1 + Math.random() * 2; }
+
+        function update() {
+            if (!launched) return;
+            ball.vy += G; ball.x += ball.vx; ball.y += ball.vy;
+            // walls
+            if (ball.x < BALL_R + 10) { ball.x = BALL_R + 10; ball.vx = Math.abs(ball.vx) * 0.8; }
+            if (ball.x > W - BALL_R - 10) { ball.x = W - BALL_R - 10; ball.vx = -Math.abs(ball.vx) * 0.8; }
+            if (ball.y < BALL_R) { ball.y = BALL_R; ball.vy = Math.abs(ball.vy) * 0.8; }
+            // drain
+            if (ball.y > H + 20) { ballsLeft--; document.getElementById('balls').textContent = ballsLeft; if (ballsLeft <= 0) { running = false; document.getElementById('msg').textContent = `Game Over! Score: ${score}`; } else { ball.x = W - 25; ball.y = H - 100; ball.vx = 0; ball.vy = 0; launched = false; document.getElementById('msg').textContent = 'Press SPACE to launch!'; } }
+            // bumpers
+            bumpers.forEach(b => { const dx = ball.x - b.x, dy = ball.y - b.y, d = Math.hypot(dx, dy); if (d < BALL_R + b.r) { const nx = dx / d, ny = dy / d; ball.vx = nx * 5; ball.vy = ny * 5; ball.x = b.x + nx * (BALL_R + b.r + 1); score += b.pts; document.getElementById('score').textContent = score; b.flash = 10; } if (b.flash) b.flash--; });
+            // flippers
+            flipperL.angle += (flipperL.target - flipperL.angle) * 0.3; flipperR.angle += (flipperR.target - flipperR.angle) * 0.3;
+            [flipperL, flipperR].forEach(f => {
+                const fx = f.x + Math.cos(f.angle) * 40, fy = f.y + Math.sin(f.angle) * 40; const dx = ball.x - f.x, dy = ball.y - f.y; const d = Math.hypot(dx, dy);
+                // simplified flipper collision
+                const mx = (f.x + fx) / 2, my = (f.y + fy) / 2; if (Math.hypot(ball.x - mx, ball.y - my) < 30 && ball.y > f.y - 15) { ball.vy = -8 - Math.abs(ball.vx) * 0.5; ball.vx += (ball.x - f.x) * 0.1; ball.y = f.y - 15; }
+            });
+        }
+
+        function draw() {
+            ctx.fillStyle = '#050508'; ctx.fillRect(0, 0, W, H);
+            // walls
+            ctx.fillStyle = 'rgba(245,158,11,0.1)'; ctx.fillRect(0, 0, 10, H); ctx.fillRect(W - 10, 0, 10, H);
+            // bumpers
+            bumpers.forEach(b => { ctx.fillStyle = b.flash ? '#f59e0b' : 'rgba(236,72,153,0.5)'; ctx.shadowColor = b.flash ? '#f59e0b' : '#ec4899'; ctx.shadowBlur = b.flash ? 20 : 8; ctx.beginPath(); ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2); ctx.fill(); ctx.shadowBlur = 0; ctx.fillStyle = '#fff'; ctx.font = 'bold 10px Outfit'; ctx.textAlign = 'center'; ctx.fillText(b.pts, b.x, b.y + 4); });
+            // flippers
+            [flipperL, flipperR].forEach(f => { ctx.save(); ctx.translate(f.x, f.y); ctx.rotate(f.angle); ctx.fillStyle = '#06b6d4'; ctx.shadowColor = '#06b6d4'; ctx.shadowBlur = 8; ctx.beginPath(); ctx.roundRect(-5, -6, 45, 12, 6); ctx.fill(); ctx.shadowBlur = 0; ctx.restore(); });
+            // ball
+            if (ball) { ctx.fillStyle = '#e2e8f0'; ctx.shadowColor = '#fff'; ctx.shadowBlur = 12; ctx.beginPath(); ctx.arc(ball.x, ball.y, BALL_R, 0, Math.PI * 2); ctx.fill(); ctx.shadowBlur = 0; }
+            // launch zone
+            if (!launched) { ctx.fillStyle = 'rgba(245,158,11,0.1)'; ctx.fillRect(W - 35, H - 150, 25, 150); ctx.fillStyle = '#f59e0b'; ctx.font = 'bold 10px Outfit'; ctx.textAlign = 'center'; ctx.fillText('LAUNCH', W - 22, H - 160); }
+        }
+
+        function loop() { if (!running) return; update(); draw(); animId = requestAnimationFrame(loop); }
+        document.addEventListener('keydown', e => { keys[e.key] = true; if (e.key === ' ') { e.preventDefault(); launch(); } if (e.key === 'z' || e.key === 'ArrowLeft') { flipperL.target = -0.5; } if (e.key === 'x' || e.key === 'ArrowRight') { flipperR.target = Math.PI + 0.5; } });
+        document.addEventListener('keyup', e => { keys[e.key] = false; if (e.key === 'z' || e.key === 'ArrowLeft') flipperL.target = 0.3; if (e.key === 'x' || e.key === 'ArrowRight') flipperR.target = Math.PI - 0.3; });
+        document.getElementById('startBtn').addEventListener('click', () => { cancelAnimationFrame(animId); init(); loop(); });
+        ctx.fillStyle = '#050508'; ctx.fillRect(0, 0, W, H);
+    </script>
+</body>
+
+</html>

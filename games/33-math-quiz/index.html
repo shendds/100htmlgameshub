@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>Math Quiz | 100 HTML Games</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        body {
+            background: #0a0a0f;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Outfit', sans-serif;
+            color: #fff;
+            padding: 24px
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 900;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #10b981, #06b6d4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text
+        }
+
+        .info {
+            display: flex;
+            gap: 24px;
+            margin-bottom: 16px;
+            font-size: 14px;
+            color: #64748b
+        }
+
+        .info span b {
+            color: #10b981;
+            font-size: 1.2em
+        }
+
+        .timer-bar {
+            width: 340px;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.07);
+            border-radius: 999px;
+            margin-bottom: 20px;
+            overflow: hidden
+        }
+
+        .timer-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #10b981, #f59e0b, #ef4444);
+            border-radius: 999px;
+            transition: width .1s linear
+        }
+
+        .question {
+            font-size: 3rem;
+            font-weight: 900;
+            margin-bottom: 24px;
+            text-align: center;
+            min-height: 60px;
+            color: #f1f5f9
+        }
+
+        .difficulty {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px
+        }
+
+        .diff-btn {
+            padding: 6px 16px;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 999px;
+            color: #94a3b8;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: 'Outfit', sans-serif;
+            transition: all .2s
+        }
+
+        .diff-btn.active {
+            background: rgba(16, 185, 129, 0.3);
+            border-color: rgba(16, 185, 129, 0.6);
+            color: #6ee7b7
+        }
+
+        .choices {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            width: 340px;
+            margin-bottom: 20px
+        }
+
+        .choice {
+            padding: 18px;
+            background: rgba(255, 255, 255, 0.06);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 14px;
+            font-size: 1.5rem;
+            font-weight: 700;
+            cursor: pointer;
+            text-align: center;
+            transition: all .15s;
+            color: #e2e8f0
+        }
+
+        .choice:hover:not(:disabled) {
+            background: rgba(16, 185, 129, 0.2);
+            border-color: rgba(16, 185, 129, 0.5);
+            transform: scale(1.03)
+        }
+
+        .choice.correct {
+            background: rgba(34, 197, 94, 0.2);
+            border-color: #22c55e;
+            color: #86efac
+        }
+
+        .choice.wrong {
+            background: rgba(239, 68, 68, 0.15);
+            border-color: #ef4444;
+            color: #f87171
+        }
+
+        .choice:disabled {
+            cursor: default
+        }
+
+        #feedback {
+            font-size: 1.1rem;
+            font-weight: 700;
+            min-height: 28px;
+            text-align: center;
+            margin-bottom: 12px
+        }
+
+        .btn {
+            padding: 10px 22px;
+            background: linear-gradient(135deg, #10b981, #06b6d4);
+            border: none;
+            border-radius: 999px;
+            color: #fff;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform .15s;
+            font-family: 'Outfit', sans-serif
+        }
+
+        .btn:hover {
+            transform: scale(1.05)
+        }
+
+        .back {
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            text-decoration: none;
+            color: #64748b;
+            font-size: 13px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 6px 14px;
+            border-radius: 999px
+        }
+
+        .back:hover {
+            color: #fff
+        }
+    </style>
+</head>
+
+<body>
+    <a href="../../index.html" class="back">← Back to Menu</a>
+    <h1>➕ Math Quiz</h1>
+    <div class="difficulty">
+        <button class="diff-btn active" data-level="easy">Easy</button>
+        <button class="diff-btn" data-level="medium">Medium</button>
+        <button class="diff-btn" data-level="hard">Hard</button>
+    </div>
+    <div class="info">
+        <span>Score: <b id="score">0</b></span>
+        <span>Q: <b id="qnum">0</b>/10</span>
+        <span>Streak: <b id="streak">0</b>🔥</span>
+    </div>
+    <div class="timer-bar">
+        <div class="timer-fill" id="timerFill" style="width:100%"></div>
+    </div>
+    <div class="question" id="question">Press Start!</div>
+    <div class="choices" id="choices"></div>
+    <div id="feedback"></div>
+    <button class="btn" id="startBtn">▶ Start Quiz</button>
+    <script>
+        let score = 0, qnum = 0, streak = 0, level = 'easy', answer, timerInt, timeLeft, running = false;
+
+        function rnd(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+
+        function genQ() {
+            const ops = ['+', '-', '×', '÷'];
+            let op, a, b, ans;
+            const ranges = { easy: [1, 12], medium: [1, 50], hard: [1, 100] };
+            const [lo, hi] = ranges[level];
+            do {
+                op = level === 'easy' ? ops[rnd(0, 1)] : ops[rnd(0, 3)];
+                if (op === '+') { a = rnd(lo, hi); b = rnd(lo, hi); ans = a + b; }
+                else if (op === '-') { a = rnd(lo, hi); b = rnd(lo, a); ans = a - b; }
+                else if (op === '×') { a = rnd(1, 12); b = rnd(1, 12); ans = a * b; }
+                else { b = rnd(1, 12); ans = rnd(lo, Math.floor(hi / b)); a = ans * b; }
+            } while (ans < 0);
+            return { q: `${a} ${op} ${b} = ?`, ans };
+        }
+
+        function shuffle(a) { return a.sort(() => Math.random() - .5); }
+
+        function nextQ() {
+            if (qnum >= 10) { endGame(); return; }
+            qnum++; document.getElementById('qnum').textContent = qnum;
+            const q = genQ(); answer = q.ans;
+            document.getElementById('question').textContent = q.q;
+            // generate 4 choices
+            const wrongs = new Set(); while (wrongs.size < 3) { const w = answer + rnd(-10, 10); if (w !== answer && w >= 0) wrongs.add(w); }
+            const choices = shuffle([answer, ...wrongs]);
+            const el = document.getElementById('choices'); el.innerHTML = '';
+            choices.forEach(v => { const b = document.createElement('button'); b.className = 'choice'; b.textContent = v; b.addEventListener('click', () => pick(b, v)); el.appendChild(b); });
+            // timer
+            clearInterval(timerInt); timeLeft = 10; document.getElementById('timerFill').style.width = '100%';
+            timerInt = setInterval(() => { timeLeft -= 0.1; document.getElementById('timerFill').style.width = Math.max(0, timeLeft / 10 * 100) + '%'; if (timeLeft <= 0) { clearInterval(timerInt); pick(null, null); } }, 100);
+        }
+
+        function pick(btn, val) {
+            clearInterval(timerInt); document.querySelectorAll('.choice').forEach(b => { b.disabled = true; if (parseInt(b.textContent) === answer) b.classList.add('correct'); });
+            if (val === answer) { score += 10 + Math.round(timeLeft * 2); streak++; document.getElementById('feedback').textContent = `✅ Correct! +${10 + Math.round(timeLeft * 2)} pts`; document.getElementById('feedback').style.color = '#22c55e'; }
+            else { streak = 0; if (btn) btn.classList.add('wrong'); document.getElementById('feedback').textContent = val === null ? `⏰ Time's up! Answer: ${answer}` : `❌ Wrong! Answer: ${answer}`; document.getElementById('feedback').style.color = '#ef4444'; }
+            document.getElementById('score').textContent = score; document.getElementById('streak').textContent = streak;
+            setTimeout(nextQ, 1200);
+        }
+
+        function endGame() { running = false; clearInterval(timerInt); document.getElementById('question').textContent = '🏆 Done!'; document.getElementById('choices').innerHTML = ''; document.getElementById('feedback').textContent = `Final Score: ${score}/100 — Grade: ${score >= 80 ? 'A' : score >= 60 ? 'B' : score >= 40 ? 'C' : 'D'}`; document.getElementById('feedback').style.color = '#f59e0b'; document.getElementById('startBtn').textContent = '▶ Play Again'; }
+
+        function startGame() { score = 0; qnum = 0; streak = 0; running = true; document.getElementById('score').textContent = 0; document.getElementById('streak').textContent = 0; document.getElementById('feedback').textContent = ''; document.getElementById('startBtn').textContent = '...'; nextQ(); }
+
+        document.querySelectorAll('.diff-btn').forEach(b => { b.addEventListener('click', () => { document.querySelectorAll('.diff-btn').forEach(x => x.classList.remove('active')); b.classList.add('active'); level = b.dataset.level; }); });
+        document.getElementById('startBtn').addEventListener('click', startGame);
+    </script>
+</body>
+
+</html>

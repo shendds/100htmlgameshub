@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>Metronome | 100 HTML Games</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        body {
+            background: #0a0a0f;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Outfit', sans-serif;
+            color: #fff;
+            padding: 24px
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 900;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #f59e0b, #ef4444);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text
+        }
+
+        .bpm-display {
+            font-size: 5rem;
+            font-weight: 900;
+            color: #f59e0b;
+            margin: 20px 0;
+            text-shadow: 0 0 30px rgba(245, 158, 11, 0.3)
+        }
+
+        .bpm-label {
+            font-size: 14px;
+            color: #64748b;
+            margin-bottom: 16px
+        }
+
+        .pendulum {
+            width: 200px;
+            height: 200px;
+            position: relative;
+            margin-bottom: 20px
+        }
+
+        .pendulum-arm {
+            width: 4px;
+            height: 160px;
+            background: linear-gradient(to bottom, #f59e0b, #ef4444);
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform-origin: bottom center;
+            border-radius: 2px;
+            transition: transform .1s ease-in-out
+        }
+
+        .pendulum-bob {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: #f59e0b;
+            position: absolute;
+            top: -12px;
+            left: -10px;
+            box-shadow: 0 0 20px rgba(245, 158, 11, 0.5)
+        }
+
+        .pendulum-pivot {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #64748b;
+            position: absolute;
+            bottom: 12px;
+            left: 50%;
+            transform: translateX(-50%)
+        }
+
+        .beat-dots {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px
+        }
+
+        .beat-dot {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.15);
+            transition: all .1s
+        }
+
+        .beat-dot.active {
+            background: #f59e0b;
+            border-color: #f59e0b;
+            box-shadow: 0 0 16px rgba(245, 158, 11, 0.5);
+            transform: scale(1.3)
+        }
+
+        .controls {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+            justify-content: center
+        }
+
+        input[type=range] {
+            width: 240px;
+            accent-color: #f59e0b;
+            height: 8px;
+            -webkit-appearance: none;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 999px;
+            cursor: pointer
+        }
+
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: #f59e0b;
+            cursor: pointer;
+            border: 2px solid #fff
+        }
+
+        .preset-btns {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-bottom: 14px
+        }
+
+        .preset {
+            padding: 6px 14px;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 999px;
+            color: #94a3b8;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: 'Outfit', sans-serif;
+            transition: all .2s
+        }
+
+        .preset:hover,
+        .preset.active {
+            background: rgba(245, 158, 11, 0.2);
+            border-color: rgba(245, 158, 11, 0.5);
+            color: #fcd34d
+        }
+
+        .ts-btns {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 14px
+        }
+
+        .ts-btn {
+            padding: 6px 14px;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 999px;
+            color: #94a3b8;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: 'Outfit', sans-serif;
+            transition: all .2s
+        }
+
+        .ts-btn.active {
+            background: rgba(245, 158, 11, 0.2);
+            border-color: rgba(245, 158, 11, 0.5);
+            color: #fcd34d
+        }
+
+        .btn {
+            padding: 12px 32px;
+            background: linear-gradient(135deg, #f59e0b, #ef4444);
+            border: none;
+            border-radius: 999px;
+            color: #fff;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform .15s;
+            font-family: 'Outfit', sans-serif
+        }
+
+        .btn:hover {
+            transform: scale(1.05)
+        }
+
+        .back {
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            text-decoration: none;
+            color: #64748b;
+            font-size: 13px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 6px 14px;
+            border-radius: 999px
+        }
+
+        .back:hover {
+            color: #fff
+        }
+    </style>
+</head>
+
+<body>
+    <a href="../../index.html" class="back">← Back to Menu</a>
+    <h1>🎵 Metronome</h1>
+    <div class="bpm-display" id="bpmDisplay">120</div>
+    <div class="bpm-label">BPM (Beats Per Minute)</div>
+    <div class="pendulum">
+        <div class="pendulum-arm" id="pendArm">
+            <div class="pendulum-bob"></div>
+        </div>
+        <div class="pendulum-pivot"></div>
+    </div>
+    <div class="beat-dots" id="beatDots"></div>
+    <div class="controls"><span style="font-size:13px;color:#64748b">40</span><input type="range" id="bpmSlider"
+            min="40" max="240" value="120" /><span style="font-size:13px;color:#64748b">240</span></div>
+    <div class="preset-btns">
+        <button class="preset" data-bpm="60">Largo 60</button>
+        <button class="preset" data-bpm="80">Adagio 80</button>
+        <button class="preset active" data-bpm="120">Moderato 120</button>
+        <button class="preset" data-bpm="140">Allegro 140</button>
+        <button class="preset" data-bpm="180">Presto 180</button>
+    </div>
+    <div class="ts-btns">
+        <button class="ts-btn" data-ts="2">2/4</button>
+        <button class="ts-btn" data-ts="3">3/4</button>
+        <button class="ts-btn active" data-ts="4">4/4</button>
+        <button class="ts-btn" data-ts="6">6/8</button>
+    </div>
+    <button class="btn" id="toggleBtn">▶ Start</button>
+    <script>
+        const audio = new (window.AudioContext || window.webkitAudioContext)();
+        let bpm = 120, ts = 4, beat = 0, running = false, timerInt, swingDir = 1;
+
+        function tick(accent) {
+            const osc = audio.createOscillator(); osc.type = 'sine'; osc.frequency.value = accent ? 880 : 660;
+            const g = audio.createGain(); g.gain.setValueAtTime(accent ? 0.4 : 0.25, audio.currentTime); g.gain.exponentialRampToValueAtTime(0.001, audio.currentTime + 0.08);
+            osc.connect(g); g.connect(audio.destination); osc.start(); osc.stop(audio.currentTime + 0.08);
+        }
+
+        function buildDots() {
+            const el = document.getElementById('beatDots'); el.innerHTML = '';
+            for (let i = 0; i < ts; i++) { const d = document.createElement('div'); d.className = 'beat-dot'; d.id = `dot-${i}`; el.appendChild(d); }
+        }
+
+        function pulse() {
+            document.querySelectorAll('.beat-dot').forEach(d => d.classList.remove('active'));
+            document.getElementById(`dot-${beat}`).classList.add('active');
+            tick(beat === 0);
+            const arm = document.getElementById('pendArm'); swingDir *= -1; arm.style.transform = `rotate(${swingDir * 25}deg)`;
+            beat = (beat + 1) % ts;
+        }
+
+        function start() {
+            running = true; beat = 0; document.getElementById('toggleBtn').textContent = '⏸ Stop';
+            const interval = 60000 / bpm; timerInt = setInterval(pulse, interval); pulse();
+        }
+
+        function stop() { running = false; document.getElementById('toggleBtn').textContent = '▶ Start'; clearInterval(timerInt); document.querySelectorAll('.beat-dot').forEach(d => d.classList.remove('active')); document.getElementById('pendArm').style.transform = 'rotate(0deg)'; }
+
+        document.getElementById('toggleBtn').addEventListener('click', () => { if (running) stop(); else start(); });
+        document.getElementById('bpmSlider').addEventListener('input', e => { bpm = parseInt(e.target.value); document.getElementById('bpmDisplay').textContent = bpm; document.querySelectorAll('.preset').forEach(p => p.classList.remove('active')); if (running) { stop(); start(); } });
+        document.querySelectorAll('.preset').forEach(p => p.addEventListener('click', () => { bpm = parseInt(p.dataset.bpm); document.getElementById('bpmSlider').value = bpm; document.getElementById('bpmDisplay').textContent = bpm; document.querySelectorAll('.preset').forEach(x => x.classList.remove('active')); p.classList.add('active'); if (running) { stop(); start(); } }));
+        document.querySelectorAll('.ts-btn').forEach(b => b.addEventListener('click', () => { ts = parseInt(b.dataset.ts); document.querySelectorAll('.ts-btn').forEach(x => x.classList.remove('active')); b.classList.add('active'); buildDots(); if (running) { stop(); start(); } }));
+        buildDots();
+    </script>
+</body>
+
+</html>

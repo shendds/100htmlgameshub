@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>Jigsaw Puzzle | 100 HTML Games</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        body {
+            background: #0a0a0f;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Outfit', sans-serif;
+            color: #fff;
+            padding: 16px
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 900;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #ec4899, #7c3aed);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text
+        }
+
+        .info {
+            font-size: 14px;
+            color: #64748b;
+            margin-bottom: 10px
+        }
+
+        .info b {
+            color: #ec4899
+        }
+
+        .puzzle-area {
+            position: relative;
+            width: 360px;
+            height: 360px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.02);
+            margin-bottom: 12px;
+            overflow: hidden;
+            touch-action: none
+        }
+
+        .piece {
+            position: absolute;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 3px;
+            cursor: grab;
+            transition: box-shadow .15s;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            user-select: none
+        }
+
+        .piece:hover {
+            box-shadow: 0 0 14px rgba(236, 72, 153, 0.5)
+        }
+
+        .piece.placed {
+            cursor: default;
+            border-color: rgba(34, 197, 94, 0.5);
+            opacity: 0.9
+        }
+
+        .btn {
+            margin-top: 8px;
+            padding: 10px 28px;
+            background: linear-gradient(135deg, #ec4899, #7c3aed);
+            border: none;
+            border-radius: 999px;
+            color: #fff;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: 'Outfit', sans-serif;
+            transition: transform .15s
+        }
+
+        .btn:hover {
+            transform: scale(1.05)
+        }
+
+        #msg {
+            margin-top: 10px;
+            font-size: 1rem;
+            color: #64748b;
+            min-height: 24px;
+            text-align: center;
+            font-weight: 600
+        }
+
+        .grid-lines {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            pointer-events: none
+        }
+
+        .back {
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            text-decoration: none;
+            color: #64748b;
+            font-size: 13px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 6px 14px;
+            border-radius: 999px
+        }
+
+        .back:hover {
+            color: #fff
+        }
+    </style>
+</head>
+
+<body>
+    <a href="../../index.html" class="back">← Back to Menu</a>
+    <h1>🧩 Jigsaw Puzzle</h1>
+    <div class="info">Placed: <b id="placed">0</b>/<b id="total">0</b> | Moves: <b id="moves">0</b></div>
+    <div class="puzzle-area" id="puzzleArea">
+        <div class="grid-lines" id="gridLines"></div>
+    </div>
+    <div id="msg">Drag pieces to their correct position!</div>
+    <button class="btn" id="newBtn">🔀 New Puzzle</button>
+    <script>
+        const IMAGES = ['🌅', '🏔️', '🌊', '🌸', '🎭', '🏛️', '🎪', '🎨', '🚀', '🌈'];
+        const SIZE = 4, PIECE = 90, AREA = 360;
+        let pieces = [], placedCount = 0, moves = 0, dragging = null, dx = 0, dy = 0;
+
+        function init() {
+            const emoji = IMAGES[Math.floor(Math.random() * IMAGES.length)];
+            const colors = []; for (let r = 0; r < SIZE; r++)for (let c = 0; c < SIZE; c++) {
+                const h = (r * SIZE + c) * 20 + Math.floor(Math.random() * 360); colors.push(`hsl(${h},60%,${30 + r * 10}%)`);
+            }
+            pieces = []; placedCount = 0; moves = 0;
+            const positions = []; for (let r = 0; r < SIZE; r++)for (let c = 0; c < SIZE; c++)positions.push({ r, c, tx: c * PIECE, ty: r * PIECE });
+            const shuffled = positions.map(p => ({ ...p, x: Math.random() * (AREA - PIECE), y: Math.random() * (AREA - PIECE), placed: false }));
+            pieces = shuffled;
+            document.getElementById('total').textContent = SIZE * SIZE; document.getElementById('placed').textContent = 0; document.getElementById('moves').textContent = 0; document.getElementById('msg').textContent = 'Drag pieces to their grid positions!';
+            render(); renderGrid();
+        }
+
+        function renderGrid() {
+            const gl = document.getElementById('gridLines'); gl.innerHTML = '';
+            for (let i = 1; i < SIZE; i++) {
+                const h = document.createElement('div'); h.style.cssText = `position:absolute;top:${i * PIECE}px;left:0;right:0;height:1px;background:rgba(255,255,255,0.06)`; gl.appendChild(h);
+                const v = document.createElement('div'); v.style.cssText = `position:absolute;left:${i * PIECE}px;top:0;bottom:0;width:1px;background:rgba(255,255,255,0.06)`; gl.appendChild(v);
+            }
+        }
+
+        function render() {
+            document.querySelectorAll('.piece').forEach(p => p.remove());
+            const area = document.getElementById('puzzleArea');
+            pieces.forEach((p, i) => {
+                const el = document.createElement('div'); el.className = 'piece' + (p.placed ? ' placed' : ''); el.style.width = PIECE + 'px'; el.style.height = PIECE + 'px'; el.style.left = p.x + 'px'; el.style.top = p.y + 'px';
+                const h = (p.r * SIZE + p.c) * 20 + 180; el.style.background = `hsl(${h},50%,${25 + p.r * 8}%)`;
+                el.innerHTML = `<span style="font-size:10px;color:rgba(255,255,255,0.4);position:absolute;top:2px;left:4px">${p.r + 1},${p.c + 1}</span>${p.r === 1 && p.c === 1 ? '🧩' : ''}`;
+                if (!p.placed) {
+                    el.addEventListener('mousedown', e => { e.preventDefault(); dragging = i; dx = e.clientX - area.getBoundingClientRect().left - p.x; dy = e.clientY - area.getBoundingClientRect().top - p.y; });
+                }
+                area.appendChild(el);
+            });
+        }
+
+        document.addEventListener('mousemove', e => {
+            if (dragging === null) return; const area = document.getElementById('puzzleArea').getBoundingClientRect();
+            const p = pieces[dragging]; p.x = Math.max(0, Math.min(AREA - PIECE, e.clientX - area.left - dx)); p.y = Math.max(0, Math.min(AREA - PIECE, e.clientY - area.top - dy)); render();
+        });
+
+        document.addEventListener('mouseup', () => {
+            if (dragging === null) return; const p = pieces[dragging];
+            // snap check
+            if (Math.abs(p.x - p.tx) < 20 && Math.abs(p.y - p.ty) < 20) { p.x = p.tx; p.y = p.ty; p.placed = true; placedCount++; document.getElementById('placed').textContent = placedCount; if (placedCount === SIZE * SIZE) document.getElementById('msg').textContent = '🏆 Puzzle complete!'; }
+            moves++; document.getElementById('moves').textContent = moves; dragging = null; render();
+        });
+
+        document.getElementById('newBtn').addEventListener('click', init); init();
+    </script>
+</body>
+
+</html>

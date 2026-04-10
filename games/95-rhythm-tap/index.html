@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>Rhythm Tap | 100 HTML Games</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        body {
+            background: #0a0a0f;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Outfit', sans-serif;
+            color: #fff;
+            padding: 16px
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 900;
+            margin-bottom: 6px;
+            background: linear-gradient(135deg, #ec4899, #7c3aed);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text
+        }
+
+        .info {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 12px;
+            font-size: 14px;
+            color: #64748b
+        }
+
+        .info span b {
+            color: #ec4899;
+            font-size: 1.2em
+        }
+
+        .lane-area {
+            position: relative;
+            width: 280px;
+            height: 420px;
+            border: 2px solid rgba(124, 58, 237, 0.3);
+            border-radius: 14px;
+            overflow: hidden;
+            background: #05050a;
+            margin-bottom: 14px
+        }
+
+        .lane {
+            position: absolute;
+            top: 0;
+            width: 70px;
+            height: 100%;
+            border-right: 1px solid rgba(255, 255, 255, 0.05)
+        }
+
+        .hit-zone {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background: rgba(124, 58, 237, 0.1);
+            border-top: 2px solid rgba(124, 58, 237, 0.4)
+        }
+
+        .note {
+            position: absolute;
+            width: 60px;
+            height: 30px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 900;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            transition: none
+        }
+
+        .tap-btn {
+            width: 70px;
+            height: 60px;
+            border: none;
+            border-radius: 0;
+            font-size: 1.4rem;
+            font-weight: 900;
+            cursor: pointer;
+            transition: all .07s;
+            font-family: 'Outfit', sans-serif;
+            background: rgba(255, 255, 255, 0.05);
+            color: rgba(255, 255, 255, 0.6);
+            border-right: 1px solid rgba(255, 255, 255, 0.05)
+        }
+
+        .tap-btn:active {
+            background: rgba(124, 58, 237, 0.3)
+        }
+
+        .tap-row {
+            display: flex;
+            width: 280px;
+            margin-bottom: 12px
+        }
+
+        .feedback {
+            position: absolute;
+            bottom: 70px;
+            width: 100%;
+            text-align: center;
+            font-size: 1rem;
+            font-weight: 900;
+            z-index: 10;
+            pointer-events: none
+        }
+
+        .btn {
+            padding: 10px 24px;
+            background: linear-gradient(135deg, #ec4899, #7c3aed);
+            border: none;
+            border-radius: 999px;
+            color: #fff;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform .15s;
+            font-family: 'Outfit', sans-serif
+        }
+
+        .btn:hover {
+            transform: scale(1.05)
+        }
+
+        #msg {
+            font-size: 13px;
+            min-height: 22px;
+            text-align: center;
+            margin-bottom: 8px;
+            color: #64748b
+        }
+
+        .back {
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            text-decoration: none;
+            color: #64748b;
+            font-size: 13px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 6px 14px;
+            border-radius: 999px
+        }
+
+        .back:hover {
+            color: #fff
+        }
+
+        .combo {
+            font-size: 1.5rem;
+            font-weight: 900;
+            color: #f59e0b;
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 20;
+            text-shadow: 0 0 20px rgba(245, 158, 11, 0.5)
+        }
+    </style>
+</head>
+
+<body>
+    <a href="../../index.html" class="back">← Back to Menu</a>
+    <h1>🎵 Rhythm Tap</h1>
+    <div class="info"><span>Score: <b id="score">0</b></span><span>Combo: <b id="combo">0</b>x</span><span>Best: <b
+                id="best">0</b></span></div>
+    <div class="lane-area" id="laneArea">
+        <div class="lane" style="left:0"></div>
+        <div class="lane" style="left:70px"></div>
+        <div class="lane" style="left:140px"></div>
+        <div class="lane" style="left:210px"></div>
+        <div class="hit-zone"></div>
+        <div class="feedback" id="feedback"></div>
+        <div class="combo" id="comboDisp"></div>
+    </div>
+    <div class="tap-row">
+        <button class="tap-btn" data-lane="0">D</button>
+        <button class="tap-btn" data-lane="1">F</button>
+        <button class="tap-btn" data-lane="2">J</button>
+        <button class="tap-btn" data-lane="3">K</button>
+    </div>
+    <div id="msg">Press Start to play!</div>
+    <button class="btn" id="startBtn">▶ Start</button>
+    <script>
+        const COLORS = ['#ef4444', '#06b6d4', '#22c55e', '#f59e0b'];
+        const KEYS = ['d', 'f', 'j', 'k'];
+        const LANE_W = 70, HIT_Y = 360;
+        let notes = [], score = 0, combo = 0, best = 0, running = false, animId, spawnTimer = 0, speed = 3, frame = 0;
+
+        function spawn() { const lane = Math.floor(Math.random() * 4); notes.push({ lane, y: -30, hit: false, missed: false }); }
+
+        function tap(lane) {
+            const hit = notes.find(n => !n.hit && !n.missed && n.lane === lane && Math.abs(n.y - HIT_Y) < 50);
+            if (hit) {
+                hit.hit = true; const dist = Math.abs(hit.y - HIT_Y);
+                let grade, pts; if (dist < 15) { grade = 'Perfect!'; pts = 100; } else if (dist < 30) { grade = 'Great!'; pts = 75; } else { grade = 'Good'; pts = 50; }
+                score += pts + combo * 5; combo++; if (score > best) best = score;
+                document.getElementById('feedback').textContent = grade; document.getElementById('feedback').style.color = dist < 15 ? '#22c55e' : '#f59e0b';
+                if (combo >= 5) { document.getElementById('comboDisp').style.display = 'block'; document.getElementById('comboDisp').textContent = combo + 'x COMBO!'; }
+                setTimeout(() => { document.getElementById('feedback').textContent = ''; }, 400);
+            } else { combo = 0; document.getElementById('comboDisp').style.display = 'none'; document.getElementById('feedback').textContent = 'Miss!'; document.getElementById('feedback').style.color = '#ef4444'; setTimeout(() => document.getElementById('feedback').textContent = '', 300); }
+            document.getElementById('score').textContent = score; document.getElementById('combo').textContent = combo; document.getElementById('best').textContent = best;
+        }
+
+        function update() {
+            frame++; spawnTimer++; if (spawnTimer >= Math.max(20, 60 - Math.floor(score / 500))) { spawnTimer = 0; spawn(); }
+            speed = 3 + Math.floor(score / 1000) * 0.5;
+            notes.forEach(n => { if (!n.hit) n.y += speed; if (n.y > HIT_Y + 50 && !n.hit && !n.missed) { n.missed = true; combo = 0; document.getElementById('combo').textContent = 0; document.getElementById('comboDisp').style.display = 'none'; } });
+            notes = notes.filter(n => n.y < 500 && !n.hit);
+        }
+
+        function draw() {
+            const area = document.getElementById('laneArea'); area.querySelectorAll('.note').forEach(n => n.remove());
+            notes.forEach(n => { if (n.hit) return; const el = document.createElement('div'); el.className = 'note'; el.style.left = (n.lane * LANE_W + 5) + 'px'; el.style.top = n.y + 'px'; el.style.background = COLORS[n.lane]; el.style.boxShadow = `0 0 10px ${COLORS[n.lane]}`; el.textContent = KEYS[n.lane].toUpperCase(); area.appendChild(el); });
+        }
+
+        function loop() { if (!running) return; update(); draw(); animId = requestAnimationFrame(loop); }
+
+        function start() { notes = []; score = 0; combo = 0; frame = 0; spawnTimer = 0; speed = 3; running = true; document.getElementById('score').textContent = 0; document.getElementById('combo').textContent = 0; document.getElementById('msg').textContent = ''; document.getElementById('startBtn').textContent = '↩ Restart'; loop(); }
+
+        document.querySelectorAll('.tap-btn').forEach(b => b.addEventListener('click', () => tap(parseInt(b.dataset.lane))));
+        document.addEventListener('keydown', e => { const i = KEYS.indexOf(e.key.toLowerCase()); if (i >= 0 && running) tap(i); if (e.key === ' ' && !running) start(); });
+        document.getElementById('startBtn').addEventListener('click', start);
+    </script>
+</body>
+
+</html>

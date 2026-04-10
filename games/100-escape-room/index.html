@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>Escape Room | 100 HTML Games</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        body {
+            background: #0a0a0f;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Outfit', sans-serif;
+            color: #fff;
+            padding: 24px
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 900;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #7c3aed, #ef4444);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text
+        }
+
+        .room {
+            max-width: 560px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 16px
+        }
+
+        .room-title {
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #7c3aed;
+            margin-bottom: 8px;
+            font-weight: 700
+        }
+
+        .room-desc {
+            font-size: 1rem;
+            color: #cbd5e1;
+            line-height: 1.6;
+            margin-bottom: 16px
+        }
+
+        .items {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 14px
+        }
+
+        .item {
+            padding: 6px 14px;
+            background: rgba(124, 58, 237, 0.1);
+            border: 1px solid rgba(124, 58, 237, 0.3);
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all .15s;
+            color: #c4b5fd
+        }
+
+        .item:hover {
+            background: rgba(124, 58, 237, 0.25);
+            border-color: #7c3aed;
+            transform: scale(1.05)
+        }
+
+        .puzzle-area {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 14px
+        }
+
+        .puzzle-title {
+            font-size: 12px;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px
+        }
+
+        .puzzle-text {
+            font-size: 1rem;
+            color: #e2e8f0;
+            margin-bottom: 12px;
+            line-height: 1.5
+        }
+
+        .input-row {
+            display: flex;
+            gap: 8px
+        }
+
+        input[type=text] {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            color: #fff;
+            padding: 10px 14px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 14px;
+            outline: none
+        }
+
+        input[type=text]:focus {
+            border-color: rgba(124, 58, 237, 0.5)
+        }
+
+        .btn {
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #7c3aed, #ef4444);
+            border: none;
+            border-radius: 10px;
+            color: #fff;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform .15s;
+            font-family: 'Outfit', sans-serif
+        }
+
+        .btn:hover {
+            transform: scale(1.05)
+        }
+
+        .inventory {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 10px
+        }
+
+        .inv-item {
+            padding: 4px 12px;
+            background: rgba(245, 158, 11, 0.15);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            border-radius: 6px;
+            font-size: 12px;
+            color: #fcd34d;
+            font-weight: 600
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.06);
+            border-radius: 999px;
+            margin-bottom: 10px;
+            overflow: hidden
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #7c3aed, #ef4444);
+            border-radius: 999px;
+            transition: width .3s
+        }
+
+        #msg {
+            font-size: 1rem;
+            min-height: 24px;
+            text-align: center;
+            margin-bottom: 10px;
+            color: #64748b;
+            font-weight: 600
+        }
+
+        .hint-btn {
+            padding: 6px 14px;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 999px;
+            color: #94a3b8;
+            font-size: 12px;
+            cursor: pointer;
+            font-family: 'Outfit', sans-serif;
+            transition: all .2s
+        }
+
+        .hint-btn:hover {
+            border-color: rgba(124, 58, 237, 0.5);
+            color: #c4b5fd
+        }
+
+        .back {
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            text-decoration: none;
+            color: #64748b;
+            font-size: 13px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 6px 14px;
+            border-radius: 999px
+        }
+
+        .back:hover {
+            color: #fff
+        }
+    </style>
+</head>
+
+<body>
+    <a href="../../index.html" class="back">← Back to Menu</a>
+    <h1>🔐 Escape Room</h1>
+    <div class="progress-bar">
+        <div class="progress-fill" id="progFill" style="width:0%"></div>
+    </div>
+    <div id="msg">Explore the room and solve puzzles to escape!</div>
+    <div class="inventory" id="inventory"></div>
+    <div class="room" id="room"></div>
+    <button class="hint-btn" id="hintBtn">💡 Hint</button>
+    <script>
+        const ROOMS = [
+            {
+                title: 'Room 1: The Dark Study', desc: 'You wake up in a dimly lit study. A heavy wooden desk sits in the center. On the wall hangs a painting of a clock showing 3:47. A locked cabinet is in the corner, and a note is on the desk.',
+                items: ['📜 Read Note', '🖼️ Examine Painting', '🔒 Try Cabinet', '🗄️ Check Desk Drawer'],
+                puzzle: 'The note reads: "The key is in the time." What 4-digit code opens the cabinet?', answer: '0347', hint: 'Look at the clock in the painting...', reward: '🔑 Old Key',
+                itemClues: { '📜 Read Note': 'The note says: "The key is in the time. Look closely at the walls."', '🖼️ Examine Painting': 'A painting of a grandfather clock. The time reads 3:47.', '🔒 Try Cabinet': 'The cabinet has a 4-digit combination lock.', '🗄️ Check Desk Drawer': 'Empty. There\'s a faint scratch mark: "time=code"' }
+            },
+            {
+                title: 'Room 2: The Laboratory', desc: 'You enter a cold laboratory. Beakers labeled R=2, G=5, B=8 sit on a shelf. A screen on the wall displays: "Mix the formula: R+G+B=?" A door with a keypad awaits.',
+                items: ['🧪 Check Beakers', '💻 Read Screen', '🚪 Try Door', '📋 Lab Notes'],
+                puzzle: 'What is R + G + B? Enter the sum to open the door.', answer: '15', hint: 'Add up the numbers on the beakers: 2 + 5 + 8', reward: '🗝️ Lab Keycard',
+                itemClues: { '🧪 Check Beakers': 'Three beakers labeled: R=2, G=5, B=8', '💻 Read Screen': '"Security Protocol: Enter R+G+B to unlock"', '🚪 Try Door': 'Electronic lock. Needs a numeric code.', '📋 Lab Notes': 'Formula notes: Always sum the primary variables.' }
+            },
+            {
+                title: 'Room 3: The Library', desc: 'A vast library with hundreds of books. One shelf has books numbered 1-26 corresponding to letters (1=A, 2=B...). A riddle on the wall reads: "I am the 8th, 9th letter."',
+                items: ['📚 Browse Books', '🧩 Read Riddle', '🔍 Search Shelf', '📝 Check Logbook'],
+                puzzle: 'The riddle says "8th and 9th letters." What two-letter word is the answer?', answer: 'hi', hint: '8th letter = H, 9th letter = I', reward: '📖 Ancient Scroll',
+                itemClues: { '📚 Browse Books': 'Books numbered 1-26, each representing a letter of the alphabet.', '🧩 Read Riddle': '"I am the 8th, 9th letter. Say me to proceed."', '🔍 Search Shelf': 'The 8th book is labeled "H", the 9th book "I".', '📝 Check Logbook': 'Previous solvers wrote: "Numbers become letters"' }
+            },
+            {
+                title: 'Room 4: The Vault', desc: 'The final room! A massive vault door with a word lock. Scattered on the floor are tiles: E, S, C, A, P, E. A sign says "Arrange the tiles to describe what you seek."',
+                items: ['🧱 Check Tiles', '📋 Read Sign', '🔐 Try Vault', '🔦 Look Around'],
+                puzzle: 'Arrange the letters E, S, C, A, P, E into a word that describes what you want to do.', answer: 'escape', hint: 'You want to get out of here... to _____', reward: '🏆 Freedom!',
+                itemClues: { '🧱 Check Tiles': 'Letter tiles on the floor: E, S, C, A, P, E', '📋 Read Sign': '"Arrange the tiles to spell your desire"', '🔐 Try Vault': 'A word lock — enter the correct word to open.', '🔦 Look Around': 'On the ceiling someone scratched: "6 letters, starts with E"' }
+            },
+        ];
+
+        let currentRoom = 0, inventory = [], hintsUsed = 0;
+
+        function renderRoom() {
+            const r = ROOMS[currentRoom]; const el = document.getElementById('room');
+            el.innerHTML = `<div class="room-title">${r.title}</div><div class="room-desc">${r.desc}</div><div class="items" id="roomItems"></div><div class="puzzle-area"><div class="puzzle-title">🧩 Puzzle</div><div class="puzzle-text">${r.puzzle}</div><div class="input-row"><input type="text" id="answer" placeholder="Your answer..."/><button class="btn" id="submitBtn">Submit</button></div></div>`;
+            const itemsEl = document.getElementById('roomItems');
+            r.items.forEach(item => { const b = document.createElement('div'); b.className = 'item'; b.textContent = item; b.addEventListener('click', () => { document.getElementById('msg').textContent = r.itemClues[item]; }); itemsEl.appendChild(b); });
+            document.getElementById('submitBtn').addEventListener('click', checkAnswer);
+            document.getElementById('answer').addEventListener('keydown', e => { if (e.key === 'Enter') checkAnswer(); });
+            document.getElementById('progFill').style.width = (currentRoom / ROOMS.length * 100) + '%';
+            renderInventory();
+        }
+
+        function checkAnswer() {
+            const ans = document.getElementById('answer').value.toLowerCase().trim();
+            if (ans === ROOMS[currentRoom].answer) {
+                inventory.push(ROOMS[currentRoom].reward);
+                document.getElementById('msg').textContent = `✅ Correct! Found: ${ROOMS[currentRoom].reward}`;
+                currentRoom++;
+                if (currentRoom >= ROOMS.length) { document.getElementById('msg').textContent = '🏆 Congratulations! You escaped all rooms!'; document.getElementById('room').innerHTML = '<div style="text-align:center;font-size:4rem;padding:40px">🎉🏆🎉</div><div style="text-align:center;font-size:1.2rem;color:#22c55e;font-weight:700">Freedom! You solved all puzzles!</div>'; document.getElementById('progFill').style.width = '100%'; renderInventory(); return; }
+                setTimeout(renderRoom, 800);
+            } else { document.getElementById('msg').textContent = '❌ Wrong answer. Keep investigating!'; }
+        }
+
+        function renderInventory() {
+            const el = document.getElementById('inventory'); el.innerHTML = '';
+            inventory.forEach(item => { const i = document.createElement('span'); i.className = 'inv-item'; i.textContent = item; el.appendChild(i); });
+        }
+
+        document.getElementById('hintBtn').addEventListener('click', () => { if (currentRoom < ROOMS.length) { document.getElementById('msg').textContent = '💡 Hint: ' + ROOMS[currentRoom].hint; hintsUsed++; } });
+
+        renderRoom();
+    </script>
+</body>
+
+</html>

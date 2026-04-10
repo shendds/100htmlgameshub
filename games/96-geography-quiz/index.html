@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>Geography Quiz | 100 HTML Games</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        body {
+            background: #0a0a0f;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Outfit', sans-serif;
+            color: #fff;
+            padding: 24px
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 900;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #22c55e, #06b6d4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text
+        }
+
+        .info {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 14px;
+            font-size: 14px;
+            color: #64748b
+        }
+
+        .info span b {
+            color: #22c55e;
+            font-size: 1.2em
+        }
+
+        .question-box {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            padding: 20px;
+            max-width: 500px;
+            width: 100%;
+            margin-bottom: 14px;
+            text-align: center
+        }
+
+        .q-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #64748b;
+            margin-bottom: 8px
+        }
+
+        .q-emoji {
+            font-size: 3rem;
+            margin-bottom: 8px
+        }
+
+        .q-text {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #e2e8f0;
+            line-height: 1.5;
+            margin-bottom: 16px
+        }
+
+        .options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px
+        }
+
+        .opt {
+            padding: 14px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 700;
+            color: #cbd5e1;
+            text-align: center;
+            transition: all .15s
+        }
+
+        .opt:hover {
+            border-color: rgba(34, 197, 94, 0.5);
+            background: rgba(34, 197, 94, 0.1);
+            transform: scale(1.03)
+        }
+
+        .opt.correct {
+            border-color: #22c55e;
+            background: rgba(34, 197, 94, 0.2);
+            color: #86efac
+        }
+
+        .opt.wrong {
+            border-color: #ef4444;
+            background: rgba(239, 68, 68, 0.15);
+            color: #fca5a5
+        }
+
+        .timer-bar {
+            width: 500px;
+            max-width: 100%;
+            height: 5px;
+            background: rgba(255, 255, 255, 0.07);
+            border-radius: 999px;
+            margin-bottom: 14px;
+            overflow: hidden
+        }
+
+        .timer-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #22c55e, #06b6d4);
+            border-radius: 999px;
+            transition: width .1s
+        }
+
+        #feedback {
+            font-size: 1rem;
+            font-weight: 700;
+            min-height: 28px;
+            text-align: center;
+            margin-bottom: 8px;
+            color: #64748b
+        }
+
+        .btn {
+            padding: 10px 24px;
+            background: linear-gradient(135deg, #22c55e, #06b6d4);
+            border: none;
+            border-radius: 999px;
+            color: #fff;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform .15s;
+            font-family: 'Outfit', sans-serif
+        }
+
+        .btn:hover {
+            transform: scale(1.05)
+        }
+
+        .back {
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            text-decoration: none;
+            color: #64748b;
+            font-size: 13px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 6px 14px;
+            border-radius: 999px
+        }
+
+        .back:hover {
+            color: #fff
+        }
+    </style>
+</head>
+
+<body>
+    <a href="../../index.html" class="back">← Back to Menu</a>
+    <h1>🌍 Geography Quiz</h1>
+    <div class="info"><span>Score: <b id="score">0</b></span><span>Q: <b id="qnum">0</b>/15</span><span>Streak: <b
+                id="streak">0</b>🔥</span></div>
+    <div class="timer-bar">
+        <div class="timer-fill" id="timerFill" style="width:100%"></div>
+    </div>
+    <div class="question-box">
+        <div class="q-label" id="qLabel">🌍 Geography</div>
+        <div class="q-emoji" id="qEmoji">🗺️</div>
+        <div class="q-text" id="qText">Press Start to begin!</div>
+        <div class="options" id="options"></div>
+    </div>
+    <div id="feedback"></div>
+    <button class="btn" id="startBtn">▶ Start</button>
+    <script>
+        const QS = [
+            { q: 'What is the capital of France?', a: 'Paris', opts: ['London', 'Paris', 'Berlin', 'Rome'], emoji: '🇫🇷' },
+            { q: 'Which is the largest continent by area?', a: 'Asia', opts: ['Africa', 'Asia', 'Europe', 'Antarctica'], emoji: '🌏' },
+            { q: 'What is the longest river in the world?', a: 'Nile', opts: ['Amazon', 'Nile', 'Yangtze', 'Mississippi'], emoji: '🏞️' },
+            { q: 'Which country has the most population?', a: 'India', opts: ['USA', 'India', 'China', 'Brazil'], emoji: '👥' },
+            { q: 'What is the capital of Japan?', a: 'Tokyo', opts: ['Seoul', 'Tokyo', 'Beijing', 'Osaka'], emoji: '🇯🇵' },
+            { q: 'Which ocean is the largest?', a: 'Pacific', opts: ['Atlantic', 'Pacific', 'Indian', 'Arctic'], emoji: '🌊' },
+            { q: 'In which country is the Sahara Desert?', a: 'Multiple African countries', opts: ['Egypt only', 'Saudi Arabia', 'Multiple African countries', 'India'], emoji: '🏜️' },
+            { q: 'What is the smallest country in the world?', a: 'Vatican City', opts: ['Monaco', 'Vatican City', 'Singapore', 'Luxembourg'], emoji: '🏛️' },
+            { q: 'Which country has the most islands?', a: 'Sweden', opts: ['Indonesia', 'Philippines', 'Sweden', 'Japan'], emoji: '🏝️' },
+            { q: 'Mt. Kilimanjaro is located in which country?', a: 'Tanzania', opts: ['Kenya', 'Tanzania', 'Uganda', 'Ethiopia'], emoji: '🏔️' },
+            { q: 'Which country is known as the Land of the Rising Sun?', a: 'Japan', opts: ['China', 'Japan', 'Thailand', 'South Korea'], emoji: '🌅' },
+            { q: 'What is the capital of Australia?', a: 'Canberra', opts: ['Sydney', 'Melbourne', 'Canberra', 'Brisbane'], emoji: '🇦🇺' },
+            { q: 'Which river flows through London?', a: 'Thames', opts: ['Seine', 'Thames', 'Danube', 'Rhine'], emoji: '🌉' },
+            { q: 'What is the capital of Brazil?', a: 'Brasília', opts: ['São Paulo', 'Rio de Janeiro', 'Brasília', 'Salvador'], emoji: '🇧🇷' },
+            { q: 'Which country is the Eiffel Tower in?', a: 'France', opts: ['France', 'Italy', 'Spain', 'Belgium'], emoji: '🗼' },
+            { q: 'What is the largest lake in Africa?', a: 'Lake Victoria', opts: ['Lake Chad', 'Lake Victoria', 'Lake Tanganyika', 'Lake Malawi'], emoji: '🌊' },
+            { q: 'Which continent is Egypt in?', a: 'Africa', opts: ['Asia', 'Africa', 'Europe', 'Middle East'], emoji: '🏛️' },
+            { q: 'What is the capital of Canada?', a: 'Ottawa', opts: ['Toronto', 'Vancouver', 'Ottawa', 'Montreal'], emoji: '🇨🇦' },
+        ];
+        let qs, qi = 0, score = 0, streak = 0, timerInt;
+        function shuffle(a) { return a.sort(() => Math.random() - .5); }
+
+        function start() { qs = shuffle([...QS]).slice(0, 15); qi = 0; score = 0; streak = 0; document.getElementById('score').textContent = 0; document.getElementById('streak').textContent = 0; document.getElementById('startBtn').style.display = 'none'; nextQ(); }
+
+        function nextQ() {
+            if (qi >= 15) { document.getElementById('qText').textContent = `🏆 Final Score: ${score}`; document.getElementById('options').innerHTML = ''; document.getElementById('qEmoji').textContent = '🏆'; document.getElementById('startBtn').style.display = ''; document.getElementById('startBtn').textContent = '▶ Play Again'; return; }
+            const q = qs[qi]; document.getElementById('qText').textContent = q.q; document.getElementById('qEmoji').textContent = q.emoji; document.getElementById('qnum').textContent = qi + 1; document.getElementById('feedback').textContent = '';
+            const opts = document.getElementById('options'); opts.innerHTML = '';
+            shuffle([...q.opts]).forEach(o => { const b = document.createElement('div'); b.className = 'opt'; b.textContent = o; b.addEventListener('click', () => pick(o, q.a, b)); opts.appendChild(b); });
+            let timeLeft = 10; document.getElementById('timerFill').style.width = '100%'; clearInterval(timerInt); timerInt = setInterval(() => { timeLeft -= 0.1; document.getElementById('timerFill').style.width = Math.max(0, timeLeft / 10 * 100) + '%'; if (timeLeft <= 0) { clearInterval(timerInt); streak = 0; document.getElementById('streak').textContent = 0; document.getElementById('feedback').textContent = `⏰ Time's up! Answer: ${q.a}`; document.getElementById('feedback').style.color = '#ef4444'; qi++; setTimeout(nextQ, 1200); } }, 100);
+        }
+
+        function pick(val, ans, btn) {
+            clearInterval(timerInt); document.querySelectorAll('.opt').forEach(b => b.style.pointerEvents = 'none');
+            if (val === ans) { score += 10 + streak * 3; streak++; btn.classList.add('correct'); document.getElementById('feedback').textContent = '✅ Correct!'; document.getElementById('feedback').style.color = '#22c55e'; }
+            else { streak = 0; btn.classList.add('wrong'); document.getElementById('feedback').textContent = `❌ Wrong! Answer: ${ans}`; document.getElementById('feedback').style.color = '#ef4444'; }
+            document.getElementById('score').textContent = score; document.getElementById('streak').textContent = streak; qi++; setTimeout(nextQ, 1000);
+        }
+
+        document.getElementById('startBtn').addEventListener('click', start);
+    </script>
+</body>
+
+</html>

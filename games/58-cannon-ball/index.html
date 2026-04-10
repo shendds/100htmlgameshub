@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>Cannon Ball | 100 HTML Games</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        body {
+            background: #0a0a0f;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Outfit', sans-serif;
+            color: #fff;
+            padding: 16px
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 900;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #f97316, #ef4444);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text
+        }
+
+        .info {
+            display: flex;
+            gap: 24px;
+            margin-bottom: 10px;
+            font-size: 14px;
+            color: #64748b
+        }
+
+        .info span b {
+            color: #f97316;
+            font-size: 1.2em
+        }
+
+        canvas {
+            border: 2px solid rgba(249, 115, 22, 0.3);
+            border-radius: 12px;
+            background: #0a0806;
+            cursor: pointer;
+            box-shadow: 0 0 30px rgba(249, 115, 22, 0.1)
+        }
+
+        .btn {
+            margin-top: 12px;
+            padding: 10px 28px;
+            background: linear-gradient(135deg, #f97316, #ef4444);
+            border: none;
+            border-radius: 999px;
+            color: #fff;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: 'Outfit', sans-serif;
+            transition: transform .15s
+        }
+
+        .btn:hover {
+            transform: scale(1.05)
+        }
+
+        #msg {
+            margin-top: 10px;
+            font-size: 13px;
+            color: #64748b;
+            min-height: 22px;
+            text-align: center
+        }
+
+        .back {
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            text-decoration: none;
+            color: #64748b;
+            font-size: 13px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 6px 14px;
+            border-radius: 999px
+        }
+
+        .back:hover {
+            color: #fff
+        }
+    </style>
+</head>
+
+<body>
+    <a href="../../index.html" class="back">← Back to Menu</a>
+    <h1>💣 Cannon Ball</h1>
+    <div class="info"><span>Score: <b id="score">0</b></span><span>Shots: <b id="shots">10</b></span><span>Best: <b
+                id="best">0</b></span></div>
+    <canvas id="c" width="500" height="380"></canvas>
+    <div id="msg">Click and drag to aim & set power, release to fire!</div>
+    <button class="btn" id="newBtn">🔄 New Game</button>
+    <script>
+        const c = document.getElementById('c'), ctx = c.getContext('2d'), W = 500, H = 380;
+        const G = 0.15, GROUND = H - 30; let cannon = { x: 40, y: GROUND - 20 }, ball = null, targets = [], particles = [], score = 0, shots = 10, best = 0, dragStart = null, trail = [];
+
+        function spawnTargets() { targets = []; for (let i = 0; i < 5; i++) { targets.push({ x: 200 + Math.random() * 250, y: GROUND - 15 - Math.random() * 80, w: 30, h: 30, pts: 10 + i * 10, color: ['#ef4444', '#f97316', '#eab308', '#22c55e', '#06b6d4'][i] }); } }
+
+        function fire(angle, power) {
+            if (shots <= 0) return; shots--; document.getElementById('shots').textContent = shots;
+            ball = { x: cannon.x + Math.cos(angle) * 30, y: cannon.y + Math.sin(angle) * 30, vx: Math.cos(angle) * power, vy: Math.sin(angle) * power }; trail = [];
+        }
+
+        function update() {
+            if (!ball) return;
+            ball.vy += G; ball.x += ball.vx; ball.y += ball.vy; trail.push({ x: ball.x, y: ball.y }); if (trail.length > 40) trail.shift();
+            if (ball.y > GROUND || ball.x > W + 20 || ball.x < -20) { ball = null; if (shots <= 0 && targets.length > 0) { if (score > best) { best = score; document.getElementById('best').textContent = best; } document.getElementById('msg').textContent = `Game over! Score: ${score}`; } return; }
+            targets.forEach(t => { if (Math.abs(ball.x - t.x - t.w / 2) < t.w && Math.abs(ball.y - t.y - t.h / 2) < t.h) { t.hit = true; score += t.pts; document.getElementById('score').textContent = score; for (let i = 0; i < 8; i++)particles.push({ x: t.x + t.w / 2, y: t.y + t.h / 2, vx: (Math.random() - .5) * 5, vy: (Math.random() - .5) * 5, life: 20, color: t.color }); } });
+            targets = targets.filter(t => !t.hit);
+            if (targets.length === 0) { document.getElementById('msg').textContent = '🏆 All targets destroyed!'; if (score > best) { best = score; document.getElementById('best').textContent = best; } }
+            particles.forEach(p => { p.x += p.vx; p.y += p.vy; p.vy += 0.1; p.life--; }); particles = particles.filter(p => p.life > 0);
+        }
+
+        function draw() {
+            ctx.fillStyle = '#0a0806'; ctx.fillRect(0, 0, W, H);
+            ctx.fillStyle = 'rgba(139,69,19,0.3)'; ctx.fillRect(0, GROUND, W, H - GROUND);
+            // cannon
+            const angle = dragStart ? Math.atan2(dragStart.sy - cannon.y, dragStart.sx - cannon.x) : -Math.PI / 4; ctx.save(); ctx.translate(cannon.x, cannon.y); ctx.rotate(angle); ctx.fillStyle = '#64748b'; ctx.fillRect(-5, -5, 35, 10); ctx.restore(); ctx.fillStyle = '#94a3b8'; ctx.beginPath(); ctx.arc(cannon.x, cannon.y, 14, 0, Math.PI * 2); ctx.fill();
+            // aim line
+            if (dragStart) { ctx.setLineDash([5, 5]); ctx.strokeStyle = 'rgba(255,255,255,0.2)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(cannon.x, cannon.y); ctx.lineTo(dragStart.sx, dragStart.sy); ctx.stroke(); ctx.setLineDash([]); }
+            // targets
+            targets.forEach(t => { ctx.fillStyle = t.color; ctx.shadowColor = t.color; ctx.shadowBlur = 8; ctx.fillRect(t.x, t.y, t.w, t.h); ctx.shadowBlur = 0; ctx.fillStyle = '#fff'; ctx.font = 'bold 11px Outfit'; ctx.textAlign = 'center'; ctx.fillText(t.pts, t.x + t.w / 2, t.y + t.h / 2 + 4); });
+            // trail
+            trail.forEach((t, i) => { ctx.globalAlpha = i / trail.length * 0.4; ctx.fillStyle = '#f97316'; ctx.beginPath(); ctx.arc(t.x, t.y, 3, 0, Math.PI * 2); ctx.fill(); }); ctx.globalAlpha = 1;
+            // ball
+            if (ball) { ctx.fillStyle = '#333'; ctx.shadowColor = '#f97316'; ctx.shadowBlur = 12; ctx.beginPath(); ctx.arc(ball.x, ball.y, 8, 0, Math.PI * 2); ctx.fill(); ctx.shadowBlur = 0; }
+            particles.forEach(p => { ctx.globalAlpha = p.life / 20; ctx.fillStyle = p.color; ctx.beginPath(); ctx.arc(p.x, p.y, 2, 0, Math.PI * 2); ctx.fill(); ctx.globalAlpha = 1; });
+        }
+
+        c.addEventListener('mousedown', e => { const r = c.getBoundingClientRect(); dragStart = { sx: e.clientX - r.left, sy: e.clientY - r.top }; });
+        c.addEventListener('mousemove', e => { if (dragStart) { const r = c.getBoundingClientRect(); dragStart.sx = e.clientX - r.left; dragStart.sy = e.clientY - r.top; } });
+        c.addEventListener('mouseup', () => { if (dragStart) { const a = Math.atan2(dragStart.sy - cannon.y, dragStart.sx - cannon.x); const d = Math.min(15, Math.hypot(dragStart.sx - cannon.x, dragStart.sy - cannon.y) / 20); fire(a, d); dragStart = null; } });
+        function init() { score = 0; shots = 10; targets = []; particles = []; ball = null; trail = []; document.getElementById('score').textContent = 0; document.getElementById('shots').textContent = 10; document.getElementById('msg').textContent = 'Click & drag to aim!'; spawnTargets(); }
+        document.getElementById('newBtn').addEventListener('click', init);
+        function loop() { update(); draw(); requestAnimationFrame(loop); } init(); loop();
+    </script>
+</body>
+
+</html>

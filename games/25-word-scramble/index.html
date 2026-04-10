@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>Word Scramble | 100 HTML Games</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        body {
+            background: #0a0a0f;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Outfit', sans-serif;
+            color: #fff;
+            padding: 24px
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 900;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #06b6d4, #7c3aed);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text
+        }
+
+        .info {
+            display: flex;
+            gap: 24px;
+            margin-bottom: 14px;
+            font-size: 14px;
+            color: #64748b
+        }
+
+        .info span b {
+            color: #06b6d4;
+            font-size: 1.2em
+        }
+
+        .timer-bar {
+            width: 440px;
+            max-width: 100%;
+            height: 5px;
+            background: rgba(255, 255, 255, 0.07);
+            border-radius: 999px;
+            margin-bottom: 16px;
+            overflow: hidden
+        }
+
+        .timer-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #06b6d4, #7c3aed);
+            border-radius: 999px;
+            transition: width .1s
+        }
+
+        .hint-box {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 12px 20px;
+            margin-bottom: 16px;
+            text-align: center;
+            max-width: 440px
+        }
+
+        .hint-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #64748b;
+            margin-bottom: 4px
+        }
+
+        .hint-text {
+            font-size: 1rem;
+            color: #94a3b8;
+            font-style: italic
+        }
+
+        .scrambled {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            justify-content: center
+        }
+
+        .letter-tile {
+            width: 48px;
+            height: 56px;
+            background: linear-gradient(135deg, #1e1b4b, #2e1065);
+            border: 2px solid rgba(124, 58, 237, 0.4);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: 900;
+            color: #c4b5fd;
+            cursor: grab;
+            transition: all .15s;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3)
+        }
+
+        .letter-tile:hover {
+            transform: translateY(-3px);
+            border-color: rgba(6, 182, 212, 0.6);
+            box-shadow: 0 8px 18px rgba(0, 0, 0, 0.4)
+        }
+
+        .answer-row {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+            justify-content: center
+        }
+
+        .answer-slot {
+            width: 48px;
+            height: 56px;
+            border: 2px dashed rgba(255, 255, 255, 0.15);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: 900;
+            color: #e2e8f0;
+            cursor: pointer;
+            transition: all .15s
+        }
+
+        .answer-slot.filled {
+            background: rgba(6, 182, 212, 0.1);
+            border-color: rgba(6, 182, 212, 0.4);
+            color: #67e8f9
+        }
+
+        .answer-slot.correct {
+            background: rgba(34, 197, 94, 0.2);
+            border-color: #22c55e;
+            color: #86efac;
+            animation: pop .2s ease
+        }
+
+        .answer-slot.wrong {
+            border-color: #ef4444;
+            animation: shake .3s ease
+        }
+
+        @keyframes pop {
+
+            0%,
+            100% {
+                transform: scale(1)
+            }
+
+            50% {
+                transform: scale(1.1)
+            }
+        }
+
+        @keyframes shake {
+
+            0%,
+            100% {
+                transform: translateX(0)
+            }
+
+            25% {
+                transform: translateX(-5px)
+            }
+
+            75% {
+                transform: translateX(5px)
+            }
+        }
+
+        .btns {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center
+        }
+
+        .btn {
+            padding: 10px 22px;
+            background: linear-gradient(135deg, #06b6d4, #7c3aed);
+            border: none;
+            border-radius: 999px;
+            color: #fff;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform .15s;
+            font-family: 'Outfit', sans-serif
+        }
+
+        .btn:hover {
+            transform: scale(1.05)
+        }
+
+        .btn.secondary {
+            background: linear-gradient(135deg, #475569, #64748b)
+        }
+
+        #msg {
+            font-size: 1rem;
+            min-height: 24px;
+            margin-bottom: 12px;
+            text-align: center;
+            color: #64748b;
+            font-weight: 700
+        }
+
+        .back {
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            text-decoration: none;
+            color: #64748b;
+            font-size: 13px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 6px 14px;
+            border-radius: 999px
+        }
+
+        .back:hover {
+            color: #fff
+        }
+    </style>
+</head>
+
+<body>
+    <a href="../../index.html" class="back">← Back to Menu</a>
+    <h1>🔤 Word Scramble</h1>
+    <div class="info">
+        <span>Score: <b id="score">0</b></span>
+        <span>Q: <b id="qnum">0</b>/10</span>
+        <span>Time: <b id="time">30</b>s</span>
+    </div>
+    <div class="timer-bar">
+        <div class="timer-fill" id="timerFill" style="width:100%"></div>
+    </div>
+    <div class="hint-box">
+        <div class="hint-label">Hint</div>
+        <div class="hint-text" id="hint">Press Start to begin!</div>
+    </div>
+    <div class="scrambled" id="scrambled"></div>
+    <div class="answer-row" id="answerRow"></div>
+    <div id="msg"></div>
+    <div class="btns">
+        <button class="btn" id="startBtn">▶ Start</button>
+        <button class="btn secondary" id="skipBtn" disabled>⏭️ Skip</button>
+    </div>
+    <script>
+        const WORDS = [
+            { w: 'javascript', h: 'Programming language of the web' }, { w: 'elephant', h: 'Largest land animal' }, { w: 'pyramid', h: 'Ancient Egyptian structure' },
+            { w: 'symphony', h: 'Musical composition with orchestra' }, { w: 'algorithm', h: 'Step-by-step problem solution' }, { w: 'telescope', h: 'Used to see distant stars' },
+            { w: 'chocolate', h: 'Sweet treat made from cocoa' }, { w: 'hurricane', h: 'Powerful tropical storm' }, { w: 'butterfly', h: 'Insect with colorful wings' },
+            { w: 'adventure', h: 'Exciting journey or experience' }, { w: 'keyboard', h: 'Used for typing on a computer' }, { w: 'universe', h: 'All of space and matter' },
+            { w: 'dinosaur', h: 'Prehistoric reptile now extinct' }, { w: 'mountain', h: 'Very tall geological formation' }, { w: 'hospital', h: 'Where doctors and nurses work' },
+            { w: 'question', h: 'Something that is asked' }, { w: 'skeleton', h: 'Framework of bones in body' }, { w: 'engineer', h: 'Designs and builds structures' },
+            { w: 'sandwich', h: 'Food held between slices of bread' }, { w: 'computer', h: 'Electronic device for computing' },
+        ];
+        let currentWord, scrambled, answer, selected, pos, score = 0, qnum = 0, timerInt, running = false;
+
+        function shuffle(a) { return [...a].sort(() => Math.random() - .5); }
+
+        function nextWord() {
+            if (qnum >= 10) { endGame(); return; }
+            clearInterval(timerInt); qnum++; document.getElementById('qnum').textContent = qnum;
+            const entry = WORDS[Math.floor(Math.random() * WORDS.length)]; currentWord = entry.w;
+            document.getElementById('hint').textContent = entry.h;
+            scrambled = shuffle(currentWord.split('')); answer = Array(currentWord.length).fill(null); selected = null;
+            let timeLeft = 30; document.getElementById('time').textContent = 30; document.getElementById('timerFill').style.width = '100%';
+            timerInt = setInterval(() => { timeLeft--; document.getElementById('time').textContent = timeLeft; document.getElementById('timerFill').style.width = (timeLeft / 30 * 100) + '%'; if (timeLeft <= 0) { clearInterval(timerInt); revealAndNext(); } }, 1000);
+            document.getElementById('msg').textContent = `Unscramble the ${currentWord.length}-letter word!`; render();
+        }
+
+        function revealAndNext() {
+            document.getElementById('msg').textContent = `⏰ Time's up! Word: ${currentWord.toUpperCase()}`; render(); setTimeout(nextWord, 1500);
+        }
+
+        function clickScrambled(i) { selected = i; render(); }
+
+        function clickAnswer(slot) {
+            if (selected === null) return;// place letter
+            if (answer[slot] !== null) {// return to scrambled
+                const old = answer[slot].orig; scrambled[old] = currentWord[old]; answer[slot] = null;
+            }
+            answer[slot] = { ch: currentWord[scrambled.indexOf(null, 0)], orig: selected };
+            // find first null in scrambled
+            let idx = scrambled.findIndex((v, i) => v !== null && i === selected); if (idx === -1) return;
+            answer[slot] = { ch: scrambled[idx], orig: idx }; scrambled[idx] = null; selected = null; render();
+            // check if complete
+            if (answer.every(v => v !== null)) { const guess = answer.map(v => v.ch).join(''); if (guess === currentWord) { clearInterval(timerInt); score += 10; document.getElementById('score').textContent = score; document.getElementById('msg').textContent = '✅ Correct!'; setTimeout(nextWord, 1000); } else { document.getElementById('msg').textContent = '❌ Not quite! Try again.'; answer.forEach((v, i) => { if (v) scrambled[v.orig] = v.ch; }); answer = Array(currentWord.length).fill(null); render(); } }
+        }
+
+        function render() {
+            const se = document.getElementById('scrambled'); se.innerHTML = '';
+            scrambled.forEach((ch, i) => { if (ch === null) return; const t = document.createElement('div'); t.className = 'letter-tile' + (selected === i ? ' selected' : ''); t.textContent = ch.toUpperCase(); if (selected === i) { t.style.borderColor = 'rgba(34,197,94,0.7)'; t.style.background = 'rgba(34,197,94,0.15)'; } t.addEventListener('click', () => clickScrambled(i)); se.appendChild(t); });
+            const ar = document.getElementById('answerRow'); ar.innerHTML = '';
+            answer.forEach((v, i) => { const s = document.createElement('div'); s.className = 'answer-slot' + (v ? ' filled' : ''); s.textContent = v ? v.ch.toUpperCase() : ''; s.addEventListener('click', () => { if (v) { scrambled[v.orig] = v.ch; answer[i] = null; selected = null; render(); } else if (selected !== null) clickAnswer(i); }); ar.appendChild(s); });
+        }
+
+        function endGame() { running = false; clearInterval(timerInt); document.getElementById('hint').textContent = 'Game over!'; document.getElementById('scrambled').innerHTML = ''; document.getElementById('answerRow').innerHTML = ''; document.getElementById('msg').textContent = `🏆 Final Score: ${score}/100`; document.getElementById('startBtn').textContent = '▶ Play Again'; document.getElementById('skipBtn').disabled = true; }
+
+        function start() { score = 0; qnum = 0; running = true; document.getElementById('score').textContent = 0; document.getElementById('startBtn').textContent = '…'; document.getElementById('skipBtn').disabled = false; nextWord(); }
+
+        document.getElementById('startBtn').addEventListener('click', start);
+        document.getElementById('skipBtn').addEventListener('click', () => { clearInterval(timerInt); revealAndNext(); });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>Ludo | 100 HTML Games</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        body {
+            background: #0a0a0f;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Outfit', sans-serif;
+            color: #fff;
+            padding: 16px
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 900;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #ef4444, #22c55e, #3b82f6, #eab308);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text
+        }
+
+        canvas {
+            border-radius: 12px;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
+            cursor: pointer
+        }
+
+        .info {
+            display: flex;
+            gap: 16px;
+            margin: 10px 0;
+            font-size: 14px;
+            color: #64748b;
+            flex-wrap: wrap
+        }
+
+        #msg {
+            font-size: 1rem;
+            font-weight: 700;
+            min-height: 28px;
+            text-align: center;
+            margin: 8px 0;
+            color: #64748b;
+            max-width: 400px
+        }
+
+        .dice-area {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            margin: 8px 0
+        }
+
+        .dice {
+            width: 60px;
+            height: 60px;
+            border-radius: 10px;
+            background: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            font-weight: 900;
+            color: #1e293b;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
+            cursor: pointer;
+            transition: transform .15s;
+            user-select: none
+        }
+
+        .dice:hover {
+            transform: scale(1.1)
+        }
+
+        .dice.rolling {
+            animation: roll .3s ease
+        }
+
+        .btn {
+            padding: 10px 22px;
+            background: linear-gradient(135deg, #ef4444, #eab308);
+            border: none;
+            border-radius: 999px;
+            color: #fff;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: 'Outfit', sans-serif;
+            transition: transform .15s
+        }
+
+        .btn:hover {
+            transform: scale(1.05)
+        }
+
+        @keyframes roll {
+            0% {
+                transform: rotate(0)
+            }
+
+            50% {
+                transform: rotate(180deg)
+            }
+
+            100% {
+                transform: rotate(360deg)
+            }
+        }
+
+        .back {
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            text-decoration: none;
+            color: #64748b;
+            font-size: 13px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 6px 14px;
+            border-radius: 999px
+        }
+
+        .back:hover {
+            color: #fff
+        }
+    </style>
+</head>
+
+<body>
+    <a href="../../index.html" class="back">← Back to Menu</a>
+    <h1>🎲 Ludo</h1>
+    <div class="info"><span style="color:#ef4444">🔴 P1: <b id="s0">Home</b></span><span style="color:#22c55e">🟢 P2: <b
+                id="s1">Home</b></span></div>
+    <div class="dice-area">
+        <div class="dice" id="dice">🎲</div><span id="diceVal" style="font-size:1.2rem;color:#94a3b8">Roll!</span>
+    </div>
+    <canvas id="c" width="360" height="360"></canvas>
+    <div id="msg">Roll the dice! Get 6 to start.</div>
+    <button class="btn" id="newBtn">🔄 New Game</button>
+    <script>
+        const c = document.getElementById('c'), ctx = c.getContext('2d'), S = 360, CS = S / 15;
+        const PCOLORS = ['#ef4444', '#22c55e'];
+        // Simplified Ludo: 2 players, 1 token each, circular track of 28 squares
+        const TRACK = []; for (let i = 0; i < 28; i++) { const angle = (i / 28) * Math.PI * 2 - Math.PI / 2; TRACK.push({ x: S / 2 + Math.cos(angle) * 130, y: S / 2 + Math.sin(angle) * 130 }); }
+        const HOME = [{ x: 90, y: 90 }, { x: 270, y: 270 }]; const START = [0, 14]; const FINISH = 28;
+
+        let tokens, turn, diceVal, rolled, canMove;
+
+        function init() {
+            tokens = [{ pos: -1, done: false }, { pos: -1, done: false }]; turn = 0; diceVal = 0; rolled = false; canMove = false;
+            document.getElementById('msg').textContent = '🔴 Player 1: Roll the dice!'; render();
+        }
+
+        function rollDice() {
+            if (rolled) return; rolled = true;
+            const d = document.getElementById('dice'); d.classList.add('rolling');
+            setTimeout(() => {
+                d.classList.remove('rolling'); diceVal = 1 + Math.floor(Math.random() * 6);
+                document.getElementById('dice').textContent = ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅'][diceVal - 1];
+                document.getElementById('diceVal').textContent = diceVal;
+                const t = tokens[turn];
+                if (t.pos === -1 && diceVal !== 6) { document.getElementById('msg').textContent = `Need 6 to start! Next player.`; setTimeout(() => { turn = 1 - turn; rolled = false; document.getElementById('msg').textContent = `${turn === 0 ? '🔴 P1' : '🟢 P2'}: Roll!`; }, 800); return; }
+                if (t.pos === -1 && diceVal === 6) { t.pos = START[turn]; document.getElementById('msg').textContent = `Token enters the board!`; document.getElementById('s' + turn).textContent = 'Pos ' + t.pos; if (diceVal === 6) { rolled = false; } render(); return; }
+                const newPos = t.pos + diceVal;
+                if (newPos >= FINISH) { t.done = true; t.pos = FINISH; document.getElementById('msg').textContent = `🏆 ${turn === 0 ? 'P1' : 'P2'} wins!`; document.getElementById('s' + turn).textContent = '🏆 DONE'; render(); return; }
+                t.pos = newPos % 28; document.getElementById('s' + turn).textContent = 'Pos ' + t.pos;
+                // Capture
+                const other = tokens[1 - turn]; if (other.pos === t.pos && other.pos >= 0) { other.pos = -1; document.getElementById('msg').textContent = '💥 Captured opponent!'; document.getElementById('s' + (1 - turn)).textContent = 'Home'; }
+                if (diceVal === 6) { rolled = false; document.getElementById('msg').textContent += ' Roll again (got 6)!'; }
+                else { setTimeout(() => { turn = 1 - turn; rolled = false; document.getElementById('msg').textContent = `${turn === 0 ? '🔴 P1' : '🟢 P2'}: Roll!`; }, 600); }
+                render();
+            }, 400);
+        }
+
+        function render() {
+            ctx.fillStyle = '#0c0c18'; ctx.fillRect(0, 0, S, S);
+            // Draw track
+            TRACK.forEach((p, i) => {
+                ctx.strokeStyle = 'rgba(255,255,255,0.1)'; ctx.lineWidth = 1; ctx.fillStyle = 'rgba(255,255,255,0.03)'; ctx.beginPath(); ctx.arc(p.x, p.y, 14, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+                // start markers
+                if (i === START[0]) { ctx.fillStyle = 'rgba(239,68,68,0.2)'; ctx.beginPath(); ctx.arc(p.x, p.y, 14, 0, Math.PI * 2); ctx.fill(); }
+                if (i === START[1]) { ctx.fillStyle = 'rgba(34,197,94,0.2)'; ctx.beginPath(); ctx.arc(p.x, p.y, 14, 0, Math.PI * 2); ctx.fill(); }
+            });
+            // homes
+            HOME.forEach((h, i) => { ctx.fillStyle = PCOLORS[i] + '33'; ctx.beginPath(); ctx.arc(h.x, h.y, 20, 0, Math.PI * 2); ctx.fill(); ctx.font = '12px Outfit'; ctx.fillStyle = PCOLORS[i]; ctx.textAlign = 'center'; ctx.fillText('HOME', h.x, h.y + 4); });
+            // center
+            ctx.fillStyle = 'rgba(255,255,255,0.03)'; ctx.beginPath(); ctx.arc(S / 2, S / 2, 30, 0, Math.PI * 2); ctx.fill(); ctx.fillStyle = '#334155'; ctx.font = 'bold 12px Outfit'; ctx.textAlign = 'center'; ctx.fillText('FINISH', S / 2, S / 2 + 4);
+            // tokens
+            tokens.forEach((t, i) => {
+                if (t.done) { ctx.fillStyle = PCOLORS[i]; ctx.shadowColor = PCOLORS[i]; ctx.shadowBlur = 14; ctx.beginPath(); ctx.arc(S / 2 + (i === 0 ? -15 : 15), S / 2, 10, 0, Math.PI * 2); ctx.fill(); ctx.shadowBlur = 0; return; }
+                const pos = t.pos === -1 ? HOME[i] : TRACK[t.pos]; ctx.fillStyle = PCOLORS[i]; ctx.shadowColor = PCOLORS[i]; ctx.shadowBlur = 12; ctx.beginPath(); ctx.arc(pos.x, pos.y, 10, 0, Math.PI * 2); ctx.fill(); ctx.shadowBlur = 0; ctx.fillStyle = '#fff'; ctx.font = 'bold 11px Outfit'; ctx.textAlign = 'center'; ctx.fillText(i + 1, pos.x, pos.y + 4);
+            });
+        }
+
+        document.getElementById('dice').addEventListener('click', rollDice);
+        document.getElementById('newBtn').addEventListener('click', init); init();
+    </script>
+</body>
+
+</html>

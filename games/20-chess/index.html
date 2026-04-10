@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>Chess | 100 HTML Games</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        body {
+            background: #0a0a0f;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Outfit', sans-serif;
+            color: #fff;
+            padding: 16px
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 900;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #f59e0b, #eab308);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text
+        }
+
+        #board {
+            display: grid;
+            grid-template-columns: repeat(8, 64px);
+            border: 2px solid rgba(255, 255, 255, 0.15);
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 16px;
+            box-shadow: 0 0 40px rgba(0, 0, 0, 0.5)
+        }
+
+        .sq {
+            width: 64px;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 2.2rem;
+            position: relative;
+            transition: background .1s;
+            line-height: 1;
+            user-select: none
+        }
+
+        .sq.light {
+            background: #1e3a5f
+        }
+
+        .sq.dark {
+            background: #0f172a
+        }
+
+        .sq.selected {
+            background: rgba(245, 158, 11, 0.5) !important
+        }
+
+        .sq.valid-move {
+            background: rgba(34, 197, 94, 0.25) !important
+        }
+
+        .sq.valid-move::after {
+            content: '';
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: rgba(34, 197, 94, 0.6);
+            position: absolute;
+            pointer-events: none
+        }
+
+        .sq.can-capture {
+            background: rgba(239, 68, 68, 0.25) !important
+        }
+
+        .info {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 12px;
+            font-size: 1rem;
+            font-weight: 600
+        }
+
+        .btn {
+            padding: 10px 22px;
+            background: linear-gradient(135deg, #f59e0b, #eab308);
+            border: none;
+            border-radius: 999px;
+            color: #000;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform .15s;
+            font-family: 'Outfit', sans-serif
+        }
+
+        .btn:hover {
+            transform: scale(1.05)
+        }
+
+        #msg {
+            font-size: 1rem;
+            min-height: 24px;
+            margin-bottom: 12px;
+            text-align: center;
+            color: #94a3b8;
+            font-weight: 600
+        }
+
+        .back {
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            text-decoration: none;
+            color: #64748b;
+            font-size: 13px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 6px 14px;
+            border-radius: 999px
+        }
+
+        .back:hover {
+            color: #fff
+        }
+    </style>
+</head>
+
+<body>
+    <a href="../../index.html" class="back">← Back to Menu</a>
+    <h1>♟️ Chess</h1>
+    <div class="info">
+        <span id="turnDisp">⬜ White's Turn</span>
+    </div>
+    <div id="board"></div>
+    <div id="msg">Click a piece to see valid moves</div>
+    <button class="btn" id="newBtn">▶ New Game</button>
+    <script>
+        // Simplified chess - pieces move correctly but no check/checkmate detection (educational)
+        const WP = '♙', WR = '♖', WN = '♘', WB = '♗', WQ = '♕', WK = '♔';
+        const BP = '♟', BR = '♜', BN = '♞', BB = '♝', BQ = '♛', BK = '♚';
+        const WHITE_PIECES = [WP, WR, WN, WB, WQ, WK]; const BLACK_PIECES = [BP, BR, BN, BB, BQ, BK];
+
+        function isWhite(p) { return WHITE_PIECES.includes(p); } function isBlack(p) { return BLACK_PIECES.includes(p); }
+        function isEmpty(p) { return p === ''; } function isEnemy(a, b) { return (isWhite(a) && isBlack(b)) || (isBlack(a) && isWhite(b)); }
+
+        let board, turn, selected, validMoves;
+
+        function initBoard() {
+            board = ['♜', '♞', '♝', '♛', '♚', '♝', '♞', '♜', '♟', '♟', '♟', '♟', '♟', '♟', '♟', '♟', ...Array(32).fill(''), '♙', '♙', '♙', '♙', '♙', '♙', '♙', '♙', '♖', '♘', '♗', '♕', '♔', '♗', '♘', '♖'];
+            turn = 'white'; selected = null; validMoves = [];
+            document.getElementById('msg').textContent = 'Click a piece to see valid moves';
+            document.getElementById('turnDisp').textContent = '⬜ White\'s Turn'; render();
+        }
+
+        function getMoves(idx) {
+            const r = Math.floor(idx / 8), c = idx % 8, p = board[idx]; const moves = [];
+            if (isEmpty(p)) return [];
+            const own = isWhite(p) ? isWhite : isBlack; const enemy = isWhite(p) ? isBlack : isWhite;
+            const add = (nr, nc) => { if (nr >= 0 && nr < 8 && nc >= 0 && nc < 8) { const ti = nr * 8 + nc; if (isEmpty(board[ti]) || enemy(board[ti])) moves.push(ti); } };
+            const slide = (dr, dc) => { let nr = r + dr, nc = c + dc; while (nr >= 0 && nr < 8 && nc >= 0 && nc < 8) { const ti = nr * 8 + nc; if (!isEmpty(board[ti])) { if (enemy(board[ti])) moves.push(ti); break; } moves.push(ti); nr += dr; nc += dc; } };
+            if (p === WP) { if (r - 1 >= 0 && isEmpty(board[(r - 1) * 8 + c])) { moves.push((r - 1) * 8 + c); if (r === 6 && isEmpty(board[(r - 2) * 8 + c])) moves.push((r - 2) * 8 + c); } if (r - 1 >= 0 && c - 1 >= 0 && isBlack(board[(r - 1) * 8 + (c - 1)])) moves.push((r - 1) * 8 + (c - 1)); if (r - 1 >= 0 && c + 1 < 8 && isBlack(board[(r - 1) * 8 + (c + 1)])) moves.push((r - 1) * 8 + (c + 1)); }
+            if (p === BP) { if (r + 1 < 8 && isEmpty(board[(r + 1) * 8 + c])) { moves.push((r + 1) * 8 + c); if (r === 1 && isEmpty(board[(r + 2) * 8 + c])) moves.push((r + 2) * 8 + c); } if (r + 1 < 8 && c - 1 >= 0 && isWhite(board[(r + 1) * 8 + (c - 1)])) moves.push((r + 1) * 8 + (c - 1)); if (r + 1 < 8 && c + 1 < 8 && isWhite(board[(r + 1) * 8 + (c + 1)])) moves.push((r + 1) * 8 + (c + 1)); }
+            if (p === WR || p === BR) { [[0, 1], [0, -1], [1, 0], [-1, 0]].forEach(([dr, dc]) => slide(dr, dc)); }
+            if (p === WB || p === BB) { [[1, 1], [1, -1], [-1, 1], [-1, -1]].forEach(([dr, dc]) => slide(dr, dc)); }
+            if (p === WQ || p === BQ) { [[0, 1], [0, -1], [1, 0], [-1, 0], [1, 1], [1, -1], [-1, 1], [-1, -1]].forEach(([dr, dc]) => slide(dr, dc)); }
+            if (p === WN || p === BN) { [[-2, -1], [-2, 1], [-1, -2], [-1, 2], [1, -2], [1, 2], [2, -1], [2, 1]].forEach(([dr, dc]) => add(r + dr, c + dc)); }
+            if (p === WK || p === BK) { [[-1, -1], [-1, 0], [-1, 1], [0, -1], [0, 1], [1, -1], [1, 0], [1, 1]].forEach(([dr, dc]) => add(r + dr, c + dc)); }
+            return moves.filter(ti => isEmpty(board[ti]) || enemy(board[ti]));
+        }
+
+        function click(idx) {
+            const p = board[idx];
+            if (selected !== null && validMoves.includes(idx)) {
+                // capture king?
+                if (board[idx] === WK || board[idx] === BK) { document.getElementById('msg').textContent = `🏆 ${turn === 'white' ? 'White' : 'Black'} wins!`; }
+                board[idx] = board[selected]; board[selected] = '';
+                // pawn promotion
+                if (board[idx] === '♙' && Math.floor(idx / 8) === 0) board[idx] = '♕';
+                if (board[idx] === '♟' && Math.floor(idx / 8) === 7) board[idx] = '♛';
+                turn = turn === 'white' ? 'black' : 'white'; selected = null; validMoves = [];
+                document.getElementById('turnDisp').textContent = turn === 'white' ? '⬜ White\'s Turn' : '⬛ Black\'s Turn';
+                if (!document.getElementById('msg').textContent.includes('wins')) document.getElementById('msg').textContent = 'Click a piece to move';
+                render(); return;
+            }
+            if (!isEmpty(p) && ((turn === 'white' && isWhite(p)) || (turn === 'black' && isBlack(p)))) {
+                selected = idx; validMoves = getMoves(idx); render();
+                document.getElementById('msg').textContent = `${validMoves.length} possible move(s)`;
+            } else { selected = null; validMoves = []; render(); }
+        }
+
+        function render() {
+            const el = document.getElementById('board'); el.innerHTML = '';
+            for (let r = 0; r < 8; r++)for (let c = 0; c < 8; c++) {
+                const i = r * 8 + c; const sq = document.createElement('div');
+                sq.className = `sq ${(r + c) % 2 === 0 ? 'light' : 'dark'}`;
+                if (selected === i) sq.classList.add('selected');
+                if (validMoves.includes(i)) { sq.classList.add(board[i] ? 'can-capture' : 'valid-move'); }
+                sq.textContent = board[i]; sq.addEventListener('click', () => click(i)); el.appendChild(sq);
+            }
+        }
+
+        document.getElementById('newBtn').addEventListener('click', initBoard);
+        initBoard();
+    </script>
+</body>
+
+</html>

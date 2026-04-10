@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>Reaction Time | 100 HTML Games</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        body {
+            background: #0a0a0f;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Outfit', sans-serif;
+            color: #fff;
+            padding: 24px
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 900;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #f59e0b, #ef4444);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text
+        }
+
+        #zone {
+            width: 340px;
+            height: 280px;
+            border-radius: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            margin: 20px 0;
+            transition: all .2s;
+            border: 3px solid rgba(255, 255, 255, 0.08);
+            background: rgba(255, 255, 255, 0.03);
+            user-select: none
+        }
+
+        #zone.waiting {
+            background: rgba(239, 68, 68, 0.1);
+            border-color: rgba(239, 68, 68, 0.3)
+        }
+
+        #zone.ready {
+            background: rgba(34, 197, 94, 0.2);
+            border-color: rgba(34, 197, 94, 0.5);
+            animation: pulse .3s ease infinite alternate
+        }
+
+        @keyframes pulse {
+            from {
+                box-shadow: 0 0 20px rgba(34, 197, 94, 0.3)
+            }
+
+            to {
+                box-shadow: 0 0 50px rgba(34, 197, 94, 0.7)
+            }
+        }
+
+        #zone.clicked {
+            background: rgba(59, 130, 246, 0.15);
+            border-color: rgba(59, 130, 246, 0.4)
+        }
+
+        #zoneTxt {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #64748b
+        }
+
+        #timeDisplay {
+            font-size: 4rem;
+            font-weight: 900;
+            color: #f59e0b;
+            min-height: 60px;
+            text-align: center
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 20px;
+            width: 340px
+        }
+
+        .stat-box {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 12px;
+            text-align: center
+        }
+
+        .stat-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #64748b;
+            margin-bottom: 4px
+        }
+
+        .stat-val {
+            font-size: 1.4rem;
+            font-weight: 900;
+            color: #f59e0b
+        }
+
+        .results {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            justify-content: center;
+            max-width: 340px;
+            margin-bottom: 12px
+        }
+
+        .result-pill {
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 700;
+            background: rgba(245, 158, 11, 0.15);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            color: #fcd34d
+        }
+
+        .btn {
+            padding: 10px 22px;
+            background: linear-gradient(135deg, #f59e0b, #ef4444);
+            border: none;
+            border-radius: 999px;
+            color: #fff;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform .15s;
+            font-family: 'Outfit', sans-serif
+        }
+
+        .btn:hover {
+            transform: scale(1.05)
+        }
+
+        .back {
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            text-decoration: none;
+            color: #64748b;
+            font-size: 13px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 6px 14px;
+            border-radius: 999px
+        }
+
+        .back:hover {
+            color: #fff
+        }
+    </style>
+</head>
+
+<body>
+    <a href="../../index.html" class="back">← Back to Menu</a>
+    <h1>⚡ Reaction Time</h1>
+    <div class="stats">
+        <div class="stat-box">
+            <div class="stat-label">Best</div>
+            <div class="stat-val" id="best">—</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-label">Last</div>
+            <div class="stat-val" id="last">—</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-label">Avg</div>
+            <div class="stat-val" id="avg">—</div>
+        </div>
+    </div>
+    <div id="timeDisplay">Ready?</div>
+    <div id="zone">
+        <div id="zoneTxt">Click to Start</div>
+    </div>
+    <div class="results" id="results"></div>
+    <button class="btn" id="resetBtn">Reset Scores</button>
+    <script>
+        let state = 'idle', timer, startTime, results = [], tooEarlyFlag = false;
+        const zone = document.getElementById('zone'), zoneTxt = document.getElementById('zoneTxt'), timeDisp = document.getElementById('timeDisplay');
+
+        function startRound() {
+            state = 'waiting'; zone.className = 'waiting'; zoneTxt.textContent = 'Wait for green...'; timeDisp.textContent = '';
+            const delay = 1500 + Math.random() * 3000;
+            timer = setTimeout(() => {
+                if (state !== 'waiting') return;
+                state = 'ready'; zone.className = 'ready'; zoneTxt.textContent = 'CLICK NOW!'; startTime = performance.now();
+            }, delay);
+        }
+
+        zone.addEventListener('click', () => {
+            if (state === 'idle') { startRound(); return; }
+            if (state === 'waiting') { clearTimeout(timer); state = 'idle'; zone.className = ''; zoneTxt.textContent = 'Too early! Click to retry'; timeDisp.textContent = '❌ Too Early!'; timeDisp.style.color = '#ef4444'; return; }
+            if (state === 'ready') {
+                const rt = Math.round(performance.now() - startTime); state = 'idle'; zone.className = 'clicked';
+                results.push(rt);
+
+                const color = rt < 200 ? '#22c55e' : rt < 400 ? '#f59e0b' : '#ef4444';
+                timeDisp.textContent = rt + ' ms'; timeDisp.style.color = color;
+                zoneTxt.textContent = rt < 200 ? '🔥 Lightning fast!' : rt < 300 ? '⚡ Excellent!' : rt < 400 ? '✅ Good!' : rt < 500 ? '👍 Average' : '🐌 A bit slow...';
+
+                const pill = document.createElement('span'); pill.className = 'result-pill'; pill.textContent = rt + 'ms'; document.getElementById('results').prepend(pill);
+
+                const best = Math.min(...results); const avg = Math.round(results.reduce((a, b) => a + b, 0) / results.length);
+                document.getElementById('best').textContent = best + 'ms'; document.getElementById('last').textContent = rt + 'ms'; document.getElementById('avg').textContent = avg + 'ms';
+                setTimeout(() => { zoneTxt.textContent = 'Click to play again'; }, 1500);
+            }
+        });
+
+        document.getElementById('resetBtn').addEventListener('click', () => { results = [];['best', 'last', 'avg'].forEach(id => document.getElementById(id).textContent = '—'); document.getElementById('results').innerHTML = ''; timeDisp.textContent = 'Ready?'; timeDisp.style.color = '#f59e0b'; state = 'idle'; zone.className = ''; zoneTxt.textContent = 'Click to Start'; });
+    </script>
+</body>
+
+</html>

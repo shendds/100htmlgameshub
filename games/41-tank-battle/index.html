@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>Tank Battle | 100 HTML Games</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        body {
+            background: #0a0a0f;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Outfit', sans-serif;
+            color: #fff;
+            padding: 16px
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 900;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #22c55e, #eab308);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text
+        }
+
+        .info {
+            display: flex;
+            gap: 24px;
+            margin-bottom: 10px;
+            font-size: 14px;
+            color: #64748b
+        }
+
+        .info span b {
+            color: #22c55e;
+            font-size: 1.2em
+        }
+
+        canvas {
+            border: 2px solid rgba(34, 197, 94, 0.3);
+            border-radius: 12px;
+            background: #080a06;
+            box-shadow: 0 0 30px rgba(34, 197, 94, 0.1)
+        }
+
+        .btn {
+            margin-top: 12px;
+            padding: 10px 28px;
+            background: linear-gradient(135deg, #22c55e, #eab308);
+            border: none;
+            border-radius: 999px;
+            color: #fff;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: 'Outfit', sans-serif;
+            transition: transform .15s
+        }
+
+        .btn:hover {
+            transform: scale(1.05)
+        }
+
+        #msg {
+            margin-top: 10px;
+            font-size: 13px;
+            color: #64748b;
+            min-height: 22px;
+            text-align: center
+        }
+
+        .back {
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            text-decoration: none;
+            color: #64748b;
+            font-size: 13px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 6px 14px;
+            border-radius: 999px
+        }
+
+        .back:hover {
+            color: #fff
+        }
+
+        .hint {
+            font-size: 12px;
+            color: #334155;
+            margin-top: 6px
+        }
+    </style>
+</head>
+
+<body>
+    <a href="../../index.html" class="back">← Back to Menu</a>
+    <h1>🛡️ Tank Battle</h1>
+    <div class="info"><span>Score: <b id="score">0</b></span><span>Lives: <b id="lives">3</b></span><span>Wave: <b
+                id="wave">1</b></span></div>
+    <canvas id="c" width="500" height="420"></canvas>
+    <div id="msg">WASD to move, click to shoot!</div>
+    <button class="btn" id="startBtn">▶ Start</button>
+    <div class="hint">WASD or Arrow keys to move | Click to shoot</div>
+    <script>
+        const c = document.getElementById('c'), ctx = c.getContext('2d'), W = 500, H = 420;
+        let player, enemies, bullets, eBullets, particles, score, lives, wave, running, animId, frame, mouseX = W / 2, mouseY = H / 2;
+        const keys = {};
+
+        function init() { player = { x: W / 2, y: H - 40, w: 28, h: 28, angle: 0, cooldown: 0 }; enemies = []; bullets = []; eBullets = []; particles = []; score = 0; lives = 3; wave = 1; frame = 0; running = true; spawnWave();['score', 'lives', 'wave'].forEach(id => document.getElementById(id).textContent = id === 'lives' ? 3 : id === 'wave' ? 1 : 0); document.getElementById('msg').textContent = ''; document.getElementById('startBtn').textContent = '↩ Restart'; }
+
+        function spawnWave() { for (let i = 0; i < 3 + wave * 2; i++) { enemies.push({ x: 30 + Math.random() * (W - 60), y: 20 + Math.random() * 150, w: 24, h: 24, vx: (Math.random() - .5) * 1.5, hp: 1 + Math.floor(wave / 3), cooldown: Math.random() * 120 }); } }
+
+        function update() {
+            frame++; player.cooldown = Math.max(0, player.cooldown - 1);
+            const speed = 3; if (keys['w'] || keys['ArrowUp']) player.y = Math.max(14, player.y - speed); if (keys['s'] || keys['ArrowDown']) player.y = Math.min(H - 14, player.y + speed); if (keys['a'] || keys['ArrowLeft']) player.x = Math.max(14, player.x - speed); if (keys['d'] || keys['ArrowRight']) player.x = Math.min(W - 14, player.x + speed);
+            player.angle = Math.atan2(mouseY - player.y, mouseX - player.x);
+            // Bullets
+            bullets.forEach(b => { b.x += Math.cos(b.angle) * 8; b.y += Math.sin(b.angle) * 8; }); bullets = bullets.filter(b => b.x > 0 && b.x < W && b.y > 0 && b.y < H);
+            // Enemies
+            enemies.forEach(e => { e.x += e.vx; if (e.x < 20 || e.x > W - 20) e.vx *= -1; e.cooldown--; if (e.cooldown <= 0) { e.cooldown = 80 + Math.random() * 60; const a = Math.atan2(player.y - e.y, player.x - e.x); eBullets.push({ x: e.x, y: e.y, angle: a }); } });
+            eBullets.forEach(b => { b.x += Math.cos(b.angle) * 4; b.y += Math.sin(b.angle) * 4; }); eBullets = eBullets.filter(b => b.x > 0 && b.x < W && b.y > 0 && b.y < H);
+            // Hit detection
+            bullets.forEach(b => { enemies.forEach(e => { if (Math.abs(b.x - e.x) < 16 && Math.abs(b.y - e.y) < 16) { e.hp--; b.done = true; if (e.hp <= 0) { e.dead = true; score += 10; document.getElementById('score').textContent = score; for (let i = 0; i < 8; i++)particles.push({ x: e.x, y: e.y, vx: (Math.random() - .5) * 5, vy: (Math.random() - .5) * 5, life: 20, color: '#ef4444' }); } } }); });
+            bullets = bullets.filter(b => !b.done); enemies = enemies.filter(e => !e.dead);
+            eBullets.forEach(b => { if (Math.abs(b.x - player.x) < 16 && Math.abs(b.y - player.y) < 16) { b.done = true; lives--; document.getElementById('lives').textContent = lives; if (lives <= 0) { running = false; document.getElementById('msg').textContent = `💀 Game Over! Score: ${score}`; } } });
+            eBullets = eBullets.filter(b => !b.done);
+            particles.forEach(p => { p.x += p.vx; p.y += p.vy; p.life--; }); particles = particles.filter(p => p.life > 0);
+            if (enemies.length === 0 && running) { wave++; document.getElementById('wave').textContent = wave; spawnWave(); }
+        }
+
+        function draw() {
+            ctx.fillStyle = '#080a06'; ctx.fillRect(0, 0, W, H);
+            // Player tank
+            ctx.save(); ctx.translate(player.x, player.y); ctx.fillStyle = '#22c55e'; ctx.shadowColor = '#22c55e'; ctx.shadowBlur = 10; ctx.fillRect(-14, -14, 28, 28); ctx.rotate(player.angle); ctx.fillRect(0, -3, 22, 6); ctx.restore(); ctx.shadowBlur = 0;
+            // Enemies
+            enemies.forEach(e => { ctx.fillStyle = e.hp > 1 ? '#f97316' : '#ef4444'; ctx.shadowColor = ctx.fillStyle; ctx.shadowBlur = 6; ctx.fillRect(e.x - 12, e.y - 12, 24, 24); }); ctx.shadowBlur = 0;
+            // Bullets
+            bullets.forEach(b => { ctx.fillStyle = '#86efac'; ctx.shadowColor = '#22c55e'; ctx.shadowBlur = 8; ctx.beginPath(); ctx.arc(b.x, b.y, 4, 0, Math.PI * 2); ctx.fill(); });
+            eBullets.forEach(b => { ctx.fillStyle = '#fca5a5'; ctx.shadowColor = '#ef4444'; ctx.beginPath(); ctx.arc(b.x, b.y, 3, 0, Math.PI * 2); ctx.fill(); }); ctx.shadowBlur = 0;
+            particles.forEach(p => { ctx.globalAlpha = p.life / 20; ctx.fillStyle = p.color; ctx.beginPath(); ctx.arc(p.x, p.y, 2, 0, Math.PI * 2); ctx.fill(); ctx.globalAlpha = 1; });
+        }
+
+        function loop() { if (!running) return; update(); draw(); animId = requestAnimationFrame(loop); }
+        c.addEventListener('mousemove', e => { const r = c.getBoundingClientRect(); mouseX = e.clientX - r.left; mouseY = e.clientY - r.top; });
+        c.addEventListener('click', () => { if (!running) return; if (player.cooldown > 0) return; player.cooldown = 12; bullets.push({ x: player.x, y: player.y, angle: player.angle }); });
+        document.addEventListener('keydown', e => { keys[e.key] = true;['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' '].includes(e.key) && e.preventDefault(); });
+        document.addEventListener('keyup', e => keys[e.key] = false);
+        document.getElementById('startBtn').addEventListener('click', () => { cancelAnimationFrame(animId); init(); loop(); });
+        ctx.fillStyle = '#080a06'; ctx.fillRect(0, 0, W, H);
+    </script>
+</body>
+
+</html>

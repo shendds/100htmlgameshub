@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>Archery | 100 HTML Games</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        body {
+            background: #0a0a0f;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Outfit', sans-serif;
+            color: #fff;
+            padding: 16px
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 900;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #ef4444, #eab308);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text
+        }
+
+        .info {
+            display: flex;
+            gap: 24px;
+            margin-bottom: 10px;
+            font-size: 14px;
+            color: #64748b
+        }
+
+        .info span b {
+            color: #ef4444;
+            font-size: 1.2em
+        }
+
+        canvas {
+            border: 2px solid rgba(239, 68, 68, 0.3);
+            border-radius: 12px;
+            background: #060a14;
+            cursor: crosshair;
+            box-shadow: 0 0 30px rgba(239, 68, 68, 0.1)
+        }
+
+        .btn {
+            margin-top: 12px;
+            padding: 10px 28px;
+            background: linear-gradient(135deg, #ef4444, #eab308);
+            border: none;
+            border-radius: 999px;
+            color: #fff;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: 'Outfit', sans-serif;
+            transition: transform .15s
+        }
+
+        .btn:hover {
+            transform: scale(1.05)
+        }
+
+        #msg {
+            margin-top: 10px;
+            font-size: 1rem;
+            color: #64748b;
+            min-height: 24px;
+            text-align: center
+        }
+
+        .back {
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            text-decoration: none;
+            color: #64748b;
+            font-size: 13px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 6px 14px;
+            border-radius: 999px
+        }
+
+        .back:hover {
+            color: #fff
+        }
+    </style>
+</head>
+
+<body>
+    <a href="../../index.html" class="back">← Back to Menu</a>
+    <h1>🏹 Archery</h1>
+    <div class="info"><span>Score: <b id="score">0</b></span><span>Arrows: <b id="arrows">10</b></span><span>Best: <b
+                id="best">0</b></span></div>
+    <canvas id="c" width="500" height="400"></canvas>
+    <div id="msg">Click to shoot at the target!</div>
+    <button class="btn" id="startBtn">▶ Start</button>
+    <script>
+        const c = document.getElementById('c'), ctx = c.getContext('2d'), W = 500, H = 400;
+        let score = 0, arrows = 10, best = 0, running = false, wind = 0, windTimer, swayX = 0, swayY = 0;
+        const CX = 380, CY = 200, RINGS = [{ r: 70, c: '#ef4444', pts: 10 }, { r: 56, c: '#fff', pts: 20 }, { r: 42, c: '#3b82f6', pts: 30 }, { r: 28, c: '#fff', pts: 40 }, { r: 14, c: '#eab308', pts: 50 }];
+        let hits = [];
+
+        function drawTarget() {
+            ctx.fillStyle = '#060a14'; ctx.fillRect(0, 0, W, H);
+            // wind indicator
+            ctx.fillStyle = 'rgba(255,255,255,0.06)'; ctx.font = '13px Outfit'; ctx.textAlign = 'center'; ctx.fillText(`Wind: ${wind > 0 ? '→' : '←'} ${Math.abs(wind).toFixed(1)}`, W / 2, 25);
+            const tx = CX + swayX, ty = CY + swayY;
+            RINGS.forEach(ring => { ctx.fillStyle = ring.c; ctx.beginPath(); ctx.arc(tx, ty, ring.r, 0, Math.PI * 2); ctx.fill(); ctx.strokeStyle = 'rgba(0,0,0,0.2)'; ctx.lineWidth = 1; ctx.stroke(); });
+            ctx.fillStyle = '#000'; ctx.font = 'bold 10px Outfit'; ctx.textAlign = 'center'; RINGS.forEach(ring => { ctx.fillText(ring.pts, tx + ring.r - 8, ty - 4); });
+            // previous hits
+            hits.forEach(h => { ctx.fillStyle = h.pts >= 40 ? '#eab308' : 'rgba(255,255,255,0.8)'; ctx.beginPath(); ctx.arc(h.x, h.y, 3, 0, Math.PI * 2); ctx.fill(); ctx.strokeStyle = 'rgba(0,0,0,0.5)'; ctx.lineWidth = 1; ctx.stroke(); });
+            // crosshair
+            ctx.strokeStyle = 'rgba(255,255,255,0.15)'; ctx.lineWidth = 1; ctx.setLineDash([4, 4]); ctx.beginPath(); ctx.moveTo(0, H / 2); ctx.lineTo(W, H / 2); ctx.moveTo(W / 2, 0); ctx.lineTo(W / 2, H); ctx.stroke(); ctx.setLineDash([]);
+        }
+
+        function shoot(mx, my) {
+            if (!running || arrows <= 0) return; arrows--; document.getElementById('arrows').textContent = arrows;
+            const tx = CX + swayX, ty = CY + swayY;
+            // add wind offset
+            const fx = mx + wind * 8, fy = my; const d = Math.hypot(fx - tx, fy - ty);
+            let pts = 0; for (const ring of RINGS) if (d <= ring.r) { pts = ring.pts; }
+            hits.push({ x: fx, y: fy, pts }); score += pts; document.getElementById('score').textContent = score;
+            if (pts >= 40) document.getElementById('msg').textContent = `🎯 Bullseye! +${pts}`; else if (pts > 0) document.getElementById('msg').textContent = `✅ +${pts} points!`; else document.getElementById('msg').textContent = '💨 Missed!';
+            if (arrows <= 0) { running = false; if (score > best) { best = score; document.getElementById('best').textContent = best; } document.getElementById('msg').textContent = `🏆 Round over! Score: ${score}`; }
+            drawTarget();
+        }
+
+        function start() {
+            score = 0; arrows = 10; hits = []; running = true; document.getElementById('score').textContent = 0; document.getElementById('arrows').textContent = 10; document.getElementById('msg').textContent = 'Click to shoot!'; document.getElementById('startBtn').textContent = '↩ Restart';
+            clearInterval(windTimer); wind = (Math.random() - .5) * 4; windTimer = setInterval(() => { wind += (Math.random() - .5) * 0.5; wind = Math.max(-4, Math.min(4, wind)); swayX = Math.sin(Date.now() / 2000) * 8; swayY = Math.cos(Date.now() / 3000) * 5; drawTarget(); }, 50); drawTarget();
+        }
+
+        c.addEventListener('click', e => { const rect = c.getBoundingClientRect(); shoot(e.clientX - rect.left, e.clientY - rect.top); });
+        document.getElementById('startBtn').addEventListener('click', start); drawTarget();
+    </script>
+</body>
+
+</html>

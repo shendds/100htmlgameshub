@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>Coin Drop | 100 HTML Games</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        body {
+            background: #0a0a0f;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Outfit', sans-serif;
+            color: #fff;
+            padding: 16px
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 900;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #f59e0b, #eab308);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text
+        }
+
+        .info {
+            display: flex;
+            gap: 24px;
+            margin-bottom: 10px;
+            font-size: 14px;
+            color: #64748b
+        }
+
+        .info span b {
+            color: #f59e0b;
+            font-size: 1.2em
+        }
+
+        canvas {
+            border: 2px solid rgba(245, 158, 11, 0.3);
+            border-radius: 12px;
+            background: #0a0806;
+            cursor: pointer;
+            box-shadow: 0 0 30px rgba(245, 158, 11, 0.1)
+        }
+
+        .btn {
+            margin-top: 12px;
+            padding: 10px 28px;
+            background: linear-gradient(135deg, #f59e0b, #eab308);
+            border: none;
+            border-radius: 999px;
+            color: #000;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: 'Outfit', sans-serif;
+            transition: transform .15s
+        }
+
+        .btn:hover {
+            transform: scale(1.05)
+        }
+
+        #msg {
+            margin-top: 10px;
+            font-size: 1rem;
+            color: #64748b;
+            min-height: 24px;
+            text-align: center
+        }
+
+        .back {
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            text-decoration: none;
+            color: #64748b;
+            font-size: 13px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 6px 14px;
+            border-radius: 999px
+        }
+
+        .back:hover {
+            color: #fff
+        }
+    </style>
+</head>
+
+<body>
+    <a href="../../index.html" class="back">← Back to Menu</a>
+    <h1>🪙 Coin Drop</h1>
+    <div class="info"><span>Score: <b id="score">0</b></span><span>Coins: <b id="coins">20</b></span></div>
+    <canvas id="c" width="400" height="500"></canvas>
+    <div id="msg">Click to drop coins into slots!</div>
+    <button class="btn" id="newBtn">🔄 New Game</button>
+    <script>
+        const c = document.getElementById('c'), ctx = c.getContext('2d'), W = 400, H = 500;
+        const PEGS = [], SLOTS = 8, COIN_R = 10, SLOT_W = W / SLOTS;
+        const MULTIPLIERS = [0.5, 1, 2, 5, 10, 5, 2, 1, 0.5];// 9 slots actually
+        const SLOT_COUNT = 9; const SW = W / SLOT_COUNT;
+
+        // Generate peg layout (Plinko style)
+        for (let row = 0; row < 10; row++) { const cols = row % 2 === 0 ? 8 : 7; const offset = row % 2 === 0 ? 25 : 25 + SW / 2; for (let col = 0; col < cols; col++) { PEGS.push({ x: offset + col * SW, y: 100 + row * 35 }); } }
+
+        let coins = [], score = 0, coinsLeft = 20;
+
+        function dropCoin(x) {
+            if (coinsLeft <= 0) return; coinsLeft--; document.getElementById('coins').textContent = coinsLeft;
+            coins.push({ x: Math.max(20, Math.min(W - 20, x)), y: 30, vx: 0, vy: 0, r: COIN_R, settled: false, trail: [] });
+        }
+
+        function update() {
+            coins.forEach(coin => {
+                if (coin.settled) return;
+                coin.vy += 0.3; coin.x += coin.vx; coin.y += coin.vy; coin.vx *= 0.99;
+                coin.trail.push({ x: coin.x, y: coin.y }); if (coin.trail.length > 8) coin.trail.shift();
+                // Peg collision
+                PEGS.forEach(p => { const dx = coin.x - p.x, dy = coin.y - p.y, d = Math.hypot(dx, dy); if (d < COIN_R + 6) { const nx = dx / d, ny = dy / d; coin.x = p.x + nx * (COIN_R + 7); coin.y = p.y + ny * (COIN_R + 7); coin.vx = nx * 2 + (Math.random() - .5) * 1.5; coin.vy = Math.abs(ny) * -1.5; } });
+                // Walls
+                if (coin.x < COIN_R) { coin.x = COIN_R; coin.vx = Math.abs(coin.vx) * 0.5; } if (coin.x > W - COIN_R) { coin.x = W - COIN_R; coin.vx = -Math.abs(coin.vx) * 0.5; }
+                // Bottom (slot)
+                if (coin.y > H - 40) { coin.settled = true; const slot = Math.max(0, Math.min(SLOT_COUNT - 1, Math.floor(coin.x / SW))); const mult = MULTIPLIERS[slot]; score += Math.round(mult * 10); document.getElementById('score').textContent = score; }
+            });
+        }
+
+        function draw() {
+            ctx.fillStyle = '#0a0806'; ctx.fillRect(0, 0, W, H);
+            // Slots at bottom
+            for (let i = 0; i < SLOT_COUNT; i++) { const x = i * SW; ctx.fillStyle = MULTIPLIERS[i] >= 5 ? 'rgba(245,158,11,0.15)' : MULTIPLIERS[i] >= 2 ? 'rgba(234,179,8,0.1)' : 'rgba(255,255,255,0.03)'; ctx.fillRect(x, H - 40, SW, 40); ctx.strokeStyle = 'rgba(255,255,255,0.08)'; ctx.lineWidth = 1; ctx.strokeRect(x, H - 40, SW, 40); ctx.fillStyle = MULTIPLIERS[i] >= 5 ? '#f59e0b' : '#64748b'; ctx.font = 'bold 14px Outfit'; ctx.textAlign = 'center'; ctx.fillText(`×${MULTIPLIERS[i]}`, x + SW / 2, H - 15); }
+            // Pegs
+            PEGS.forEach(p => { ctx.fillStyle = 'rgba(255,255,255,0.3)'; ctx.beginPath(); ctx.arc(p.x, p.y, 6, 0, Math.PI * 2); ctx.fill(); });
+            // Coins
+            coins.forEach(coin => {
+                coin.trail.forEach((t, i) => { ctx.globalAlpha = i / coin.trail.length * 0.3; ctx.fillStyle = '#f59e0b'; ctx.beginPath(); ctx.arc(t.x, t.y, COIN_R * 0.7, 0, Math.PI * 2); ctx.fill(); }); ctx.globalAlpha = 1;
+                ctx.fillStyle = '#f59e0b'; ctx.shadowColor = '#f59e0b'; ctx.shadowBlur = 10; ctx.beginPath(); ctx.arc(coin.x, coin.y, COIN_R, 0, Math.PI * 2); ctx.fill(); ctx.fillStyle = '#fef3c7'; ctx.font = 'bold 10px Outfit'; ctx.textAlign = 'center'; ctx.fillText('$', coin.x, coin.y + 4); ctx.shadowBlur = 0;
+            });
+        }
+
+        c.addEventListener('click', e => { const r = c.getBoundingClientRect(); dropCoin(e.clientX - r.left); });
+        function init() { coins = []; score = 0; coinsLeft = 20; document.getElementById('score').textContent = 0; document.getElementById('coins').textContent = 20; }
+        document.getElementById('newBtn').addEventListener('click', init);
+        function loop() { update(); draw(); requestAnimationFrame(loop); } init(); loop();
+    </script>
+</body>
+
+</html>

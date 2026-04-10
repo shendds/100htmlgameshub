@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>Yahtzee | 100 HTML Games</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        body {
+            background: #0a0a0f;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Outfit', sans-serif;
+            color: #fff;
+            padding: 16px
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 900;
+            margin-bottom: 6px;
+            background: linear-gradient(135deg, #f59e0b, #ef4444);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text
+        }
+
+        .game-area {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: flex-start
+        }
+
+        .dice-area {
+            text-align: center
+        }
+
+        .dice-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 12px;
+            justify-content: center
+        }
+
+        .die {
+            width: 64px;
+            height: 64px;
+            background: linear-gradient(135deg, #fff, #f0f0f0);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            cursor: pointer;
+            border: 3px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+            transition: all .2s;
+            user-select: none
+        }
+
+        .die.held {
+            border-color: #f59e0b;
+            box-shadow: 0 0 16px rgba(245, 158, 11, 0.5);
+            background: linear-gradient(135deg, #fef3c7, #fde68a)
+        }
+
+        .die.rolling {
+            animation: shake .3s ease
+        }
+
+        @keyframes shake {
+
+            0%,
+            100% {
+                transform: rotate(0)
+            }
+
+            25% {
+                transform: rotate(-15deg)
+            }
+
+            75% {
+                transform: rotate(15deg)
+            }
+        }
+
+        .rolls-left {
+            font-size: 13px;
+            color: #64748b;
+            margin-bottom: 8px
+        }
+
+        .btn {
+            padding: 10px 22px;
+            background: linear-gradient(135deg, #f59e0b, #ef4444);
+            border: none;
+            border-radius: 999px;
+            color: #fff;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform .15s;
+            font-family: 'Outfit', sans-serif;
+            margin: 4px
+        }
+
+        .btn:hover:not(:disabled) {
+            transform: scale(1.05)
+        }
+
+        .btn:disabled {
+            opacity: 0.4;
+            cursor: default
+        }
+
+        .scorecard {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            padding: 12px;
+            min-width: 260px
+        }
+
+        .sc-title {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #64748b;
+            margin-bottom: 8px;
+            font-weight: 700
+        }
+
+        .sc-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 5px 4px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            font-size: 13px
+        }
+
+        .sc-row:last-child {
+            border-bottom: none
+        }
+
+        .sc-name {
+            color: #94a3b8
+        }
+
+        .sc-score {
+            font-weight: 700;
+            color: #f59e0b;
+            min-width: 32px;
+            text-align: right
+        }
+
+        .sc-btn {
+            padding: 2px 8px;
+            background: rgba(245, 158, 11, 0.2);
+            border: 1px solid rgba(245, 158, 11, 0.4);
+            border-radius: 6px;
+            color: #fcd34d;
+            font-size: 11px;
+            cursor: pointer;
+            font-family: 'Outfit', sans-serif;
+            transition: all .15s
+        }
+
+        .sc-btn:hover {
+            background: rgba(245, 158, 11, 0.4)
+        }
+
+        .sc-btn:disabled {
+            opacity: 0.2;
+            cursor: default
+        }
+
+        .total-row {
+            font-weight: 900;
+            font-size: 15px;
+            padding: 8px 4px;
+            color: #fff
+        }
+
+        #msg {
+            font-size: 13px;
+            min-height: 22px;
+            text-align: center;
+            margin: 6px 0;
+            color: #64748b
+        }
+
+        .hint {
+            font-size: 11px;
+            color: #334155;
+            text-align: center;
+            margin-top: 4px
+        }
+
+        .back {
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            text-decoration: none;
+            color: #64748b;
+            font-size: 13px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 6px 14px;
+            border-radius: 999px
+        }
+
+        .back:hover {
+            color: #fff
+        }
+    </style>
+</head>
+
+<body>
+    <a href="../../index.html" class="back">← Back to Menu</a>
+    <h1>🎲 Yahtzee</h1>
+    <div class="game-area">
+        <div class="dice-area">
+            <div class="dice-row" id="diceRow"></div>
+            <div class="rolls-left" id="rollsLeft">Rolls remaining: 3</div>
+            <button class="btn" id="rollBtn">🎲 Roll Dice</button>
+            <div id="msg">Roll the dice to start!</div>
+            <div class="hint">Click dice to hold/release | Roll up to 3 times</div>
+        </div>
+        <div class="scorecard">
+            <div class="sc-title">📋 Scorecard</div>
+            <div id="scorecard"></div>
+        </div>
+    </div>
+    <script>
+        const FACES = ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅'];
+        const CATEGORIES = [
+            { id: 'ones', name: 'Ones', calc: d => d.filter(v => v === 1).reduce((a, b) => a + b, 0) },
+            { id: 'twos', name: 'Twos', calc: d => d.filter(v => v === 2).reduce((a, b) => a + b, 0) },
+            { id: 'threes', name: 'Threes', calc: d => d.filter(v => v === 3).reduce((a, b) => a + b, 0) },
+            { id: 'fours', name: 'Fours', calc: d => d.filter(v => v === 4).reduce((a, b) => a + b, 0) },
+            { id: 'fives', name: 'Fives', calc: d => d.filter(v => v === 5).reduce((a, b) => a + b, 0) },
+            { id: 'sixes', name: 'Sixes', calc: d => d.filter(v => v === 6).reduce((a, b) => a + b, 0) },
+            { id: '3k', name: 'Three of a Kind', calc: d => CATS[6].check(d) ? d.reduce((a, b) => a + b, 0) : 0, check: d => Object.values(counts(d)).some(c => c >= 3) },
+            { id: '4k', name: 'Four of a Kind', calc: d => CATS[7].check(d) ? d.reduce((a, b) => a + b, 0) : 0, check: d => Object.values(counts(d)).some(c => c >= 4) },
+            { id: 'fh', name: 'Full House', calc: d => { const c = Object.values(counts(d)).sort(); return (c[0] === 2 && c[1] === 3) ? 25 : 0; }, check: d => { const c = Object.values(counts(d)).sort(); return c[0] === 2 && c[1] === 3; } },
+            { id: 'ss', name: 'Small Straight', calc: d => { const u = [...new Set(d)].sort(); for (const s of [[1, 2, 3, 4], [2, 3, 4, 5], [3, 4, 5, 6]]) if (s.every(v => u.includes(v))) return 30; return 0; } },
+            { id: 'ls', name: 'Large Straight', calc: d => { const u = [...new Set(d)].sort().join(''); return (u === '12345' || u === '23456') ? 40 : 0; } },
+            { id: 'yh', name: 'Yahtzee!', calc: d => Object.values(counts(d)).some(c => c === 5) ? 50 : 0 },
+            { id: 'ch', name: 'Chance', calc: d => d.reduce((a, b) => a + b, 0) },
+        ];
+        const CATS = CATEGORIES;
+        function counts(d) { const c = {}; d.forEach(v => c[v] = (c[v] || 0) + 1); return c; }
+
+        let dice, held, rolls, scores, gameOver;
+
+        function init() { dice = [1, 1, 1, 1, 1]; held = [false, false, false, false, false]; rolls = 3; scores = {}; gameOver = false; document.getElementById('rollBtn').disabled = false; document.getElementById('msg').textContent = 'Roll the dice!'; renderDice(); renderScore(); }
+
+        function roll() {
+            if (rolls <= 0) return; rolls--; document.getElementById('rollsLeft').textContent = `Rolls remaining: ${rolls}`;
+            dice.forEach((v, i) => { if (!held[i]) dice[i] = Math.floor(Math.random() * 6) + 1; });
+            document.querySelectorAll('.die').forEach(el => { el.classList.add('rolling'); setTimeout(() => el.classList.remove('rolling'), 300); });
+            setTimeout(() => { renderDice(); renderScore(); if (rolls === 0) document.getElementById('msg').textContent = 'No rolls left — score one category!'; else document.getElementById('msg').textContent = 'Click dice to hold, roll again or score.'; }, 310);
+            if (rolls === 0) document.getElementById('rollBtn').disabled = true;
+        }
+
+        function renderDice() {
+            const el = document.getElementById('diceRow'); el.innerHTML = '';
+            dice.forEach((v, i) => { const d = document.createElement('div'); d.className = 'die' + (held[i] ? ' held' : ''); d.textContent = FACES[v - 1]; d.addEventListener('click', () => { if (rolls < 3 && rolls >= 0) { held[i] = !held[i]; renderDice(); } }); el.appendChild(d); });
+        }
+
+        function renderScore() {
+            const sc = document.getElementById('scorecard'); sc.innerHTML = ''; let total = 0;
+            CATEGORIES.forEach(cat => {
+                const row = document.createElement('div'); row.className = 'sc-row'; const pts = cat.calc(dice); const used = scores[cat.id] !== undefined; if (used) total += scores[cat.id];
+                row.innerHTML = `<span class="sc-name">${cat.name}</span><div style="display:flex;gap:8px;align-items:center"><span class="sc-score">${used ? scores[cat.id] : ''}</span><button class="sc-btn" ${used || rolls === 3 ? 'disabled' : ''} id="btn-${cat.id}">+${pts}</button></div>`;
+                sc.appendChild(row); if (!used) document.getElementById(`btn-${cat.id}`)?.addEventListener('click', () => selectCat(cat.id, pts));
+            });
+            const tr = document.createElement('div'); tr.className = 'sc-row total-row'; tr.innerHTML = `<span>Total</span><span class="sc-score">${total}</span>`; sc.appendChild(tr);
+            if (Object.keys(scores).length === CATEGORIES.length && !gameOver) { gameOver = true; document.getElementById('msg').textContent = `🏆 Game over! Final score: ${total}`; document.getElementById('rollBtn').disabled = true; }
+        }
+
+        function selectCat(id, pts) { scores[id] = pts; held = [false, false, false, false, false]; rolls = 3; document.getElementById('rollsLeft').textContent = 'Rolls remaining: 3'; document.getElementById('rollBtn').disabled = false; document.getElementById('msg').textContent = 'New round! Roll the dice.'; renderDice(); renderScore(); }
+
+        document.getElementById('rollBtn').addEventListener('click', roll);
+        document.addEventListener('keydown', e => { if (e.code === 'Space') { e.preventDefault(); if (!document.getElementById('rollBtn').disabled) roll(); } });
+        init();
+    </script>
+</body>
+
+</html>

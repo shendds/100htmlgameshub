@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>Crazy Eights | 100 HTML Games</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        body {
+            background: #0a0a0f;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Outfit', sans-serif;
+            color: #fff;
+            padding: 20px
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 900;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #06b6d4, #7c3aed);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text
+        }
+
+        .info {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 10px;
+            font-size: 13px;
+            color: #64748b
+        }
+
+        .info b {
+            color: #06b6d4
+        }
+
+        .pile-area {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+            margin: 12px 0
+        }
+
+        .pile-card {
+            width: 70px;
+            height: 98px;
+            border-radius: 10px;
+            background: #fff;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            font-size: 1.3rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4)
+        }
+
+        .pile-card.red {
+            color: #dc2626
+        }
+
+        .pile-card.black {
+            color: #1e293b
+        }
+
+        .draw-pile {
+            width: 70px;
+            height: 98px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #1e3a5f, #0f172a);
+            border: 2px solid rgba(59, 130, 246, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            cursor: pointer;
+            transition: all .15s;
+            color: #93c5fd;
+            font-weight: 900
+        }
+
+        .draw-pile:hover {
+            border-color: #3b82f6
+        }
+
+        .hand {
+            display: flex;
+            gap: 6px;
+            margin: 8px 0;
+            flex-wrap: wrap;
+            justify-content: center;
+            max-width: 520px
+        }
+
+        .card {
+            width: 50px;
+            height: 70px;
+            border-radius: 8px;
+            background: #fff;
+            border: 2px solid rgba(255, 255, 255, 0.15);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: .85rem;
+            font-weight: 900;
+            cursor: pointer;
+            transition: all .15s
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+            border-color: #06b6d4
+        }
+
+        .card.playable {
+            border-color: rgba(6, 182, 212, 0.5);
+            box-shadow: 0 0 8px rgba(6, 182, 212, 0.2)
+        }
+
+        .card.red {
+            color: #dc2626
+        }
+
+        .card.black {
+            color: #1e293b
+        }
+
+        .label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #64748b;
+            margin: 6px 0
+        }
+
+        #msg {
+            font-size: 1rem;
+            font-weight: 700;
+            min-height: 28px;
+            text-align: center;
+            margin: 8px 0;
+            color: #64748b
+        }
+
+        .suit-pick {
+            display: flex;
+            gap: 8px;
+            margin: 8px 0;
+            justify-content: center
+        }
+
+        .suit-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.06);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            font-size: 1.4rem;
+            cursor: pointer;
+            transition: all .15s
+        }
+
+        .suit-btn:hover {
+            border-color: #06b6d4;
+            transform: scale(1.1)
+        }
+
+        .btn {
+            padding: 10px 22px;
+            background: linear-gradient(135deg, #06b6d4, #7c3aed);
+            border: none;
+            border-radius: 999px;
+            color: #fff;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: 'Outfit', sans-serif;
+            transition: transform .15s
+        }
+
+        .btn:hover {
+            transform: scale(1.05)
+        }
+
+        .back {
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            text-decoration: none;
+            color: #64748b;
+            font-size: 13px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 6px 14px;
+            border-radius: 999px
+        }
+
+        .back:hover {
+            color: #fff
+        }
+    </style>
+</head>
+
+<body>
+    <a href="../../index.html" class="back">← Back to Menu</a>
+    <h1>🎴 Crazy Eights</h1>
+    <div class="info"><span>You: <b id="yc">0</b></span><span>CPU: <b id="cc">0</b></span><span>Deck: <b
+                id="dc">0</b></span></div>
+    <div class="pile-area">
+        <div class="draw-pile" id="drawPile">🂠</div>
+        <div class="pile-card" id="topCard">-</div>
+    </div>
+    <div class="suit-pick" id="suitPick" style="display:none"></div>
+    <div id="msg">Play a card matching suit, rank, or any 8!</div>
+    <div class="label">Your Hand</div>
+    <div class="hand" id="yourHand"></div>
+    <button class="btn" id="newBtn">🔄 New Game</button>
+    <script>
+        const SUITS = ['♥', '♦', '♣', '♠'], VALS = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
+        function isRed(s) { return s === '♥' || s === '♦'; }
+        function mk() { const d = []; SUITS.forEach(s => VALS.forEach(v => d.push({ s, v }))); return d.sort(() => Math.random() - .5); }
+
+        let deck, you, cpu, top, currentSuit, turn;
+        function init() { deck = mk(); you = deck.splice(0, 7); cpu = deck.splice(0, 7); top = deck.pop(); currentSuit = top.s; turn = 'you'; document.getElementById('msg').textContent = 'Play a matching card or draw!'; render(); }
+
+        function canPlay(c) { return c.v === '8' || c.s === currentSuit || c.v === top.v; }
+
+        function play(i) {
+            if (turn !== 'you') return; const c = you[i]; if (!canPlay(c)) { document.getElementById('msg').textContent = 'Can\'t play that card!'; return; }
+            top = you.splice(i, 1)[0]; if (top.v === '8') { showSuitPicker(); return; } currentSuit = top.s; afterPlay();
+        }
+
+        function showSuitPicker() {
+            const sp = document.getElementById('suitPick'); sp.style.display = 'flex'; sp.innerHTML = '';
+            SUITS.forEach(s => { const b = document.createElement('button'); b.className = 'suit-btn'; b.textContent = s; b.addEventListener('click', () => { currentSuit = s; sp.style.display = 'none'; afterPlay(); }); sp.appendChild(b); });
+        }
+
+        function afterPlay() {
+            render(); if (you.length === 0) { document.getElementById('msg').textContent = '🏆 You win!'; return; }
+            turn = 'cpu'; document.getElementById('msg').textContent = 'CPU is thinking...';
+            setTimeout(() => {
+                const playable = cpu.findIndex(c => canPlay(c)); if (playable >= 0) { top = cpu.splice(playable, 1)[0]; if (top.v === '8') currentSuit = SUITS[Math.floor(Math.random() * 4)]; else currentSuit = top.s; document.getElementById('msg').textContent = 'CPU played ' + top.v + top.s; } else if (deck.length) { cpu.push(deck.pop()); document.getElementById('msg').textContent = 'CPU draws a card.'; } else document.getElementById('msg').textContent = 'CPU passes.';
+                if (cpu.length === 0) { document.getElementById('msg').textContent = '💀 CPU wins!'; render(); return; } turn = 'you'; render();
+            }, 800);
+        }
+
+        document.getElementById('drawPile').addEventListener('click', () => { if (turn !== 'you' || !deck.length) return; you.push(deck.pop()); document.getElementById('msg').textContent = 'Drew a card.'; render(); });
+
+        function render() {
+            document.getElementById('yc').textContent = you.length; document.getElementById('cc').textContent = cpu.length; document.getElementById('dc').textContent = deck.length;
+            const tc = document.getElementById('topCard'); tc.className = `pile-card ${isRed(top.s) ? 'red' : 'black'}`; tc.innerHTML = `<div style="font-size:1.4rem">${top.v}</div><div>${top.s}</div>`;
+            const yh = document.getElementById('yourHand'); yh.innerHTML = '';
+            you.forEach((c, i) => { const el = document.createElement('div'); el.className = `card ${isRed(c.s) ? 'red' : 'black'}${canPlay(c) ? ' playable' : ''}`; el.innerHTML = `<div>${c.v}</div><div>${c.s}</div>`; el.addEventListener('click', () => play(i)); yh.appendChild(el); });
+        }
+
+        document.getElementById('newBtn').addEventListener('click', init); init();
+    </script>
+</body>
+
+</html>

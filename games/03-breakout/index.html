@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>Breakout | 100 HTML Games</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        body {
+            background: #0a0a0f;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            font-family: 'Segoe UI', sans-serif;
+            color: #fff
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 900;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #f59e0b, #ef4444);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text
+        }
+
+        .info {
+            display: flex;
+            gap: 32px;
+            margin-bottom: 12px;
+            font-size: 14px;
+            color: #64748b
+        }
+
+        .info span b {
+            color: #f59e0b;
+            font-size: 1.2em
+        }
+
+        canvas {
+            border: 2px solid rgba(245, 158, 11, 0.3);
+            border-radius: 12px;
+            background: #0f0d00;
+            box-shadow: 0 0 40px rgba(245, 158, 11, 0.1)
+        }
+
+        #msg {
+            margin-top: 16px;
+            font-size: 1rem;
+            color: #64748b;
+            min-height: 24px;
+            text-align: center
+        }
+
+        .btn {
+            margin-top: 12px;
+            padding: 10px 28px;
+            background: linear-gradient(135deg, #f59e0b, #ef4444);
+            border: none;
+            border-radius: 999px;
+            color: #fff;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform .15s
+        }
+
+        .btn:hover {
+            transform: scale(1.05)
+        }
+
+        .back {
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            text-decoration: none;
+            color: #64748b;
+            font-size: 13px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 6px 14px;
+            border-radius: 999px
+        }
+
+        .back:hover {
+            color: #fff
+        }
+
+        .hint {
+            font-size: 12px;
+            color: #334155;
+            margin-top: 8px
+        }
+    </style>
+</head>
+
+<body>
+    <a href="../../index.html" class="back">← Back to Menu</a>
+    <h1>🧱 Breakout</h1>
+    <div class="info">
+        <span>Score: <b id="scoreDisp">0</b></span>
+        <span>Lives: <b id="livesDisp">3</b></span>
+        <span>Level: <b id="lvlDisp">1</b></span>
+    </div>
+    <canvas id="c" width="480" height="500"></canvas>
+    <div id="msg">Press SPACE or the button to start</div>
+    <button class="btn" id="startBtn">▶ Start</button>
+    <div class="hint">← → or mouse to move | SPACE to launch</div>
+    <script>
+        const c = document.getElementById('c'), ctx = c.getContext('2d');
+        const W = 480, H = 500, ROWS = 6, COLS = 10, BRICK_W = 42, BRICK_H = 18, BRICK_PAD = 4, BRICK_TOP = 50;
+        const COL_ROWS = ['#ef4444', '#f59e0b', '#eab308', '#22c55e', '#06b6d4', '#7c3aed'];
+        let ball, pad, bricks, score, lives, level, running = false, animId, launched = false;
+
+        function initLevel() {
+            launched = false; ball = { x: W / 2, y: H - 70, vx: 3 + level * 0.5, vy: -(3 + level * 0.5), r: 8 };
+            pad = { x: W / 2 - 40, y: H - 30, w: 80, h: 12 }; bricks = [];
+            for (let r = 0; r < ROWS; r++)for (let c2 = 0; c2 < COLS; c2++)bricks.push({ x: c2 * (BRICK_W + BRICK_PAD) + 4, y: r * (BRICK_H + BRICK_PAD) + BRICK_TOP, alive: true, color: COL_ROWS[r], hits: r < 2 ? 2 : 1 });
+        }
+        function init() { score = 0; lives = 3; level = 1; initLevel(); }
+
+        function update() {
+            if (!launched) return;
+            ball.x += ball.vx; ball.y += ball.vy;
+            if (ball.x - ball.r < 0) { ball.x = ball.r; ball.vx *= -1; }
+            if (ball.x + ball.r > W) { ball.x = W - ball.r; ball.vx *= -1; }
+            if (ball.y - ball.r < 0) { ball.y = ball.r; ball.vy *= -1; }
+            if (ball.y + ball.r > pad.y && ball.y + ball.r < pad.y + pad.h && ball.x > pad.x && ball.x < pad.x + pad.w) {
+                ball.vy = -Math.abs(ball.vy); ball.vx = ((ball.x - (pad.x + pad.w / 2)) / (pad.w / 2)) * 6; ball.y = pad.y - ball.r;
+            }
+            let allDead = true;
+            for (let b of bricks) {
+                if (!b.alive) continue; allDead = false;
+                if (ball.x + ball.r > b.x && ball.x - ball.r < b.x + BRICK_W && ball.y + ball.r > b.y && ball.y - ball.r < b.y + BRICK_H) {
+                    b.hits--; if (b.hits <= 0) { b.alive = false; score += 10; } ball.vy *= -1; break;
+                }
+            }
+            if (allDead) { level++; initLevel(); document.getElementById('msg').textContent = `🎉 Level ${level}!`; setTimeout(() => document.getElementById('msg').textContent = '', 1200); }
+            if (ball.y - ball.r > H) {
+                lives--; updateUI(); if (lives <= 0) { end(); return; }
+                launched = false; ball.x = pad.x + pad.w / 2; ball.y = pad.y - ball.r;
+                ball.vx = 3 + level * 0.5; ball.vy = -(3 + level * 0.5);
+                document.getElementById('msg').textContent = '⬆ SPACE to launch';
+            }
+            updateUI();
+        }
+        function draw() {
+            ctx.fillStyle = '#0f0d00'; ctx.fillRect(0, 0, W, H);
+            for (const b of bricks) {
+                if (!b.alive) continue;
+                ctx.globalAlpha = b.hits === 2 ? 1 : 0.6;
+                const g = ctx.createLinearGradient(b.x, b.y, b.x + BRICK_W, b.y + BRICK_H);
+                g.addColorStop(0, b.color); g.addColorStop(1, b.color + '88'); ctx.fillStyle = g;
+                ctx.beginPath(); ctx.roundRect(b.x, b.y, BRICK_W, BRICK_H, 4); ctx.fill(); ctx.globalAlpha = 1;
+            }
+            const pg = ctx.createLinearGradient(pad.x, pad.y, pad.x + pad.w, pad.y);
+            pg.addColorStop(0, '#f59e0b'); pg.addColorStop(1, '#ef4444'); ctx.fillStyle = pg; ctx.shadowColor = '#f59e0b'; ctx.shadowBlur = 12;
+            ctx.beginPath(); ctx.roundRect(pad.x, pad.y, pad.w, pad.h, 6); ctx.fill(); ctx.shadowBlur = 0;
+            ctx.shadowColor = '#fff'; ctx.shadowBlur = 16; ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(ball.x, ball.y, ball.r, 0, Math.PI * 2); ctx.fill(); ctx.shadowBlur = 0;
+        }
+        function end() { cancelAnimationFrame(animId); running = false; document.getElementById('msg').textContent = `💀 Game Over! Score: ${score}`; document.getElementById('startBtn').textContent = '↩ Play Again'; }
+        function updateUI() { document.getElementById('scoreDisp').textContent = score; document.getElementById('livesDisp').textContent = lives; document.getElementById('lvlDisp').textContent = level; }
+        function loop() { if (!running) return; update(); draw(); animId = requestAnimationFrame(loop); }
+        function start() { cancelAnimationFrame(animId); running = false; init(); running = true; document.getElementById('msg').textContent = '⬆ SPACE to launch'; document.getElementById('startBtn').textContent = '↩ Restart'; loop(); }
+        c.addEventListener('mousemove', e => { const r = c.getBoundingClientRect(); pad.x = Math.max(0, Math.min(W - pad.w, e.clientX - r.left - pad.w / 2)); if (!launched) ball.x = pad.x + pad.w / 2; });
+        document.addEventListener('keydown', e => {
+            if (e.key === 'ArrowLeft') pad.x = Math.max(0, pad.x - 15);
+            if (e.key === 'ArrowRight') pad.x = Math.min(W - pad.w, pad.x + 15);
+            if (!launched) ball.x = pad.x + pad.w / 2;
+            if (e.key === ' ') { e.preventDefault(); if (!running) { start(); return; } launched = true; document.getElementById('msg').textContent = ''; }
+        });
+        document.getElementById('startBtn').addEventListener('click', start);
+        draw();
+    </script>
+</body>
+
+</html>

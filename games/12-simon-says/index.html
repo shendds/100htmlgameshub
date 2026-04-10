@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>Simon Says | 100 HTML Games</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        body {
+            background: #0a0a0f;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Outfit', sans-serif;
+            color: #fff
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 900;
+            margin-bottom: 6px;
+            background: linear-gradient(135deg, #ef4444, #eab308, #22c55e, #3b82f6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text
+        }
+
+        .info {
+            display: flex;
+            gap: 32px;
+            margin-bottom: 24px;
+            font-size: 15px;
+            color: #64748b
+        }
+
+        .info span b {
+            color: #f59e0b;
+            font-size: 1.3em
+        }
+
+        .simon {
+            position: relative;
+            width: 280px;
+            height: 280px;
+            border-radius: 50%;
+            overflow: hidden;
+            margin-bottom: 24px
+        }
+
+        .simon-center {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80px;
+            height: 80px;
+            background: #12121a;
+            border-radius: 50%;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            font-weight: 900;
+            color: #fff;
+            border: 3px solid rgba(255, 255, 255, 0.1)
+        }
+
+        .btn-segment {
+            position: absolute;
+            width: 120px;
+            height: 120px;
+            cursor: pointer;
+            transition: filter .1s;
+            opacity: 0.7
+        }
+
+        .btn-segment:hover {
+            opacity: 0.85
+        }
+
+        .btn-segment.lit {
+            opacity: 1;
+            filter: brightness(1.6) drop-shadow(0 0 18px currentColor)
+        }
+
+        .btn-segment.disabled {
+            cursor: default;
+            pointer-events: none
+        }
+
+        #r {
+            top: 10px;
+            left: 10px;
+            background: #ef4444;
+            border-radius: 100% 0 0 0
+        }
+
+        #g {
+            top: 10px;
+            right: 10px;
+            background: #22c55e;
+            border-radius: 0 100% 0 0
+        }
+
+        #y {
+            bottom: 10px;
+            left: 10px;
+            background: #eab308;
+            border-radius: 0 0 0 100%
+        }
+
+        #b {
+            bottom: 10px;
+            right: 10px;
+            background: #3b82f6;
+            border-radius: 0 0 100% 0
+        }
+
+        .game-btn {
+            padding: 10px 28px;
+            background: linear-gradient(135deg, #7c3aed, #06b6d4);
+            border: none;
+            border-radius: 999px;
+            color: #fff;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform .15s;
+            font-family: 'Outfit', sans-serif
+        }
+
+        .game-btn:hover {
+            transform: scale(1.05)
+        }
+
+        #msg {
+            font-size: 1.1rem;
+            color: #64748b;
+            min-height: 28px;
+            margin-bottom: 14px;
+            text-align: center
+        }
+
+        .back {
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            text-decoration: none;
+            color: #64748b;
+            font-size: 13px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 6px 14px;
+            border-radius: 999px
+        }
+
+        .back:hover {
+            color: #fff
+        }
+    </style>
+</head>
+
+<body>
+    <a href="../../index.html" class="back">← Back to Menu</a>
+    <h1>🔴 Simon Says</h1>
+    <div class="info">
+        <span>Round: <b id="round">0</b></span>
+        <span>Best: <b id="high">0</b></span>
+    </div>
+    <div class="simon">
+        <div id="r" class="btn-segment" data-i="0"></div>
+        <div id="g" class="btn-segment" data-i="1"></div>
+        <div id="y" class="btn-segment" data-i="2"></div>
+        <div id="b" class="btn-segment" data-i="3"></div>
+        <div class="simon-center" id="centerTxt">🎮</div>
+    </div>
+    <div id="msg">Are you ready?</div>
+    <button class="game-btn" id="startBtn">▶ Start</button>
+    <script>
+        let seq = [], playerSeq = [], round = 0, highScore = 0, running = false, playerTurn = false;
+        const segs = document.querySelectorAll('.btn-segment');
+        function light(i, dur = 400) { return new Promise(r => { segs[i].classList.add('lit'); setTimeout(() => { segs[i].classList.remove('lit'); setTimeout(r, 50); }, dur); }); }
+        async function playSeq() {
+            playerTurn = false; segs.forEach(s => s.classList.add('disabled')); document.getElementById('msg').textContent = '👀 Watch...';
+            for (const idx of seq) { await new Promise(r => setTimeout(r, 300)); await light(idx, 400); }
+            document.getElementById('msg').textContent = '🖱️ Your turn!'; segs.forEach(s => s.classList.remove('disabled')); playerTurn = true; playerSeq = [];
+        }
+        segs.forEach(s => {
+            s.addEventListener('click', async () => {
+                if (!running || !playerTurn) return;
+                const i = parseInt(s.dataset.i); await light(i, 200); playerSeq.push(i);
+                const pos = playerSeq.length - 1;
+                if (playerSeq[pos] !== seq[pos]) {
+                    document.getElementById('msg').textContent = '❌ Wrong! Game over.';
+                    if (round > highScore) { highScore = round; document.getElementById('high').textContent = highScore; }
+                    document.getElementById('startBtn').textContent = '↩ Play Again'; running = false; segs.forEach(s => s.classList.add('disabled'));
+                    for (let i = 0; i < 3; i++) { await new Promise(r => setTimeout(r, 200)); segs.forEach(s => s.classList.toggle('lit')); } segs.forEach(s => s.classList.remove('lit')); return;
+                }
+                if (playerSeq.length === seq.length) {
+                    playerTurn = false; document.getElementById('msg').textContent = '✅ Correct!'; round++; document.getElementById('round').textContent = round;
+                    await new Promise(r => setTimeout(r, 600)); seq.push(Math.floor(Math.random() * 4)); playSeq();
+                }
+            });
+        });
+        async function start() { seq = []; round = 0; playerTurn = false; running = true; document.getElementById('round').textContent = 0; document.getElementById('startBtn').textContent = '↩ Restart'; segs.forEach(s => s.classList.remove('disabled')); seq.push(Math.floor(Math.random() * 4)); round = 1; document.getElementById('round').textContent = round; await new Promise(r => setTimeout(r, 600)); playSeq(); }
+        document.getElementById('startBtn').addEventListener('click', start);
+    </script>
+</body>
+
+</html>

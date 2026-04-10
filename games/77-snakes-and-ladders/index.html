@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>Snakes and Ladders | 100 HTML Games</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        body {
+            background: #0a0a0f;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Outfit', sans-serif;
+            color: #fff;
+            padding: 16px
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 900;
+            margin-bottom: 6px;
+            background: linear-gradient(135deg, #22c55e, #ef4444);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text
+        }
+
+        .main {
+            display: flex;
+            gap: 16px;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            justify-content: center
+        }
+
+        canvas {
+            border: 2px solid rgba(255, 255, 255, 0.15);
+            border-radius: 12px;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.5)
+        }
+
+        .side {
+            width: 180px
+        }
+
+        .players-panel {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 12px;
+            margin-bottom: 10px
+        }
+
+        .panel-title {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #64748b;
+            margin-bottom: 8px
+        }
+
+        .player-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            font-size: 13px;
+            font-weight: 700
+        }
+
+        .player-row:last-child {
+            border-bottom: none
+        }
+
+        .player-row.active {
+            color: #f59e0b
+        }
+
+        .player-dot {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            font-size: 0.7rem;
+            display: flex;
+            align-items: center;
+            justify-content: center
+        }
+
+        .dice-area {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 12px;
+            margin-bottom: 10px
+        }
+
+        #diceVal {
+            font-size: 3rem;
+            margin-bottom: 4px
+        }
+
+        .btn {
+            width: 100%;
+            padding: 10px;
+            background: linear-gradient(135deg, #22c55e, #06b6d4);
+            border: none;
+            border-radius: 12px;
+            color: #fff;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform .15s;
+            font-family: 'Outfit', sans-serif;
+            margin-bottom: 6px
+        }
+
+        .btn:hover:not(:disabled) {
+            transform: scale(1.03)
+        }
+
+        .btn:disabled {
+            opacity: 0.4;
+            cursor: default
+        }
+
+        .btn.secondary {
+            background: linear-gradient(135deg, #475569, #64748b)
+        }
+
+        #msg {
+            font-size: 12px;
+            color: #94a3b8;
+            text-align: center;
+            margin-top: 6px;
+            padding: 6px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 8px;
+            min-height: 32px
+        }
+
+        .back {
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            text-decoration: none;
+            color: #64748b;
+            font-size: 13px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 6px 14px;
+            border-radius: 999px
+        }
+
+        .back:hover {
+            color: #fff
+        }
+    </style>
+</head>
+
+<body>
+    <a href="../../index.html" class="back">← Back to Menu</a>
+    <h1>🐍 Snakes &amp; Ladders</h1>
+    <div class="main">
+        <canvas id="c" width="400" height="400"></canvas>
+        <div class="side">
+            <div class="players-panel" id="playersPanel"></div>
+            <div class="dice-area">
+                <div class="panel-title">🎲 Dice</div>
+                <div id="diceVal">⚀</div>
+                <button class="btn" id="rollBtn">Roll Dice</button>
+            </div>
+            <button class="btn secondary" id="newBtn">🔄 New Game</button>
+            <div id="msg">Click Roll Dice to play!</div>
+        </div>
+    </div>
+    <script>
+        const SIZE = 10, CELL = 40;
+        const SNAKES = { 97: 78, 95: 56, 88: 24, 76: 37, 54: 34, 62: 19 };
+        const LADDERS = { 4: 14, 9: 31, 20: 38, 28: 84, 40: 59, 51: 67, 63: 81, 71: 91 };
+        const PLAYER_COLORS = ['#ef4444', '#3b82f6', '#22c55e', '#f59e0b'];
+        const DICE_FACES = ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅'];
+        const c = document.getElementById('c'), ctx = c.getContext('2d');
+        let players, current, rolling;
+
+        function sqPos(sq) { const row = Math.floor((sq - 1) / SIZE), raw = (sq - 1) % SIZE; const c = row % 2 === 0 ? raw : SIZE - 1 - raw; const r = SIZE - 1 - row; return { x: c * CELL + CELL / 2, y: r * CELL + CELL / 2 }; }
+
+        function init(num = 2) { players = []; for (let i = 0; i < num; i++)players.push({ pos: 0, name: `P${i + 1}`, color: PLAYER_COLORS[i] }); current = 0; rolling = false; document.getElementById('rollBtn').disabled = false; document.getElementById('msg').textContent = `${players[current].name}'s turn. Roll the dice!`; renderPlayers(); draw(); }
+
+        function roll() {
+            if (rolling) return; rolling = true; document.getElementById('rollBtn').disabled = true;
+            let n = 0; const anim = setInterval(() => { n = Math.floor(Math.random() * 6) + 1; document.getElementById('diceVal').textContent = DICE_FACES[n - 1]; }, 60);
+            setTimeout(() => { clearInterval(anim); n = Math.floor(Math.random() * 6) + 1; document.getElementById('diceVal').textContent = DICE_FACES[n - 1]; move(players[current], n); }, 600);
+        }
+
+        function move(p, n) {
+            const newPos = Math.min(100, p.pos + n); p.pos = newPos; let msg = `${p.name} rolled ${n} → square ${newPos}`;
+            if (newPos === 100) { document.getElementById('msg').textContent = `🏆 ${p.name} wins!`; draw(); renderPlayers(); rolling = false; return; }
+            if (SNAKES[newPos]) { const to = SNAKES[newPos]; msg += ` 🐍 Snake! Down to ${to}`; p.pos = to; }
+            else if (LADDERS[newPos]) { const to = LADDERS[newPos]; msg += ` 🪜 Ladder! Up to ${to}`; p.pos = to; }
+            document.getElementById('msg').textContent = msg; current = (current + 1) % players.length; renderPlayers(); draw();
+            setTimeout(() => { rolling = false; document.getElementById('rollBtn').disabled = false; document.getElementById('msg').textContent += ` | ${players[current].name}'s turn`; }, 400);
+        }
+
+        function renderPlayers() {
+            const el = document.getElementById('playersPanel'); el.innerHTML = '<div class="panel-title">👥 Players</div>';
+            players.forEach((p, i) => { const row = document.createElement('div'); row.className = 'player-row' + (i === current ? ' active' : ''); row.innerHTML = `<div class="player-dot" style="background:${p.color}">${i + 1}</div>${p.name}: Sq ${p.pos || 'Start'}`; el.appendChild(row); });
+        }
+
+        function draw() {
+            ctx.fillStyle = '#0f0f1a'; ctx.fillRect(0, 0, 400, 400);
+            for (let r = SIZE; r >= 1; r--)for (let cc = 1; cc <= SIZE; cc++) {
+                const sq = (SIZE - r) * SIZE + (r % 2 !== 0 ? cc : SIZE + 1 - cc); const pos = sqPos(sq); const light = (r + cc) % 2 === 0;
+                ctx.fillStyle = light ? 'rgba(255,255,255,0.06)' : 'rgba(255,255,255,0.03)'; ctx.fillRect(pos.x - CELL / 2, pos.y - CELL / 2, CELL, CELL);
+                if (SNAKES[sq]) { ctx.fillStyle = 'rgba(239,68,68,0.2)'; ctx.fillRect(pos.x - CELL / 2, pos.y - CELL / 2, CELL, CELL); }
+                if (LADDERS[sq]) { ctx.fillStyle = 'rgba(34,197,94,0.2)'; ctx.fillRect(pos.x - CELL / 2, pos.y - CELL / 2, CELL, CELL); }
+                ctx.fillStyle = 'rgba(255,255,255,0.3)'; ctx.font = '9px Outfit'; ctx.textAlign = 'center'; ctx.fillText(sq, pos.x, pos.y + 3);
+            }
+            // Snakes
+            Object.entries(SNAKES).forEach(([from, to]) => { const f = sqPos(parseInt(from)), t = sqPos(parseInt(to)); ctx.strokeStyle = 'rgba(239,68,68,0.7)'; ctx.lineWidth = 4; ctx.lineCap = 'round'; ctx.setLineDash([6, 3]); ctx.beginPath(); ctx.moveTo(f.x, f.y); ctx.lineTo(t.x, t.y); ctx.stroke(); ctx.setLineDash([]); ctx.font = '14px serif'; ctx.fillText('🐍', f.x, f.y); });
+            // Ladders
+            Object.entries(LADDERS).forEach(([from, to]) => { const f = sqPos(parseInt(from)), t = sqPos(parseInt(to)); ctx.strokeStyle = 'rgba(34,197,94,0.7)'; ctx.lineWidth = 4; ctx.setLineDash([6, 3]); ctx.beginPath(); ctx.moveTo(f.x, f.y); ctx.lineTo(t.x, t.y); ctx.stroke(); ctx.setLineDash([]); ctx.font = '14px serif'; ctx.fillText('🪜', f.x, f.y); });
+            // Players
+            players.forEach((p, i) => { if (!p.pos) return; const pos = sqPos(p.pos); ctx.fillStyle = p.color; ctx.shadowColor = p.color; ctx.shadowBlur = 10; ctx.beginPath(); ctx.arc(pos.x + (i - 0.5) * 10, pos.y + 5, 9, 0, Math.PI * 2); ctx.fill(); ctx.shadowBlur = 0; });
+        }
+
+        document.getElementById('rollBtn').addEventListener('click', roll);
+        document.getElementById('newBtn').addEventListener('click', () => init(2));
+        init(2);
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>Cribbage | 100 HTML Games</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        body {
+            background: #0a0a0f;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Outfit', sans-serif;
+            color: #fff;
+            padding: 20px
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 900;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #f59e0b, #ef4444);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text
+        }
+
+        .info {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 8px;
+            font-size: 13px;
+            color: #64748b;
+            flex-wrap: wrap
+        }
+
+        .info b {
+            color: #f59e0b
+        }
+
+        .hand {
+            display: flex;
+            gap: 6px;
+            margin: 8px 0;
+            justify-content: center
+        }
+
+        .card {
+            width: 56px;
+            height: 78px;
+            border-radius: 8px;
+            background: #fff;
+            border: 2px solid rgba(255, 255, 255, 0.15);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            font-size: .9rem;
+            cursor: pointer;
+            transition: all .15s
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+            border-color: #f59e0b
+        }
+
+        .card.selected {
+            border-color: #22c55e;
+            box-shadow: 0 0 10px rgba(34, 197, 94, 0.4);
+            transform: translateY(-6px)
+        }
+
+        .card.red {
+            color: #dc2626
+        }
+
+        .card.black {
+            color: #1e293b
+        }
+
+        .label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #64748b;
+            margin: 6px 0
+        }
+
+        #msg {
+            font-size: .9rem;
+            font-weight: 700;
+            min-height: 26px;
+            text-align: center;
+            margin: 6px 0;
+            color: #64748b;
+            max-width: 460px
+        }
+
+        .score-board {
+            display: flex;
+            gap: 24px;
+            margin: 10px 0;
+            font-size: 1.1rem
+        }
+
+        .score-box {
+            padding: 8px 20px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08)
+        }
+
+        .score-box b {
+            font-size: 1.4rem
+        }
+
+        .btn {
+            padding: 8px 20px;
+            background: linear-gradient(135deg, #f59e0b, #ef4444);
+            border: none;
+            border-radius: 999px;
+            color: #fff;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: 'Outfit', sans-serif;
+            transition: transform .15s;
+            margin: 4px
+        }
+
+        .btn:hover {
+            transform: scale(1.05)
+        }
+
+        .back {
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            text-decoration: none;
+            color: #64748b;
+            font-size: 13px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 6px 14px;
+            border-radius: 999px
+        }
+
+        .back:hover {
+            color: #fff
+        }
+    </style>
+</head>
+
+<body>
+    <a href="../../index.html" class="back">← Back to Menu</a>
+    <h1>🎰 Cribbage</h1>
+    <div class="score-board">
+        <div class="score-box">You: <b id="ys">0</b>/121</div>
+        <div class="score-box">CPU: <b id="cs">0</b>/121</div>
+    </div>
+    <div id="msg">Select 2 cards to put in the crib!</div>
+    <div class="label">Starter Card</div>
+    <div class="hand" id="starter"></div>
+    <div class="label">Your Hand</div>
+    <div class="hand" id="yourHand"></div>
+    <div><button class="btn" id="cribBtn">Send to Crib</button><button class="btn" id="newBtn">🔄 New</button></div>
+    <script>
+        const SUITS = ['♥', '♦', '♣', '♠'], VALS = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
+        const PTS = { A: 1, '2': 2, '3': 3, '4': 4, '5': 5, '6': 6, '7': 7, '8': 8, '9': 9, '10': 10, J: 10, Q: 10, K: 10 };
+        const RANK = Object.fromEntries(VALS.map((v, i) => ([v, i])));
+        function isRed(s) { return s === '♥' || s === '♦'; }
+        function mk() { const d = []; SUITS.forEach(s => VALS.forEach(v => d.push({ s, v }))); return d.sort(() => Math.random() - .5); }
+
+        let deck, you, cpu, crib, starter, selected, ys = 0, cs = 0, phase;
+
+        function deal() { deck = mk(); you = deck.splice(0, 6); cpu = deck.splice(0, 6); crib = []; starter = null; selected = new Set(); phase = 'crib'; document.getElementById('msg').textContent = 'Select 2 cards to put in the crib!'; document.getElementById('starter').innerHTML = ''; render(); }
+
+        function sendToCrib() {
+            if (selected.size !== 2) return; const idxs = [...selected].sort((a, b) => b - a); idxs.forEach(i => { crib.push(you.splice(i, 1)[0]); });
+            // CPU sends 2 to crib
+            crib.push(cpu.splice(0, 1)[0], cpu.splice(0, 1)[0]); selected.clear();
+            // Flip starter
+            starter = deck.pop(); const se = document.getElementById('starter'); se.innerHTML = ''; const el = document.createElement('div'); el.className = `card ${isRed(starter.s) ? 'red' : 'black'}`; el.innerHTML = `<div>${starter.v}</div><div>${starter.s}</div>`; se.appendChild(el);
+            if (starter.v === 'J') { ys += 2; document.getElementById('ys').textContent = ys; document.getElementById('msg').textContent = 'His Heels! +2 for Jack starter.'; }
+            // Score hands
+            setTimeout(() => {
+                const ypts = scoreHand(you, starter); const cpts = scoreHand(cpu, starter); ys += ypts; cs += cpts; document.getElementById('ys').textContent = ys; document.getElementById('cs').textContent = cs;
+                document.getElementById('msg').textContent = `You scored ${ypts} pts | CPU scored ${cpts} pts`;
+                if (ys >= 121) document.getElementById('msg').textContent = '🏆 You win!';
+                if (cs >= 121) document.getElementById('msg').textContent = '💀 CPU wins!'; phase = 'done'; render(); setTimeout(deal, 2500);
+            }, 1000);
+        }
+
+        function scoreHand(hand, st) {
+            let pts = 0; const all = [...hand, st]; const vals = all.map(c => PTS[c.v]);
+            // 15s
+            for (let mask = 1; mask < 32; mask++) { let sum = 0; for (let i = 0; i < 5; i++)if (mask & (1 << i)) sum += vals[i]; if (sum === 15) pts += 2; }
+            // pairs
+            for (let i = 0; i < 5; i++)for (let j = i + 1; j < 5; j++)if (all[i].v === all[j].v) pts += 2;
+            // runs
+            const ranks = all.map(c => RANK[c.v]).sort((a, b) => a - b); for (let len = 5; len >= 3; len--) { for (let i = 0; i <= 5 - len; i++) { let run = true; for (let j = 1; j < len; j++)if (ranks[i + j] - ranks[i + j - 1] !== 1) { run = false; break; } if (run) { pts += len; break; } } }
+            // flush
+            if (hand.every(c => c.s === hand[0].s)) { pts += st.s === hand[0].s ? 5 : 4; }
+            return pts;
+        }
+
+        function render() {
+            document.getElementById('ys').textContent = ys; document.getElementById('cs').textContent = cs;
+            const yh = document.getElementById('yourHand'); yh.innerHTML = '';
+            you.forEach((c, i) => {
+                const el = document.createElement('div'); el.className = `card ${isRed(c.s) ? 'red' : 'black'}${selected.has(i) ? ' selected' : ''}`; el.innerHTML = `<div>${c.v}</div><div>${c.s}</div>`;
+                if (phase === 'crib') el.addEventListener('click', () => { if (selected.has(i)) selected.delete(i); else if (selected.size < 2) selected.add(i); render(); }); yh.appendChild(el);
+            });
+        }
+
+        document.getElementById('cribBtn').addEventListener('click', sendToCrib); document.getElementById('newBtn').addEventListener('click', () => { ys = 0; cs = 0; deal(); }); deal();
+    </script>
+</body>
+
+</html>

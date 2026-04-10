@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>Hangman | 100 HTML Games</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        body {
+            background: #0a0a0f;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Outfit', sans-serif;
+            color: #fff;
+            padding: 16px
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 900;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #ef4444, #f97316);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text
+        }
+
+        .info {
+            display: flex;
+            gap: 24px;
+            margin-bottom: 12px;
+            font-size: 14px;
+            color: #64748b
+        }
+
+        canvas {
+            border: 2px solid rgba(239, 68, 68, 0.2);
+            border-radius: 12px;
+            background: #0f0a00;
+            margin-bottom: 16px;
+            box-shadow: 0 0 30px rgba(239, 68, 68, 0.05)
+        }
+
+        .word {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+            justify-content: center
+        }
+
+        .letter-slot {
+            width: 36px;
+            height: 44px;
+            border-bottom: 3px solid rgba(255, 255, 255, 0.3);
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: 700;
+            padding-bottom: 4px;
+            color: #e2e8f0
+        }
+
+        .letter-slot.wrong {
+            color: #ef4444
+        }
+
+        #hint {
+            font-size: 0.9rem;
+            color: #64748b;
+            margin-bottom: 6px;
+            font-style: italic;
+            min-height: 20px
+        }
+
+        .keyboard {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 6px;
+            max-width: 400px;
+            margin-bottom: 16px
+        }
+
+        .key {
+            width: 36px;
+            height: 36px;
+            background: rgba(255, 255, 255, 0.07);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 8px;
+            color: #e2e8f0;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all .15s;
+            font-family: 'Outfit', sans-serif
+        }
+
+        .key:hover:not(:disabled) {
+            background: rgba(239, 68, 68, 0.2);
+            border-color: rgba(239, 68, 68, 0.5)
+        }
+
+        .key:disabled {
+            opacity: 0.25;
+            cursor: default
+        }
+
+        .key.correct {
+            background: rgba(34, 197, 94, 0.2);
+            border-color: rgba(34, 197, 94, 0.5);
+            color: #86efac
+        }
+
+        .key.wrong {
+            background: rgba(239, 68, 68, 0.15);
+            border-color: rgba(239, 68, 68, 0.3);
+            color: #f87171
+        }
+
+        .btn {
+            padding: 10px 22px;
+            background: linear-gradient(135deg, #ef4444, #f97316);
+            border: none;
+            border-radius: 999px;
+            color: #fff;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform .15s;
+            font-family: 'Outfit', sans-serif
+        }
+
+        .btn:hover {
+            transform: scale(1.05)
+        }
+
+        #msg {
+            font-size: 1rem;
+            min-height: 24px;
+            margin-bottom: 12px;
+            text-align: center;
+            color: #64748b;
+            font-weight: 700
+        }
+
+        .back {
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            text-decoration: none;
+            color: #64748b;
+            font-size: 13px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 6px 14px;
+            border-radius: 999px
+        }
+
+        .back:hover {
+            color: #fff
+        }
+    </style>
+</head>
+
+<body>
+    <a href="../../index.html" class="back">← Back to Menu</a>
+    <h1>🪢 Hangman</h1>
+    <div class="info"><span>Wrong guesses: <b id="wrongCount">0</b>/6</span><span>Wins: <b
+                id="wins">0</b></span><span>Losses: <b id="losses">0</b></span></div>
+    <canvas id="c" width="200" height="180"></canvas>
+    <div id="hint"></div>
+    <div class="word" id="wordDisplay"></div>
+    <div class="keyboard" id="keyboard"></div>
+    <div id="msg">Guess the word!</div>
+    <button class="btn" id="newBtn">▶ New Word</button>
+    <script>
+        const WORDS = [
+            { w: 'javascript', h: 'Programming language' }, { w: 'elephant', h: 'Largest land animal' }, { w: 'pyramid', h: 'Ancient Egyptian structure' },
+            { w: 'symphony', h: 'Musical composition' }, { w: 'algorithm', h: 'Step-by-step problem solving' }, { w: 'telescope', h: 'Used to see distant stars' },
+            { w: 'chocolate', h: 'Sweet treat from cocoa' }, { w: 'hurricane', h: 'Tropical storm' }, { w: 'butterfly', h: 'Insect with colorful wings' },
+            { w: 'adventure', h: 'Exciting experience' }, { w: 'keyboard', h: 'Used to type' }, { w: 'universe', h: 'All of space and matter' },
+            { w: 'dinosaur', h: 'Prehistoric reptile' }, { w: 'mountain', h: 'Tall geological formation' }, { w: 'hospital', h: 'Where doctors work' },
+            { w: 'question', h: 'Something asked' }, { w: 'skeleton', h: 'Bones of a body' }, { w: 'engineer', h: 'Designs and builds things' },
+            { w: 'sandwich', h: 'Food between bread' }, { w: 'computer', h: 'Electronic device for calculations' },
+        ];
+        let word, hint, guessed, wrong, wins = 0, losses = 0;
+        const c = document.getElementById('c'), ctx = c.getContext('2d');
+
+        function draw(n) {
+            ctx.fillStyle = '#0f0a00'; ctx.fillRect(0, 0, 200, 180);
+            ctx.strokeStyle = 'rgba(239,68,68,0.5)'; ctx.lineWidth = 3; ctx.lineCap = 'round';
+            // gibbet
+            ctx.beginPath(); ctx.moveTo(20, 170); ctx.lineTo(180, 170); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(50, 170); ctx.lineTo(50, 20); ctx.lineTo(120, 20); ctx.lineTo(120, 40); ctx.stroke();
+            if (n >= 1) { ctx.strokeStyle = '#ef4444'; ctx.beginPath(); ctx.arc(120, 55, 15, 0, Math.PI * 2); ctx.stroke(); }
+            if (n >= 2) { ctx.beginPath(); ctx.moveTo(120, 70); ctx.lineTo(120, 120); ctx.stroke(); }
+            if (n >= 3) { ctx.beginPath(); ctx.moveTo(120, 80); ctx.lineTo(95, 105); ctx.stroke(); }
+            if (n >= 4) { ctx.beginPath(); ctx.moveTo(120, 80); ctx.lineTo(145, 105); ctx.stroke(); }
+            if (n >= 5) { ctx.beginPath(); ctx.moveTo(120, 120); ctx.lineTo(95, 150); ctx.stroke(); }
+            if (n >= 6) { ctx.beginPath(); ctx.moveTo(120, 120); ctx.lineTo(145, 150); ctx.stroke(); }
+        }
+
+        function init() {
+            const entry = WORDS[Math.floor(Math.random() * WORDS.length)]; word = entry.w; hint = entry.h; guessed = new Set(); wrong = 0;
+            document.getElementById('hint').textContent = `Hint: ${hint}`; document.getElementById('wrongCount').textContent = 0; document.getElementById('msg').textContent = 'Guess the word!';
+            renderWord(); renderKeyboard(); draw(0);
+        }
+
+        function renderWord() {
+            const el = document.getElementById('wordDisplay'); el.innerHTML = '';
+            word.split('').forEach(l => { const s = document.createElement('div'); s.className = 'letter-slot'; s.textContent = guessed.has(l) ? l : ''; el.appendChild(s); });
+        }
+
+        function renderKeyboard() {
+            const el = document.getElementById('keyboard'); el.innerHTML = '';
+            'abcdefghijklmnopqrstuvwxyz'.split('').forEach(l => {
+                const b = document.createElement('button'); b.className = 'key'; b.textContent = l.toUpperCase();
+                if (guessed.has(l)) { b.disabled = true; b.classList.add(word.includes(l) ? 'correct' : 'wrong'); }
+                b.addEventListener('click', () => guess(l)); el.appendChild(b);
+            });
+        }
+
+        function guess(l) {
+            if (guessed.has(l)) return; guessed.add(l);
+            if (!word.includes(l)) { wrong++; document.getElementById('wrongCount').textContent = wrong; draw(wrong); }
+            renderWord(); renderKeyboard();
+            if (word.split('').every(l => guessed.has(l))) { wins++; document.getElementById('wins').textContent = wins; document.getElementById('msg').textContent = `🏆 You got it! The word was "${word.toUpperCase()}"`; document.querySelectorAll('.key').forEach(k => k.disabled = true); }
+            if (wrong >= 6) { losses++; document.getElementById('losses').textContent = losses; document.getElementById('msg').textContent = `💀 Game Over! The word was "${word.toUpperCase()}"`; document.querySelectorAll('.key').forEach(k => k.disabled = true); }
+        }
+
+        document.addEventListener('keydown', e => { const l = e.key.toLowerCase(); if (/^[a-z]$/.test(l)) guess(l); });
+        document.getElementById('newBtn').addEventListener('click', init);
+        init();
+    </script>
+</body>
+
+</html>

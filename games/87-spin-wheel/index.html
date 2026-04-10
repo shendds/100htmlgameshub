@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>Spin Wheel | 100 HTML Games</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        body {
+            background: #0a0a0f;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Outfit', sans-serif;
+            color: #fff;
+            padding: 20px
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 900;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #f59e0b, #ef4444, #7c3aed);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text
+        }
+
+        .wheel-wrap {
+            position: relative;
+            width: 360px;
+            height: 360px;
+            margin: 10px 0
+        }
+
+        canvas#wheel {
+            border-radius: 50%;
+            box-shadow: 0 0 40px rgba(0, 0, 0, 0.5);
+            cursor: pointer
+        }
+
+        .pointer {
+            position: absolute;
+            top: -6px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 16px solid transparent;
+            border-right: 16px solid transparent;
+            border-top: 36px solid #fff;
+            filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.5))
+        }
+
+        .center-btn {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 70px;
+            height: 70px;
+            background: radial-gradient(circle, #fff, #e2e8f0);
+            border: none;
+            border-radius: 50%;
+            font-size: 1.8rem;
+            cursor: pointer;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+            transition: transform .15s
+        }
+
+        .center-btn:hover {
+            transform: translate(-50%, -50%) scale(1.1)
+        }
+
+        .center-btn:disabled {
+            cursor: default;
+            opacity: 0.7
+        }
+
+        #result {
+            font-size: 1.6rem;
+            font-weight: 900;
+            min-height: 44px;
+            text-align: center;
+            margin: 10px 0;
+            padding: 10px 24px;
+            border-radius: 12px;
+            transition: all .3s
+        }
+
+        .items-area {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 14px;
+            padding: 14px 16px;
+            width: 360px;
+            max-width: 100%;
+            margin-bottom: 12px
+        }
+
+        .items-title {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #64748b;
+            margin-bottom: 8px
+        }
+
+        .item-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 10px
+        }
+
+        .tag {
+            padding: 4px 10px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all .15s;
+            display: flex;
+            align-items: center;
+            gap: 4px
+        }
+
+        .tag:hover {
+            border-color: rgba(239, 68, 68, 0.5);
+            background: rgba(239, 68, 68, 0.1)
+        }
+
+        .add-row {
+            display: flex;
+            gap: 8px
+        }
+
+        input[type=text] {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 9px;
+            color: #fff;
+            padding: 8px 12px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 14px;
+            outline: none
+        }
+
+        input[type=text]:focus {
+            border-color: rgba(245, 158, 11, 0.5)
+        }
+
+        .btn {
+            padding: 8px 16px;
+            background: linear-gradient(135deg, #f59e0b, #ef4444);
+            border: none;
+            border-radius: 9px;
+            color: #fff;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: 'Outfit', sans-serif;
+            transition: transform .15s
+        }
+
+        .btn:hover {
+            transform: scale(1.05)
+        }
+
+        .back {
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            text-decoration: none;
+            color: #64748b;
+            font-size: 13px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 6px 14px;
+            border-radius: 999px
+        }
+
+        .back:hover {
+            color: #fff
+        }
+    </style>
+</head>
+
+<body>
+    <a href="../../index.html" class="back">← Back to Menu</a>
+    <h1>🎡 Spin Wheel</h1>
+    <div class="wheel-wrap">
+        <canvas id="wheel" width="360" height="360"></canvas>
+        <div class="pointer"></div>
+        <button class="center-btn" id="spinBtn">🎡</button>
+    </div>
+    <div id="result">Click the wheel to spin!</div>
+    <div class="items-area">
+        <div class="items-title">🎲 Wheel Items (click to remove)</div>
+        <div class="item-tags" id="tags"></div>
+        <div class="add-row"><input type="text" id="newItem" placeholder="Add option..." /><button class="btn"
+                id="addBtn">Add</button></div>
+    </div>
+    <script>
+        const COLORS = ['#ef4444', '#f97316', '#eab308', '#22c55e', '#06b6d4', '#7c3aed', '#ec4899', '#10b981', '#f59e0b', '#3b82f6'];
+        let items = ['Pizza', 'Burger', 'Sushi', 'Tacos', 'Ramen', 'Pasta', 'Salad', 'Steak'], spinning = false, angle = 0, spinVel = 0;
+        const canvas = document.getElementById('wheel'), ctx = canvas.getContext('2d');
+
+        function drawWheel() {
+            const cx = 180, cy = 180, r = 170, n = items.length; ctx.clearRect(0, 0, 360, 360); if (!n) return;
+            const sweep = Math.PI * 2 / n;
+            items.forEach((item, i) => {
+                const start = angle + i * sweep; ctx.fillStyle = COLORS[i % COLORS.length]; ctx.shadowColor = COLORS[i % COLORS.length]; ctx.shadowBlur = 4; ctx.beginPath(); ctx.moveTo(cx, cy); ctx.arc(cx, cy, r, start, start + sweep); ctx.closePath(); ctx.fill(); ctx.shadowBlur = 0;
+                ctx.save(); ctx.translate(cx, cy); ctx.rotate(start + sweep / 2); ctx.textAlign = 'right'; ctx.fillStyle = '#fff'; ctx.font = `bold ${Math.max(10, Math.min(16, 260 / n))}px Outfit`; ctx.shadowColor = 'rgba(0,0,0,0.5)'; ctx.shadowBlur = 4; ctx.fillText(item.length > 12 ? item.slice(0, 12) + '…' : item, r - 10, 5); ctx.restore();
+            });
+            ctx.beginPath(); ctx.arc(cx, cy, 30, 0, Math.PI * 2); ctx.fillStyle = '#0a0a0f'; ctx.fill(); ctx.strokeStyle = 'rgba(255,255,255,0.2)'; ctx.lineWidth = 3; ctx.stroke();
+        }
+
+        function spin() {
+            if (spinning || items.length < 2) return; spinning = true; spinVel = 20 + Math.random() * 15; document.getElementById('spinBtn').disabled = true; document.getElementById('result').textContent = 'Spinning...'; document.getElementById('result').style.background = '';
+            function frame() {
+                angle += spinVel * (Math.PI / 180); spinVel *= 0.985; if (spinVel < 0.2) { spinning = false; document.getElementById('spinBtn').disabled = false; const n = items.length, sweep = Math.PI * 2 / n; const norm = (((-angle % (Math.PI * 2)) + (Math.PI * 2)) % (Math.PI * 2)); const idx = Math.floor(norm / sweep) % n; const winner = items[idx]; document.getElementById('result').textContent = `🎉 ${winner}!`; document.getElementById('result').style.background = 'rgba(245,158,11,0.15)'; document.getElementById('result').style.color = '#f59e0b'; }
+                drawWheel(); if (spinning) requestAnimationFrame(frame);
+            }
+            requestAnimationFrame(frame);
+        }
+
+        function renderTags() {
+            const el = document.getElementById('tags'); el.innerHTML = '';
+            items.forEach((item, i) => { const t = document.createElement('div'); t.className = 'tag'; t.style.borderColor = COLORS[i % COLORS.length] + '66'; t.innerHTML = `<span>${item}</span><span style="opacity:0.5">✕</span>`; t.addEventListener('click', () => { items.splice(i, 1); renderTags(); drawWheel(); }); el.appendChild(t); });
+        }
+
+        function addItem() { const v = document.getElementById('newItem').value.trim(); if (!v || items.length >= 10) return; items.push(v); document.getElementById('newItem').value = ''; renderTags(); drawWheel(); }
+        document.getElementById('addBtn').addEventListener('click', addItem);
+        document.getElementById('newItem').addEventListener('keydown', e => { if (e.key === 'Enter') addItem(); });
+        document.getElementById('spinBtn').addEventListener('click', spin);
+        canvas.addEventListener('click', spin);
+        renderTags(); drawWheel();
+    </script>
+</body>
+
+</html>

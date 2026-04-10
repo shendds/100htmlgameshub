@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>Asteroids | 100 HTML Games</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        body {
+            background: #0a0a0f;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            font-family: 'Segoe UI', sans-serif;
+            color: #fff
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 900;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #06b6d4, #7c3aed);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text
+        }
+
+        .info {
+            display: flex;
+            gap: 32px;
+            margin-bottom: 12px;
+            font-size: 14px;
+            color: #64748b
+        }
+
+        .info span b {
+            color: #06b6d4;
+            font-size: 1.2em
+        }
+
+        canvas {
+            border: 2px solid rgba(6, 182, 212, 0.2);
+            border-radius: 12px;
+            background: #000008;
+            box-shadow: 0 0 40px rgba(6, 182, 212, 0.1)
+        }
+
+        #msg {
+            margin-top: 14px;
+            font-size: 1rem;
+            color: #64748b;
+            min-height: 24px;
+            text-align: center
+        }
+
+        .btn {
+            margin-top: 10px;
+            padding: 10px 28px;
+            background: linear-gradient(135deg, #06b6d4, #7c3aed);
+            border: none;
+            border-radius: 999px;
+            color: #fff;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform .15s
+        }
+
+        .btn:hover {
+            transform: scale(1.05)
+        }
+
+        .back {
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            text-decoration: none;
+            color: #64748b;
+            font-size: 13px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 6px 14px;
+            border-radius: 999px
+        }
+
+        .back:hover {
+            color: #fff
+        }
+
+        .hint {
+            font-size: 12px;
+            color: #334155;
+            margin-top: 8px
+        }
+    </style>
+</head>
+
+<body>
+    <a href="../../index.html" class="back">← Back to Menu</a>
+    <h1>🚀 Asteroids</h1>
+    <div class="info">
+        <span>Score: <b id="scoreDisp">0</b></span>
+        <span>Lives: <b id="livesDisp">🚀🚀🚀</b></span>
+        <span>Best: <b id="highDisp">0</b></span>
+    </div>
+    <canvas id="c" width="500" height="500"></canvas>
+    <div id="msg">Press SPACE or the button to start</div>
+    <button class="btn" id="startBtn">▶ Start</button>
+    <div class="hint">← → rotate | ↑ thrust | SPACE shoot</div>
+    <script>
+        const c = document.getElementById('c'), ctx = c.getContext('2d');
+        const W = 500, H = 500;
+        let ship, bullets, asteroids, particles, score, highScore = 0, lives, running = false, animId, invincible = 0, stars = [];
+        function initStars() { stars = Array.from({ length: 100 }, () => ({ x: Math.random() * W, y: Math.random() * H, r: Math.random() * 1.5 + 0.3 })); }
+        function mkAsteroid(x, y, size) { const vx = (Math.random() - .5) * 2 * (4 - size) * 0.6, vy = (Math.random() - .5) * 2 * (4 - size) * 0.6; const n = 8 + Math.floor(Math.random() * 5), pts = []; for (let i = 0; i < n; i++) { const a = i / n * Math.PI * 2, r = size * 14 + Math.random() * size * 6; pts.push({ x: Math.cos(a) * r, y: Math.sin(a) * r }); } return { x, y, vx, vy, size, pts, angle: 0, rotSpeed: (Math.random() - .5) * 0.03 }; }
+        function init() { ship = { x: W / 2, y: H / 2, angle: 0, vx: 0, vy: 0, r: 10 }; bullets = []; particles = []; asteroids = Array.from({ length: 4 }, () => mkAsteroid(Math.random() < .5 ? -30 : W + 30, Math.random() * H, 3)); score = 0; lives = 3; invincible = 180; initStars(); }
+        function explode(x, y, n, color) { for (let i = 0; i < n; i++)particles.push({ x, y, vx: (Math.random() - .5) * 4, vy: (Math.random() - .5) * 4, life: 40 + Math.random() * 20, color }); }
+        let keys = {}, lastShot = 0;
+        function update() {
+            if (invincible > 0) invincible--;
+            if (keys['ArrowLeft']) ship.angle -= 0.05; if (keys['ArrowRight']) ship.angle += 0.05;
+            if (keys['ArrowUp']) { ship.vx += Math.sin(ship.angle) * 0.2; ship.vy -= Math.cos(ship.angle) * 0.2; }
+            ship.vx *= 0.98; ship.vy *= 0.98; ship.x = (ship.x + ship.vx + W) % W; ship.y = (ship.y + ship.vy + H) % H;
+            const now = Date.now();
+            if (keys[' '] && now - lastShot > 250) { bullets.push({ x: ship.x + Math.sin(ship.angle) * 12, y: ship.y - Math.cos(ship.angle) * 12, vx: Math.sin(ship.angle) * 8, vy: -Math.cos(ship.angle) * 8, life: 60 }); lastShot = now; }
+            bullets = bullets.filter(b => { b.x = (b.x + b.vx + W) % W; b.y = (b.y + b.vy + H) % H; b.life--; return b.life > 0; });
+            asteroids.forEach(a => { a.x = (a.x + a.vx + W) % W; a.y = (a.y + a.vy + H) % H; a.angle += a.rotSpeed; });
+            particles = particles.filter(p => { p.x += p.vx; p.y += p.vy; p.vx *= 0.93; p.vy *= 0.93; p.life--; return p.life > 0; });
+            const na = [];
+            bullets.forEach(b => asteroids.forEach(a => { const d = Math.hypot(b.x - a.x, b.y - a.y); if (d < a.size * 14 && !a.hit) { b.life = 0; a.hit = true; score += Math.round(100 / a.size); if (score > highScore) highScore = score; explode(a.x, a.y, 10, '#f59e0b'); if (a.size > 1) { na.push(mkAsteroid(a.x, a.y, a.size - 1)); na.push(mkAsteroid(a.x, a.y, a.size - 1)); } } }));
+            asteroids = [...asteroids.filter(a => !a.hit), ...na];
+            if (!asteroids.length) asteroids = Array.from({ length: 4 + Math.floor(score / 300) }, () => mkAsteroid(Math.random() < .5 ? -30 : W + 30, Math.random() * H, 3));
+            if (invincible <= 0) { for (const a of asteroids) { if (Math.hypot(ship.x - a.x, ship.y - a.y) < a.size * 12 + ship.r) { explode(ship.x, ship.y, 20, '#06b6d4'); lives--; ship.vx = 0; ship.vy = 0; ship.x = W / 2; ship.y = H / 2; invincible = 180; updateUI(); if (lives <= 0) { end(); return; } break; } } }
+            updateUI();
+        }
+        function draw() {
+            ctx.fillStyle = 'rgba(0,0,8,0.85)'; ctx.fillRect(0, 0, W, H);
+            stars.forEach(s => { ctx.fillStyle = `rgba(255,255,255,${0.3 + s.r * 0.2})`; ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2); ctx.fill(); });
+            particles.forEach(p => { ctx.fillStyle = p.color; ctx.globalAlpha = p.life / 60; ctx.beginPath(); ctx.arc(p.x, p.y, 2, 0, Math.PI * 2); ctx.fill(); ctx.globalAlpha = 1; });
+            asteroids.forEach(a => { ctx.save(); ctx.translate(a.x, a.y); ctx.rotate(a.angle); ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 2; ctx.fillStyle = 'rgba(148,163,184,0.08)'; ctx.beginPath(); a.pts.forEach((p, i) => i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y)); ctx.closePath(); ctx.fill(); ctx.stroke(); ctx.restore(); });
+            bullets.forEach(b => { ctx.fillStyle = '#fff'; ctx.shadowColor = '#06b6d4'; ctx.shadowBlur = 8; ctx.beginPath(); ctx.arc(b.x, b.y, 3, 0, Math.PI * 2); ctx.fill(); ctx.shadowBlur = 0; });
+            const alpha = invincible > 0 ? (Math.floor(Date.now() / 100) % 2 ? 0.3 : 0.9) : 1;
+            ctx.save(); ctx.translate(ship.x, ship.y); ctx.rotate(ship.angle); ctx.globalAlpha = alpha;
+            ctx.strokeStyle = '#06b6d4'; ctx.lineWidth = 2; ctx.shadowColor = '#06b6d4'; ctx.shadowBlur = 12;
+            ctx.beginPath(); ctx.moveTo(0, -14); ctx.lineTo(-9, 10); ctx.lineTo(0, 6); ctx.lineTo(9, 10); ctx.closePath(); ctx.stroke();
+            if (keys['ArrowUp'] && Math.random() < 0.7) { ctx.fillStyle = '#f59e0b'; ctx.beginPath(); ctx.moveTo(-4, 8); ctx.lineTo(0, 16 + Math.random() * 6); ctx.lineTo(4, 8); ctx.fill(); }
+            ctx.shadowBlur = 0; ctx.globalAlpha = 1; ctx.restore();
+        }
+        function updateUI() { document.getElementById('scoreDisp').textContent = score; document.getElementById('livesDisp').textContent = '🚀'.repeat(lives); document.getElementById('highDisp').textContent = highScore; }
+        function end() { cancelAnimationFrame(animId); running = false; document.getElementById('msg').textContent = `💀 Game Over! Score: ${score}`; document.getElementById('startBtn').textContent = '↩ Play Again'; }
+        function loop() { if (!running) return; update(); draw(); animId = requestAnimationFrame(loop); }
+        function start() { cancelAnimationFrame(animId); init(); running = true; document.getElementById('msg').textContent = ''; document.getElementById('startBtn').textContent = '↩ Restart'; loop(); }
+        document.addEventListener('keydown', e => { keys[e.key] = true; if (e.key === ' ') { e.preventDefault(); if (!running) start(); } });
+        document.addEventListener('keyup', e => { keys[e.key] = false; });
+        document.getElementById('startBtn').addEventListener('click', start);
+        draw();
+    </script>
+</body>
+
+</html>

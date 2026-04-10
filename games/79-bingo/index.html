@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>Bingo | 100 HTML Games</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        body {
+            background: #0a0a0f;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Outfit', sans-serif;
+            color: #fff;
+            padding: 20px
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 900;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #10b981, #06b6d4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text
+        }
+
+        .call-area {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+            justify-content: center
+        }
+
+        .called-num {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #10b981, #06b6d4);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            font-weight: 900;
+            box-shadow: 0 0 30px rgba(16, 185, 129, 0.4)
+        }
+
+        .called-letter {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 2px
+        }
+
+        .last-calls {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            max-width: 300px
+        }
+
+        .lc {
+            padding: 4px 10px;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 700;
+            color: #94a3b8
+        }
+
+        .card-area {
+            display: flex;
+            gap: 20px;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-bottom: 16px
+        }
+
+        .bingo-card {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 14px;
+            padding: 12px;
+            overflow: hidden
+        }
+
+        .card-header {
+            display: grid;
+            grid-template-columns: repeat(5, 52px);
+            gap: 3px;
+            margin-bottom: 3px
+        }
+
+        .ch {
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            font-size: 1rem;
+            border-radius: 6px
+        }
+
+        .ch.B {
+            background: rgba(6, 182, 212, 0.3);
+            color: #67e8f9
+        }
+
+        .ch.I {
+            background: rgba(124, 58, 237, 0.3);
+            color: #c4b5fd
+        }
+
+        .ch.N {
+            background: rgba(16, 185, 129, 0.3);
+            color: #6ee7b7
+        }
+
+        .ch.G {
+            background: rgba(245, 158, 11, 0.3);
+            color: #fcd34d
+        }
+
+        .ch.O {
+            background: rgba(239, 68, 68, 0.3);
+            color: #fca5a5
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(5, 52px);
+            gap: 3px
+        }
+
+        .cell {
+            width: 52px;
+            height: 52px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 700;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            cursor: pointer;
+            transition: all .15s;
+            color: #cbd5e1
+        }
+
+        .cell:hover {
+            background: rgba(255, 255, 255, 0.1)
+        }
+
+        .cell.marked {
+            background: linear-gradient(135deg, #10b981, #06b6d4);
+            border-color: #10b981;
+            color: #fff;
+            box-shadow: 0 0 10px rgba(16, 185, 129, 0.4)
+        }
+
+        .cell.free {
+            background: linear-gradient(135deg, #7c3aed, #ec4899);
+            border-color: #7c3aed;
+            color: #fff;
+            font-size: 0.6rem;
+            letter-spacing: 0.5px
+        }
+
+        .cell.win {
+            animation: winFlash .4s ease infinite alternate
+        }
+
+        @keyframes winFlash {
+            from {
+                box-shadow: 0 0 8px #10b981
+            }
+
+            to {
+                box-shadow: 0 0 25px #10b981
+            }
+        }
+
+        .btns {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center
+        }
+
+        .btn {
+            padding: 10px 22px;
+            background: linear-gradient(135deg, #10b981, #06b6d4);
+            border: none;
+            border-radius: 999px;
+            color: #fff;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform .15s;
+            font-family: 'Outfit', sans-serif
+        }
+
+        .btn:hover {
+            transform: scale(1.05)
+        }
+
+        .btn.secondary {
+            background: linear-gradient(135deg, #475569, #64748b)
+        }
+
+        #msg {
+            font-size: 1.1rem;
+            min-height: 28px;
+            text-align: center;
+            margin: 8px 0;
+            font-weight: 700;
+            color: #64748b
+        }
+
+        .back {
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            text-decoration: none;
+            color: #64748b;
+            font-size: 13px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 6px 14px;
+            border-radius: 999px
+        }
+
+        .back:hover {
+            color: #fff
+        }
+    </style>
+</head>
+
+<body>
+    <a href="../../index.html" class="back">← Back to Menu</a>
+    <h1>📢 Bingo</h1>
+    <div class="call-area">
+        <div class="called-num" id="calledNum">
+            <div class="called-letter" id="calledLetter">-</div>
+            <div id="calledNumVal">??</div>
+        </div>
+        <div class="last-calls" id="lastCalls"></div>
+    </div>
+    <div id="msg">Press New Game to start!</div>
+    <div class="card-area" id="cardArea"></div>
+    <div class="btns">
+        <button class="btn" id="newBtn">🎲 New Game</button>
+        <button class="btn secondary" id="callBtn" disabled>📢 Call Next</button>
+    </div>
+    <script>
+        const LETTERS = ['B', 'I', 'N', 'G', 'O'];
+        const RANGES = { B: [1, 15], I: [16, 30], N: [31, 45], G: [46, 60], O: [61, 75] };
+        let card, marked, called, pool, gameOver;
+
+        function rndCard() {
+            const c = [];
+            LETTERS.forEach((lt, li) => { const [lo, hi] = RANGES[lt]; const nums = []; while (nums.length < 5) { const n = Math.floor(Math.random() * (hi - lo + 1)) + lo; if (!nums.includes(n)) nums.push(n); } c.push(nums); });
+            return c;
+        }
+
+        function init() {
+            card = rndCard(); marked = Array.from({ length: 5 }, () => Array(5).fill(false)); marked[2][2] = true;// free
+            called = []; pool = []; LETTERS.forEach((lt, li) => { const [lo, hi] = RANGES[lt]; for (let n = lo; n <= hi; n++)pool.push({ l: lt, n }); }); pool.sort(() => Math.random() - .5);
+            gameOver = false; document.getElementById('callBtn').disabled = false; document.getElementById('msg').textContent = 'Click "Call Next" to draw numbers'; document.getElementById('lastCalls').innerHTML = ''; document.getElementById('calledNumVal').textContent = '??'; document.getElementById('calledLetter').textContent = '-';
+            renderCard();
+        }
+
+        function callNext() {
+            if (pool.length === 0 || gameOver) { document.getElementById('msg').textContent = 'All numbers called!'; return; }
+            const num = pool.pop(); called.push(num);
+            document.getElementById('calledNumVal').textContent = num.n; document.getElementById('calledLetter').textContent = num.l;
+            // auto mark if on card
+            LETTERS.forEach((lt, ci) => { if (lt === num.l) { card[ci].forEach((v, ri) => { if (v === num.n) marked[ri][ci] = true; }); } });
+            const lcs = document.getElementById('lastCalls'); const pill = document.createElement('span'); pill.className = 'lc'; pill.textContent = `${num.l}${num.n}`; lcs.prepend(pill); if (lcs.children.length > 8) lcs.lastChild.remove();
+            if (checkBingo()) { gameOver = true; document.getElementById('msg').textContent = '🎉 BINGO! You won!'; document.getElementById('callBtn').disabled = true; } else document.getElementById('msg').textContent = `Called: ${num.l}${num.n}`;
+            renderCard();
+        }
+
+        function checkBingo() {
+            for (let r = 0; r < 5; r++)if (marked[r].every(v => v)) return true;
+            for (let c = 0; c < 5; c++)if ([0, 1, 2, 3, 4].every(r => marked[r][c])) return true;
+            if ([0, 1, 2, 3, 4].every(i => marked[i][i])) return true;
+            if ([0, 1, 2, 3, 4].every(i => marked[i][4 - i])) return true;
+            return false;
+        }
+        function isWinCell(r, c) {
+            if (marked[r].every(v => v)) return true; if ([0, 1, 2, 3, 4].every(ri => marked[ri][c])) return true; if (r === c && [0, 1, 2, 3, 4].every(i => marked[i][i])) return true; if (r === 4 - c && [0, 1, 2, 3, 4].every(i => marked[i][4 - i])) return true; return false;
+        }
+
+        function renderCard() {
+            const el = document.getElementById('cardArea'); el.innerHTML = '';
+            const cardDiv = document.createElement('div'); cardDiv.className = 'bingo-card';
+            const hdr = document.createElement('div'); hdr.className = 'card-header';
+            LETTERS.forEach(l => { const ch = document.createElement('div'); ch.className = `ch ${l}`; ch.textContent = l; hdr.appendChild(ch); });
+            cardDiv.appendChild(hdr);
+            const grid = document.createElement('div'); grid.className = 'grid';
+            for (let r = 0; r < 5; r++)for (let c = 0; c < 5; c++) {
+                const cell = document.createElement('div'); cell.className = 'cell';
+                if (r === 2 && c === 2) { cell.classList.add('free', 'marked'); cell.textContent = 'FREE'; }
+                else { cell.textContent = card[c][r]; if (marked[r][c]) { cell.classList.add('marked'); if (gameOver && isWinCell(r, c)) cell.classList.add('win'); } }
+                cell.addEventListener('click', () => { if (!gameOver && r !== 2 || c !== 2) { marked[r][c] = !marked[r][c]; if (checkBingo()) { gameOver = true; document.getElementById('msg').textContent = '🎉 BINGO! You won!'; document.getElementById('callBtn').disabled = true; } renderCard(); } });
+                grid.appendChild(cell);
+            }
+            cardDiv.appendChild(grid); el.appendChild(cardDiv);
+        }
+
+        document.getElementById('newBtn').addEventListener('click', init);
+        document.getElementById('callBtn').addEventListener('click', callNext);
+        init();
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>Pac-Man | 100 HTML Games</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        body {
+            background: #0a0a0f;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            font-family: 'Segoe UI', sans-serif;
+            color: #fff
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 900;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #eab308, #f59e0b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text
+        }
+
+        .info {
+            display: flex;
+            gap: 32px;
+            margin-bottom: 12px;
+            font-size: 14px;
+            color: #64748b
+        }
+
+        .info span b {
+            color: #eab308;
+            font-size: 1.2em
+        }
+
+        canvas {
+            border: 2px solid rgba(234, 179, 8, 0.3);
+            border-radius: 12px;
+            background: #000014;
+            box-shadow: 0 0 40px rgba(234, 179, 8, 0.1)
+        }
+
+        #msg {
+            margin-top: 14px;
+            font-size: 1rem;
+            color: #64748b;
+            min-height: 24px;
+            text-align: center
+        }
+
+        .btn {
+            margin-top: 10px;
+            padding: 10px 28px;
+            background: linear-gradient(135deg, #eab308, #f59e0b);
+            border: none;
+            border-radius: 999px;
+            color: #000;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform .15s
+        }
+
+        .btn:hover {
+            transform: scale(1.05)
+        }
+
+        .back {
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            text-decoration: none;
+            color: #64748b;
+            font-size: 13px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 6px 14px;
+            border-radius: 999px
+        }
+
+        .back:hover {
+            color: #fff
+        }
+    </style>
+</head>
+
+<body>
+    <a href="../../index.html" class="back">← Back to Menu</a>
+    <h1>🟡 Pac-Man</h1>
+    <div class="info">
+        <span>Score: <b id="scoreDisp">0</b></span>
+        <span>Lives: <b id="livesDisp">3</b></span>
+        <span>Level: <b id="lvlDisp">1</b></span>
+    </div>
+    <canvas id="c" width="420" height="460"></canvas>
+    <div id="msg">Press SPACE or the button to start</div>
+    <button class="btn" id="startBtn">▶ Start</button>
+    <script>
+        const c = document.getElementById('c'), ctx = c.getContext('2d');
+        const CELL = 20, COLS = 21, ROWS = 23;
+        const MAP_TEMPLATE = [
+            [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+            [1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1],
+            [1, 3, 1, 1, 2, 1, 1, 1, 2, 1, 1, 1, 2, 1, 1, 1, 2, 1, 1, 3, 1],
+            [1, 2, 1, 1, 2, 1, 1, 1, 2, 1, 1, 1, 2, 1, 1, 1, 2, 1, 1, 2, 1],
+            [1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1],
+            [1, 2, 1, 1, 2, 1, 2, 1, 1, 1, 1, 1, 1, 1, 2, 1, 2, 1, 1, 2, 1],
+            [1, 2, 2, 2, 2, 1, 2, 2, 2, 2, 1, 2, 2, 2, 2, 1, 2, 2, 2, 2, 1],
+            [1, 1, 1, 1, 2, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 2, 1, 1, 1, 1],
+            [1, 1, 1, 1, 2, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 1, 1, 1, 1],
+            [1, 1, 1, 1, 2, 1, 0, 1, 1, 0, 0, 0, 1, 1, 0, 1, 2, 1, 1, 1, 1],
+            [0, 0, 0, 0, 2, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 2, 0, 0, 0, 0],
+            [1, 1, 1, 1, 2, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 2, 1, 1, 1, 1],
+            [1, 1, 1, 1, 2, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 1, 1, 1, 1],
+            [1, 1, 1, 1, 2, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 2, 1, 1, 1, 1],
+            [1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1],
+            [1, 2, 1, 1, 2, 1, 1, 1, 2, 1, 1, 1, 2, 1, 1, 1, 2, 1, 1, 2, 1],
+            [1, 3, 2, 1, 2, 2, 2, 2, 2, 2, 0, 2, 2, 2, 2, 2, 2, 1, 2, 3, 1],
+            [1, 1, 2, 1, 2, 1, 2, 1, 1, 1, 1, 1, 1, 1, 2, 1, 2, 1, 2, 1, 1],
+            [1, 2, 2, 2, 2, 1, 2, 2, 2, 2, 1, 2, 2, 2, 2, 1, 2, 2, 2, 2, 1],
+            [1, 2, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 2, 1],
+            [1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1],
+            [1, 2, 1, 1, 2, 1, 1, 2, 1, 1, 1, 1, 1, 2, 1, 1, 2, 1, 1, 2, 1],
+            [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+        ];
+        const GHOST_COLORS = ['#ef4444', '#ec4899', '#06b6d4', '#f97316'];
+        let map, pac, ghosts, score, lives, level, running = false, animId, powered = false, powerTimer = 0, mouthAngle = 0, mouthDir = 1, tick = 0;
+        function copyMap() { return MAP_TEMPLATE.map(r => [...r]); }
+        function init() {
+            map = copyMap(); pac = { x: 10, y: 14, dx: 0, dy: 0, nextDx: 0, nextDy: 0 };
+            ghosts = GHOST_COLORS.map((col) => ({ x: 10, y: 10, dx: 1, dy: 0, color: col }));
+            score = 0; lives = 3; level = 1; powered = false; powerTimer = 0;
+        }
+        function dotCount() { return map.reduce((s, r) => s + r.filter(c => c === 2 || c === 3).length, 0); }
+        function movePac() {
+            const nx = pac.x + pac.nextDx, ny = pac.y + pac.nextDy;
+            if (nx >= 0 && nx < COLS && ny >= 0 && ny < ROWS && map[ny][nx] !== 1) { pac.dx = pac.nextDx; pac.dy = pac.nextDy; }
+            const mx = ((pac.x + pac.dx) + COLS) % COLS, my = pac.y + pac.dy;
+            if (my >= 0 && my < ROWS && map[my] && map[my][mx] !== 1) { pac.x = mx; pac.y = my; }
+            const cell = map[pac.y]?.[pac.x];
+            if (cell === 2) { map[pac.y][pac.x] = 0; score += 10; }
+            if (cell === 3) { map[pac.y][pac.x] = 0; score += 50; powered = true; powerTimer = 200; }
+            if (!dotCount()) { level++; map = copyMap(); }
+        }
+        function moveGhost(g) {
+            const dirs = [{ x: 1, y: 0 }, { x: -1, y: 0 }, { x: 0, y: 1 }, { x: 0, y: -1 }];
+            const valid = dirs.filter(d => { const nx = ((g.x + d.x) + COLS) % COLS, ny = g.y + d.y; return ny >= 0 && ny < ROWS && map[ny] && map[ny][nx] !== 1 && !(d.x === -g.dx && d.y === -g.dy); });
+            if (!valid.length) return;
+            let chosen;
+            if (powered || Math.random() < 0.1) { chosen = valid[Math.floor(Math.random() * valid.length)]; }
+            else { chosen = valid.reduce((best, d) => { const nx = ((g.x + d.x) + COLS) % COLS, ny = g.y + d.y; const dist = Math.abs(nx - pac.x) + Math.abs(ny - pac.y); const bdist = Math.abs(((g.x + best.x) + COLS) % COLS - pac.x) + Math.abs(g.y + best.y - pac.y); return dist < bdist ? d : best; }); }
+            g.dx = chosen.x; g.dy = chosen.y; g.x = ((g.x + g.dx) + COLS) % COLS; g.y = Math.max(0, Math.min(ROWS - 1, g.y + g.dy));
+            if (g.x === pac.x && g.y === pac.y) { if (powered) { score += 200; g.x = 10; g.y = 10; } else { lives--; updateUI(); if (lives <= 0) end(); } }
+        }
+        function update() {
+            tick++;
+            if (tick % 6 === 0) movePac();
+            if (tick % 8 === 0) ghosts.forEach(moveGhost);
+            if (powered) { powerTimer--; if (powerTimer <= 0) powered = false; }
+            mouthAngle += mouthDir * 0.15; if (mouthAngle > 0.4 || mouthAngle < 0.01) mouthDir *= -1;
+            updateUI();
+        }
+        function draw() {
+            ctx.fillStyle = '#000014'; ctx.fillRect(0, 0, COLS * CELL, ROWS * CELL);
+            for (let r = 0; r < ROWS; r++)for (let col = 0; col < COLS; col++) {
+                const v = map[r][col], px = col * CELL, py = r * CELL;
+                if (v === 1) { ctx.fillStyle = '#1e3a5f'; ctx.beginPath(); ctx.roundRect(px + 1, py + 1, CELL - 2, CELL - 2, 3); ctx.fill(); ctx.strokeStyle = 'rgba(6,182,212,0.25)'; ctx.lineWidth = 1; ctx.stroke(); }
+                else if (v === 2) { ctx.fillStyle = '#eab308'; ctx.shadowColor = '#eab308'; ctx.shadowBlur = 6; ctx.beginPath(); ctx.arc(px + CELL / 2, py + CELL / 2, 2, 0, Math.PI * 2); ctx.fill(); ctx.shadowBlur = 0; }
+                else if (v === 3) { const pulse = Math.sin(tick / 8) * 0.4 + 0.6; ctx.fillStyle = `rgba(234,179,8,${pulse})`; ctx.shadowColor = '#eab308'; ctx.shadowBlur = 12; ctx.beginPath(); ctx.arc(px + CELL / 2, py + CELL / 2, 5, 0, Math.PI * 2); ctx.fill(); ctx.shadowBlur = 0; }
+            }
+            ghosts.forEach(g => {
+                const gx = g.x * CELL + CELL / 2, gy = g.y * CELL + CELL / 2;
+                ctx.fillStyle = powered ? '#7c3aed' : g.color; ctx.shadowColor = powered ? '#7c3aed' : g.color; ctx.shadowBlur = 12;
+                ctx.beginPath(); ctx.arc(gx, gy - 3, 8, Math.PI, 0); ctx.lineTo(gx + 8, gy + 7);
+                for (let i = 3; i >= 0; i--)ctx.arc(gx + 8 - i * 5.3, gy + 7, (8 / (2 + i)) + 1, 0, Math.PI, true);
+                ctx.lineTo(gx - 8, gy - 3); ctx.fill(); ctx.shadowBlur = 0;
+                if (!powered) { ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(gx - 3, gy - 5, 3, 0, Math.PI * 2); ctx.fill(); ctx.beginPath(); ctx.arc(gx + 3, gy - 5, 3, 0, Math.PI * 2); ctx.fill(); }
+            });
+            const px = pac.x * CELL + CELL / 2, py = pac.y * CELL + CELL / 2;
+            const angle = Math.atan2(pac.dy, pac.dx || 1);
+            ctx.fillStyle = '#eab308'; ctx.shadowColor = '#eab308'; ctx.shadowBlur = 16;
+            ctx.beginPath(); ctx.moveTo(px, py); ctx.arc(px, py, 9, angle + mouthAngle, angle + Math.PI * 2 - mouthAngle); ctx.closePath(); ctx.fill(); ctx.shadowBlur = 0;
+        }
+        function updateUI() { document.getElementById('scoreDisp').textContent = score; document.getElementById('livesDisp').textContent = lives; document.getElementById('lvlDisp').textContent = level; }
+        function end() { cancelAnimationFrame(animId); running = false; document.getElementById('msg').textContent = `💀 Game Over! Score: ${score}`; document.getElementById('startBtn').textContent = '↩ Play Again'; }
+        function loop() { if (!running) return; update(); draw(); animId = requestAnimationFrame(loop); }
+        function start() { cancelAnimationFrame(animId); init(); running = true; document.getElementById('msg').textContent = ''; document.getElementById('startBtn').textContent = '↩ Restart'; loop(); }
+        document.addEventListener('keydown', e => { const m = { ArrowLeft: { x: -1, y: 0 }, ArrowRight: { x: 1, y: 0 }, ArrowUp: { x: 0, y: -1 }, ArrowDown: { x: 0, y: 1 } }; const d = m[e.key]; if (d) { e.preventDefault(); pac.nextDx = d.x; pac.nextDy = d.y; } if (e.key === ' ') { e.preventDefault(); if (!running) start(); } });
+        document.getElementById('startBtn').addEventListener('click', start);
+        draw();
+    </script>
+</body>
+
+</html>

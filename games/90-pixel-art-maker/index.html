@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>Pixel Art Maker | 100 HTML Games</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        body {
+            background: #0a0a0f;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Outfit', sans-serif;
+            color: #fff;
+            padding: 12px
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            font-weight: 900;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #ec4899, #f97316);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text
+        }
+
+        .toolbar {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 14px;
+            padding: 10px 16px
+        }
+
+        .tool-btn {
+            padding: 5px 12px;
+            background: rgba(255, 255, 255, 0.07);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: #e2e8f0;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: 'Outfit', sans-serif;
+            transition: all .15s
+        }
+
+        .tool-btn:hover,
+        .tool-btn.active {
+            background: rgba(236, 72, 153, 0.3);
+            border-color: rgba(236, 72, 153, 0.5);
+            color: #f9a8d4
+        }
+
+        .sep {
+            width: 1px;
+            height: 24px;
+            background: rgba(255, 255, 255, 0.08)
+        }
+
+        .size-select {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: #e2e8f0;
+            padding: 4px 8px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 12px;
+            cursor: pointer
+        }
+
+        .palette {
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-bottom: 10px;
+            max-width: 560px
+        }
+
+        .swatch {
+            width: 26px;
+            height: 26px;
+            border-radius: 6px;
+            cursor: pointer;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            transition: transform .15s
+        }
+
+        .swatch:hover,
+        .swatch.active {
+            transform: scale(1.25);
+            border-color: #fff
+        }
+
+        #canvas {
+            display: grid;
+            margin-bottom: 10px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            overflow: hidden;
+            cursor: crosshair;
+            user-select: none;
+            touch-action: none
+        }
+
+        .pixel {
+            transition: background .05s
+        }
+
+        input[type=color] {
+            width: 32px;
+            height: 32px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            background: none;
+            padding: 2px
+        }
+
+        .back {
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            text-decoration: none;
+            color: #64748b;
+            font-size: 13px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 6px 14px;
+            border-radius: 999px
+        }
+
+        .back:hover {
+            color: #fff
+        }
+    </style>
+</head>
+
+<body>
+    <a href="../../index.html" class="back">← Back to Menu</a>
+    <h1>🎨 Pixel Art Maker</h1>
+    <div class="toolbar">
+        <button class="tool-btn active" id="drawBtn">✏️ Draw</button>
+        <button class="tool-btn" id="eraserBtn">🧹 Erase</button>
+        <button class="tool-btn" id="fillBtn">🪣 Fill</button>
+        <div class="sep"></div>
+        <label style="font-size:12px;color:#64748b">Grid:</label>
+        <select class="size-select" id="gridSize">
+            <option value="16">16×16</option>
+            <option value="24" selected>24×24</option>
+            <option value="32">32×32</option>
+        </select>
+        <div class="sep"></div>
+        <input type="color" id="customColor" value="#ec4899" />
+        <div class="sep"></div>
+        <button class="tool-btn" id="clearBtn">🗑️ Clear</button>
+        <button class="tool-btn" id="saveBtn">💾 Export</button>
+    </div>
+    <div class="palette" id="palette"></div>
+    <div id="canvas"></div>
+    <script>
+        const COLORS = ['#000000', '#ffffff', '#ef4444', '#f97316', '#eab308', '#22c55e', '#06b6d4', '#3b82f6', '#7c3aed', '#ec4899', '#78350f', '#854d0e', '#166534', '#155e75', '#1e3a5f', '#4c1d95', '#9f1239', '#064e3b', '#1e40af', '#7f1d1d', '#d4d4d4', '#94a3b8', '#64748b', '#334155'];
+        let tool = 'draw', color = '#ec4899', gridSize = 24, painting = false, pixels = [];
+
+        const pal = document.getElementById('palette');
+        COLORS.forEach(c => { const s = document.createElement('div'); s.className = 'swatch' + (c === color ? ' active' : ''); s.style.background = c; s.addEventListener('click', () => { color = c; tool = 'draw'; document.querySelectorAll('.swatch').forEach(x => x.classList.remove('active')); s.classList.add('active'); document.getElementById('drawBtn').classList.add('active'); document.getElementById('eraserBtn').classList.remove('active'); document.getElementById('fillBtn').classList.remove('active'); }); pal.appendChild(s); });
+
+        function buildGrid() {
+            const el = document.getElementById('canvas'); const cellSize = Math.floor(Math.min(560, window.innerWidth - 40) / gridSize); el.style.gridTemplateColumns = `repeat(${gridSize},${cellSize}px)`; el.innerHTML = ''; pixels = [];
+            for (let i = 0; i < gridSize * gridSize; i++) {
+                const p = document.createElement('div'); p.className = 'pixel'; p.style.width = cellSize + 'px'; p.style.height = cellSize + 'px'; p.style.background = '#1e1b4b'; p.style.border = '1px solid rgba(255,255,255,0.04)'; pixels.push({ el: p, color: '#1e1b4b' });
+                p.addEventListener('mousedown', e => { e.preventDefault(); painting = true; paint(i); }); p.addEventListener('mouseover', () => { if (painting) paint(i); }); p.addEventListener('touchmove', e => { e.preventDefault(); }, { passive: false });
+                el.appendChild(p);
+            }
+        }
+
+        function paint(i) {
+            if (tool === 'erase') { pixels[i].color = '#1e1b4b'; pixels[i].el.style.background = '#1e1b4b'; }
+            else if (tool === 'fill') { const target = pixels[i].color; if (target === color) return; const q = [i]; const visited = new Set([i]); while (q.length) { const idx = q.shift(); pixels[idx].color = color; pixels[idx].el.style.background = color; const r = Math.floor(idx / gridSize), c = idx % gridSize;[[r - 1, c], [r + 1, c], [r, c - 1], [r, c + 1]].forEach(([nr, nc]) => { if (nr < 0 || nr >= gridSize || nc < 0 || nc >= gridSize) return; const ni = nr * gridSize + nc; if (!visited.has(ni) && pixels[ni].color === target) { visited.add(ni); q.push(ni); } }); } }
+            else { pixels[i].color = color; pixels[i].el.style.background = color; }
+        }
+
+        document.addEventListener('mouseup', () => painting = false);
+        document.getElementById('drawBtn').addEventListener('click', () => { tool = 'draw'; document.getElementById('drawBtn').classList.add('active'); document.getElementById('eraserBtn').classList.remove('active'); document.getElementById('fillBtn').classList.remove('active'); });
+        document.getElementById('eraserBtn').addEventListener('click', () => { tool = 'erase'; document.getElementById('eraserBtn').classList.add('active'); document.getElementById('drawBtn').classList.remove('active'); document.getElementById('fillBtn').classList.remove('active'); });
+        document.getElementById('fillBtn').addEventListener('click', () => { tool = 'fill'; document.getElementById('fillBtn').classList.add('active'); document.getElementById('drawBtn').classList.remove('active'); document.getElementById('eraserBtn').classList.remove('active'); });
+        document.getElementById('clearBtn').addEventListener('click', () => buildGrid());
+        document.getElementById('gridSize').addEventListener('change', e => { gridSize = parseInt(e.target.value); buildGrid(); });
+        document.getElementById('customColor').addEventListener('input', e => { color = e.target.value; tool = 'draw'; document.getElementById('drawBtn').classList.add('active'); });
+        document.getElementById('saveBtn').addEventListener('click', () => {
+            const cvs = document.createElement('canvas'), sz = 16; cvs.width = gridSize * sz; cvs.height = gridSize * sz; const c2 = cvs.getContext('2d');
+            pixels.forEach((p, i) => { const r = Math.floor(i / gridSize), col = i % gridSize; c2.fillStyle = p.color; c2.fillRect(col * sz, r * sz, sz, sz); });
+            const a = document.createElement('a'); a.download = 'pixel-art.png'; a.href = cvs.toDataURL(); a.click();
+        });
+        buildGrid();
+    </script>
+</body>
+
+</html>

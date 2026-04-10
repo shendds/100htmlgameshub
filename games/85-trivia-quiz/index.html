@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>Trivia Quiz | 100 HTML Games</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        body {
+            background: #0a0a0f;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Outfit', sans-serif;
+            color: #fff;
+            padding: 24px
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 900;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #7c3aed, #ec4899);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text
+        }
+
+        .progress {
+            width: 540px;
+            max-width: 100%;
+            display: flex;
+            gap: 4px;
+            margin-bottom: 20px
+        }
+
+        .prog-dot {
+            flex: 1;
+            height: 6px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.1);
+            transition: all .3s
+        }
+
+        .prog-dot.done {
+            background: #7c3aed
+        }
+
+        .prog-dot.correct {
+            background: #22c55e
+        }
+
+        .prog-dot.wrong {
+            background: #ef4444
+        }
+
+        .info {
+            display: flex;
+            gap: 24px;
+            margin-bottom: 16px;
+            font-size: 14px;
+            color: #64748b
+        }
+
+        .info span b {
+            color: #a78bfa;
+            font-size: 1.2em
+        }
+
+        .timer-bar {
+            width: 540px;
+            max-width: 100%;
+            height: 5px;
+            background: rgba(255, 255, 255, 0.07);
+            border-radius: 999px;
+            margin-bottom: 16px;
+            overflow: hidden
+        }
+
+        .timer-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #7c3aed, #ec4899);
+            border-radius: 999px;
+            transition: width .1s
+        }
+
+        .category-badge {
+            background: rgba(124, 58, 237, 0.2);
+            border: 1px solid rgba(124, 58, 237, 0.4);
+            color: #a78bfa;
+            padding: 4px 12px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+            display: inline-block
+        }
+
+        .question {
+            font-size: 1.25rem;
+            font-weight: 700;
+            line-height: 1.5;
+            margin-bottom: 24px;
+            text-align: center;
+            max-width: 540px;
+            color: #f1f5f9
+        }
+
+        .options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            width: 540px;
+            max-width: 100%;
+            margin-bottom: 20px
+        }
+
+        .option {
+            padding: 16px 18px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 14px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-align: left;
+            transition: all .15s;
+            color: #e2e8f0;
+            font-family: 'Outfit', sans-serif
+        }
+
+        .option:hover:not(:disabled) {
+            background: rgba(124, 58, 237, 0.2);
+            border-color: rgba(124, 58, 237, 0.5);
+            transform: translateY(-2px)
+        }
+
+        .option.correct {
+            background: rgba(34, 197, 94, 0.2);
+            border-color: #22c55e;
+            color: #86efac
+        }
+
+        .option.wrong {
+            background: rgba(239, 68, 68, 0.15);
+            border-color: #ef4444;
+            color: #f87171
+        }
+
+        .option:disabled {
+            cursor: default
+        }
+
+        #feedback {
+            font-size: 1rem;
+            font-weight: 700;
+            min-height: 24px;
+            text-align: center;
+            margin-bottom: 12px
+        }
+
+        .btn {
+            padding: 10px 24px;
+            background: linear-gradient(135deg, #7c3aed, #ec4899);
+            border: none;
+            border-radius: 999px;
+            color: #fff;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform .15s;
+            font-family: 'Outfit', sans-serif
+        }
+
+        .btn:hover {
+            transform: scale(1.05)
+        }
+
+        .back {
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            text-decoration: none;
+            color: #64748b;
+            font-size: 13px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 6px 14px;
+            border-radius: 999px
+        }
+
+        .back:hover {
+            color: #fff
+        }
+
+        .final-screen {
+            text-align: center;
+            display: none
+        }
+
+        .final-screen .big-score {
+            font-size: 5rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, #7c3aed, #ec4899);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text
+        }
+    </style>
+</head>
+
+<body>
+    <a href="../../index.html" class="back">← Back to Menu</a>
+    <h1>❓ Trivia Quiz</h1>
+    <div id="quizArea">
+        <div class="progress" id="progress"></div>
+        <div class="info">
+            <span>Question: <b id="qnum">1</b>/10</span>
+            <span>Score: <b id="score">0</b></span>
+            <span>Streak: <b id="streak">0</b>🔥</span>
+        </div>
+        <div class="timer-bar">
+            <div class="timer-fill" id="timerFill" style="width:100%"></div>
+        </div>
+        <div class="category-badge" id="catBadge">General</div>
+        <div class="question" id="question"></div>
+        <div class="options" id="options"></div>
+        <div id="feedback"></div>
+    </div>
+    <div class="final-screen" id="finalScreen">
+        <div class="big-score" id="finalScore">0</div>
+        <div style="font-size:1.2rem;color:#94a3b8;margin-bottom:16px">out of 10 correct</div>
+        <div id="finalMsg" style="font-size:1.1rem;font-weight:700;margin-bottom:20px;color:#f59e0b"></div>
+        <button class="btn" id="playAgainBtn">▶ Play Again</button>
+    </div>
+    <button class="btn" id="startBtn" style="margin-top:8px">▶ Start Quiz</button>
+    <script>
+        const QUESTIONS = [
+            { q: "What is the capital of France?", a: "Paris", opts: ["London", "Paris", "Berlin", "Madrid"], cat: "Geography" },
+            { q: "Which planet is closest to the Sun?", a: "Mercury", opts: ["Venus", "Mars", "Mercury", "Earth"], cat: "Science" },
+            { q: "How many sides does a hexagon have?", a: "6", opts: ["5", "6", "7", "8"], cat: "Math" },
+            { q: "Who painted the Mona Lisa?", a: "Leonardo da Vinci", opts: ["Picasso", "Da Vinci", "Rembrandt", "Leonardo da Vinci"], cat: "Art" },
+            { q: "What is H2O commonly known as?", a: "Water", opts: ["Salt", "Water", "Oxygen", "Hydrogen"], cat: "Science" },
+            { q: "In what year did World War II end?", a: "1945", opts: ["1943", "1944", "1945", "1946"], cat: "History" },
+            { q: "What is the largest ocean on Earth?", a: "Pacific", opts: ["Atlantic", "Indian", "Arctic", "Pacific"], cat: "Geography" },
+            { q: "How many continents are there?", a: "7", opts: ["5", "6", "7", "8"], cat: "Geography" },
+            { q: "What is the chemical symbol for Gold?", a: "Au", opts: ["Ag", "Go", "Au", "Gd"], cat: "Science" },
+            { q: "Which country invented pizza?", a: "Italy", opts: ["Greece", "Italy", "France", "Spain"], cat: "Culture" },
+            { q: "What is the square root of 144?", a: "12", opts: ["11", "12", "13", "14"], cat: "Math" },
+            { q: "Who wrote Romeo and Juliet?", a: "Shakespeare", opts: ["Dickens", "Shakespeare", "Austen", "Tolstoy"], cat: "Literature" },
+            { q: "What is the tallest mountain in the world?", a: "Everest", opts: ["K2", "Everest", "Kilimanjaro", "Fuji"], cat: "Geography" },
+            { q: "How many colors are in a rainbow?", a: "7", opts: ["5", "6", "7", "8"], cat: "Science" },
+            { q: "What language is most spoken worldwide?", a: "Mandarin", opts: ["English", "Spanish", "Mandarin", "Hindi"], cat: "Culture" },
+            { q: "What is the speed of light (approx)?", a: "300,000 km/s", opts: ["150,000 km/s", "200,000 km/s", "250,000 km/s", "300,000 km/s"], cat: "Science" },
+            { q: "Which element has atomic number 1?", a: "Hydrogen", opts: ["Helium", "Hydrogen", "Oxygen", "Carbon"], cat: "Science" },
+            { q: "What year was the iPhone first released?", a: "2007", opts: ["2005", "2006", "2007", "2008"], cat: "Technology" },
+            { q: "Who discovered penicillin?", a: "Fleming", opts: ["Pasteur", "Fleming", "Curie", "Darwin"], cat: "Science" },
+            { q: "What is the longest river in the world?", a: "Nile", opts: ["Amazon", "Nile", "Yangtze", "Mississippi"], cat: "Geography" },
+        ];
+
+        let qs, qi, score, streak, timerInt, timeLeft, answered;
+
+        function shuffle(a) { return a.sort(() => Math.random() - .5); }
+
+        function startQuiz() {
+            qs = shuffle([...QUESTIONS]).slice(0, 10); qi = 0; score = 0; streak = 0; answered = false;
+            document.getElementById('quizArea').style.display = ''; document.getElementById('startBtn').style.display = 'none'; document.getElementById('finalScreen').style.display = 'none';
+            const prog = document.getElementById('progress'); prog.innerHTML = ''; for (let i = 0; i < 10; i++) { const d = document.createElement('div'); d.className = 'prog-dot'; d.id = `dot-${i}`; prog.appendChild(d); }
+            showQ();
+        }
+
+        function showQ() {
+            if (qi >= 10) { endGame(); return; }
+            answered = false;
+            const q = qs[qi]; document.getElementById('qnum').textContent = qi + 1; document.getElementById('catBadge').textContent = q.cat; document.getElementById('question').textContent = q.q; document.getElementById('feedback').textContent = '';
+            const opts = document.getElementById('options'); opts.innerHTML = '';
+            shuffle([...q.opts]).forEach(o => { const b = document.createElement('button'); b.className = 'option'; b.textContent = o; b.addEventListener('click', () => pick(b, o, q.a)); opts.appendChild(b); });
+            timeLeft = 15; document.getElementById('timerFill').style.width = '100%'; clearInterval(timerInt);
+            timerInt = setInterval(() => { timeLeft -= 0.1; document.getElementById('timerFill').style.width = Math.max(0, timeLeft / 15 * 100) + '%'; if (timeLeft <= 0) { clearInterval(timerInt); pick(null, null, q.a); } }, 100);
+        }
+
+        function pick(btn, chosen, correct) {
+            if (answered) return; answered = true; clearInterval(timerInt);
+            document.querySelectorAll('.option').forEach(b => { b.disabled = true; if (b.textContent === correct) b.classList.add('correct'); });
+            const dot = document.getElementById(`dot-${qi}`);
+            if (chosen === correct) { score++; streak++; dot.classList.add('correct'); document.getElementById('feedback').textContent = `✅ Correct! +${10 + streak * 2} pts`; document.getElementById('feedback').style.color = '#22c55e'; }
+            else { streak = 0; dot.classList.add('wrong'); if (btn) btn.classList.add('wrong'); document.getElementById('feedback').textContent = chosen === null ? `⏰ Time's up!` : `❌ Wrong! Answer: ${correct}`; document.getElementById('feedback').style.color = '#ef4444'; }
+            document.getElementById('score').textContent = score; document.getElementById('streak').textContent = streak;
+            qi++; setTimeout(showQ, 1400);
+        }
+
+        function endGame() {
+            document.getElementById('quizArea').style.display = 'none'; document.getElementById('finalScreen').style.display = '';
+            document.getElementById('finalScore').textContent = score;
+            const msgs = ['Keep practicing!', 'Not bad!', 'Good job!', 'Great score!', 'Perfect! 🎉']; document.getElementById('finalMsg').textContent = msgs[Math.floor(score / 2)];
+            document.getElementById('startBtn').style.display = ''; document.getElementById('startBtn').textContent = '▶ Play Again';
+        }
+
+        document.getElementById('startBtn').addEventListener('click', startQuiz);
+        document.getElementById('playAgainBtn').addEventListener('click', startQuiz);
+    </script>
+</body>
+
+</html>

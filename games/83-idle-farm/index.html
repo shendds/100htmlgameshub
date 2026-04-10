@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>Idle Farm | 100 HTML Games</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        body {
+            background: #0a0f07;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Outfit', sans-serif;
+            color: #fff;
+            padding: 20px
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 900;
+            margin-bottom: 6px;
+            background: linear-gradient(135deg, #22c55e, #eab308);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text
+        }
+
+        .farm-main {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 20px;
+            max-width: 700px;
+            width: 100%;
+            align-items: start
+        }
+
+        .farm-display {
+            background: rgba(34, 197, 94, 0.06);
+            border: 1px solid rgba(34, 197, 94, 0.15);
+            border-radius: 16px;
+            padding: 16px;
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 8px
+        }
+
+        .farm-plot {
+            height: 70px;
+            border-radius: 10px;
+            background: rgba(0, 80, 0, 0.3);
+            border: 2px solid rgba(34, 197, 94, 0.15);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            cursor: pointer;
+            transition: all .2s;
+            position: relative
+        }
+
+        .farm-plot:hover {
+            transform: scale(1.08);
+            border-color: rgba(34, 197, 94, 0.5)
+        }
+
+        .farm-plot .grow-bar {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            border-radius: 0 0 8px 8px;
+            background: linear-gradient(90deg, #22c55e, #eab308);
+            transition: width .5s
+        }
+
+        .resources {
+            font-size: 1.2rem;
+            font-weight: 900;
+            color: #eab308;
+            margin-bottom: 12px;
+            text-align: center
+        }
+
+        .resources span {
+            font-size: 0.9rem;
+            color: #64748b;
+            font-weight: 400
+        }
+
+        .shop {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            padding: 14px;
+            min-width: 200px
+        }
+
+        .shop-title {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #64748b;
+            margin-bottom: 10px
+        }
+
+        .shop-item {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 10px;
+            padding: 10px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: all .15s
+        }
+
+        .shop-item:hover {
+            border-color: rgba(234, 179, 8, 0.4);
+            background: rgba(234, 179, 8, 0.08)
+        }
+
+        .shop-item.locked {
+            opacity: 0.35;
+            cursor: default
+        }
+
+        .item-icon {
+            font-size: 1.6rem
+        }
+
+        .item-name {
+            font-size: 13px;
+            font-weight: 700;
+            color: #e2e8f0
+        }
+
+        .item-desc {
+            font-size: 11px;
+            color: #64748b
+        }
+
+        .item-cost {
+            font-size: 13px;
+            font-weight: 700;
+            color: #eab308
+        }
+
+        .item-owned {
+            font-size: 11px;
+            color: #64748b
+        }
+
+        .rate-display {
+            font-size: 12px;
+            color: #22c55e;
+            text-align: center;
+            margin-bottom: 8px
+        }
+
+        .btn {
+            padding: 8px 18px;
+            background: linear-gradient(135deg, #22c55e, #eab308);
+            border: none;
+            border-radius: 999px;
+            color: #000;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform .15s;
+            font-family: 'Outfit', sans-serif
+        }
+
+        .btn:hover {
+            transform: scale(1.05)
+        }
+
+        .back {
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            text-decoration: none;
+            color: #64748b;
+            font-size: 13px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 6px 14px;
+            border-radius: 999px
+        }
+
+        .back:hover {
+            color: #fff
+        }
+
+        .float-coin {
+            position: fixed;
+            font-size: 1.2rem;
+            font-weight: 900;
+            color: #eab308;
+            pointer-events: none;
+            animation: floatUp 1s ease forwards;
+            text-shadow: 0 0 10px rgba(234, 179, 8, 0.5)
+        }
+
+        @keyframes floatUp {
+            from {
+                opacity: 1;
+                transform: translate(-50%, -50%)
+            }
+
+            to {
+                opacity: 0;
+                transform: translate(-50%, -200%)
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <a href="../../index.html" class="back">← Back to Menu</a>
+    <h1>🌾 Idle Farm</h1>
+    <div class="resources">🌾 <span id="coins">0</span> crops <span>| per second: <b id="cps">0</b></span></div>
+    <div class="rate-display" id="rateDisp">Click plots to harvest!</div>
+    <div class="farm-main">
+        <div class="farm-display" id="farmDisplay"></div>
+        <div class="shop">
+            <div class="shop-title">🏪 Farm Shop</div>
+            <div id="shopItems"></div>
+            <button class="btn" id="newBtn">🔄 Reset</button>
+        </div>
+    </div>
+    <script>
+        const CROPS = ['🌾', '🌽', '🥕', '🍅', '🥦', '🍓', '🌻', '🫐'];
+        const UPGRADES = [
+            { id: 'scarecrow', name: 'Scarecrow', icon: '🧱', desc: '+1 crop/click', cost: 10, clickBonus: 1, owned: 0, baseCost: 10 },
+            { id: 'tractor', name: 'Tractor', icon: '🚜', desc: '+2 crop/sec', cost: 50, cps: 2, owned: 0, baseCost: 50 },
+            { id: 'sprinkler', name: 'Sprinkler', icon: '💧', desc: '+5 crop/sec', cost: 200, cps: 5, owned: 0, baseCost: 200 },
+            { id: 'greenhouse', name: 'Greenhouse', icon: '🏡', desc: '+15 crop/sec', cost: 1000, cps: 15, owned: 0, baseCost: 1000 },
+            { id: 'drone', name: 'Drone', icon: '🚁', desc: '+50 crop/sec', cost: 5000, cps: 50, owned: 0, baseCost: 5000 },
+        ];
+        const PLOTS = 10;
+        let coins = 0, cps = 0, clickBonus = 1, plots;
+
+        function mkPlots() { plots = Array.from({ length: PLOTS }, (_, i) => ({ crop: CROPS[i % CROPS.length], grow: 0, maxGrow: 5 + i })); }
+
+        function harvest(i, e) {
+            plots[i].grow = 0; coins += clickBonus;
+            const fp = document.createElement('div'); fp.className = 'float-coin'; fp.textContent = '+' + clickBonus + '🌾'; fp.style.left = e.clientX + 'px'; fp.style.top = e.clientY + 'px'; document.body.appendChild(fp); setTimeout(() => fp.remove(), 1000);
+        }
+
+        function renderShop() {
+            const el = document.getElementById('shopItems'); el.innerHTML = '';
+            UPGRADES.forEach(u => {
+                const cost = Math.floor(u.baseCost * Math.pow(1.2, u.owned)); const locked = coins < cost;
+                const item = document.createElement('div'); item.className = 'shop-item' + (locked ? ' locked' : '');
+                item.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center"><span class="item-icon">${u.icon}</span><span class="item-owned">×${u.owned}</span></div><div class="item-name">${u.name}</div><div class="item-desc">${u.desc}</div><div class="item-cost">🌾 ${fmt(cost)}</div>`;
+                if (!locked) item.addEventListener('click', () => { const c = Math.floor(u.baseCost * Math.pow(1.2, u.owned)); if (coins < c) return; coins -= c; u.owned++; if (u.cps) cps = UPGRADES.reduce((s, x) => s + (x.cps || 0) * x.owned, 0); if (u.clickBonus) clickBonus = 1 + UPGRADES.filter(x => x.clickBonus).reduce((s, x) => s + x.clickBonus * x.owned, 0); renderShop(); });
+                el.appendChild(item);
+            });
+        }
+
+        function fmt(n) { if (n >= 1e9) return (n / 1e9).toFixed(1) + 'B'; if (n >= 1e6) return (n / 1e6).toFixed(1) + 'M'; if (n >= 1e3) return (n / 1e3).toFixed(1) + 'K'; return Math.floor(n); }
+
+        function renderFarm() {
+            const el = document.getElementById('farmDisplay'); el.innerHTML = '';
+            plots.forEach((p, i) => {
+                const plot = document.createElement('div'); plot.className = 'farm-plot'; const pct = p.grow / p.maxGrow; const bar = document.createElement('div'); bar.className = 'grow-bar'; bar.style.width = (pct * 100) + '%';
+                plot.textContent = pct >= 1 ? p.crop : '🌱'; plot.title = pct >= 1 ? 'Click to harvest!' : 'Growing...'; plot.appendChild(bar);
+                plot.addEventListener('click', e => { if (pct >= 1) harvest(i, e); }); el.appendChild(plot);
+            });
+        }
+
+        function init() { coins = 0; cps = 0; clickBonus = 1; UPGRADES.forEach(u => { u.owned = 0; }); mkPlots(); render(); }
+        function render() { renderFarm(); renderShop(); document.getElementById('coins').textContent = fmt(coins); document.getElementById('cps').textContent = fmt(cps); document.getElementById('rateDisp').textContent = `${fmt(cps)} crops/sec | ${fmt(clickBonus)} per click`; }
+
+        setInterval(() => { coins += cps / 20; plots.forEach(p => { p.grow = Math.min(p.maxGrow, p.grow + 0.05); }); render(); }, 50);
+
+        document.getElementById('newBtn').addEventListener('click', init);
+        init();
+    </script>
+</body>
+
+</html>

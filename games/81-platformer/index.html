@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>Platformer | 100 HTML Games</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        body {
+            background: #0a0a0f;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Outfit', sans-serif;
+            color: #fff;
+            padding: 16px
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 900;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #10b981, #06b6d4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text
+        }
+
+        .info {
+            display: flex;
+            gap: 32px;
+            margin-bottom: 12px;
+            font-size: 14px;
+            color: #64748b
+        }
+
+        .info span b {
+            color: #10b981;
+            font-size: 1.2em
+        }
+
+        canvas {
+            border: 2px solid rgba(16, 185, 129, 0.3);
+            border-radius: 12px;
+            background: #0a100c;
+            box-shadow: 0 0 30px rgba(16, 185, 129, 0.1)
+        }
+
+        #msg {
+            margin-top: 14px;
+            font-size: 1rem;
+            color: #64748b;
+            min-height: 24px;
+            text-align: center
+        }
+
+        .btn {
+            margin-top: 10px;
+            padding: 10px 28px;
+            background: linear-gradient(135deg, #10b981, #06b6d4);
+            border: none;
+            border-radius: 999px;
+            color: #fff;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform .15s;
+            font-family: 'Outfit', sans-serif
+        }
+
+        .btn:hover {
+            transform: scale(1.05)
+        }
+
+        .back {
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            text-decoration: none;
+            color: #64748b;
+            font-size: 13px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 6px 14px;
+            border-radius: 999px
+        }
+
+        .back:hover {
+            color: #fff
+        }
+
+        .hint {
+            font-size: 12px;
+            color: #334155;
+            margin-top: 6px
+        }
+    </style>
+</head>
+
+<body>
+    <a href="../../index.html" class="back">← Back to Menu</a>
+    <h1>🏃 Platformer</h1>
+    <div class="info">
+        <span>Score: <b id="score">0</b></span>
+        <span>Lives: <b id="lives">3</b></span>
+        <span>Level: <b id="level">1</b></span>
+    </div>
+    <canvas id="c" width="600" height="360"></canvas>
+    <div id="msg">Press SPACE or click Start to play</div>
+    <button class="btn" id="startBtn">▶ Start</button>
+    <div class="hint">← → to move | SPACE / ↑ to jump | Double jump allowed</div>
+    <script>
+        const c = document.getElementById('c'), ctx = c.getContext('2d');
+        const W = 600, H = 360, GRAV = 0.5, JUMP = -11, SPEED = 4;
+        let player, platforms, coins, enemies, score, lives, level, running = false, animId, frame = 0, camX = 0;
+        const keys = {};
+
+        function mkLevel(lvl) {
+            platforms = [{ x: 0, y: 320, w: 200, h: 20 }, { x: 250, y: 260, w: 120, h: 16 }, { x: 430, y: 200, w: 140, h: 16 }, { x: 630, y: 250, w: 100, h: 16 }, { x: 800, y: 180, w: 160, h: 16 }, { x: 1030, y: 280, w: 120, h: 16 }, { x: 1210, y: 220, w: 150, h: 16 }, { x: 1440, y: 320, w: 200, h: 20 }];
+            coins = [];[{ x: 270, y: 235 }, { x: 330, y: 235 }, { x: 455, y: 175 }, { x: 540, y: 175 }, { x: 720, y: 225 }, { x: 830, y: 155 }, { x: 920, y: 155 }, { x: 1040, y: 255 }, { x: 1240, y: 195 }, { x: 1350, y: 195 }].forEach(p => coins.push({ x: p.x, y: p.y, r: 8, taken: false, pulse: Math.random() * Math.PI * 2 }));
+            enemies = [{ x: 480, y: 180, w: 24, h: 24, vx: 1.5, dir: 1 }, { x: 860, y: 160, w: 24, h: 24, vx: 2, dir: 1 }, { x: 1260, y: 200, w: 24, h: 24, vx: 1.8, dir: 1 }];
+            player = { x: 20, y: 280, w: 26, h: 32, vx: 0, vy: 0, onGround: false, jumps: 0, dir: 1, frame: 0 }; camX = 0;
+        }
+
+        function update() {
+            frame++;
+            if (keys['ArrowLeft'] || keys['a']) { player.vx = -SPEED; player.dir = -1; }
+            else if (keys['ArrowRight'] || keys['d']) { player.vx = SPEED; player.dir = 1; }
+            else player.vx *= 0.7;
+            player.vy += GRAV; player.x += player.vx; player.y += player.vy;
+            // platform collision
+            player.onGround = false;
+            platforms.forEach(p => { const py = player.y + player.h, px2 = player.x + player.w; if (player.x < p.x + p.w && px2 > p.x && py > p.y && py < p.y + p.h + player.vy + 2 && player.vy >= 0) { player.y = p.y - player.h; player.vy = 0; player.onGround = true; player.jumps = 0; } });
+            if (player.onGround && player.vx !== 0 && frame % 10 === 0) player.frame++;
+            // bounds
+            player.x = Math.max(0, player.x); if (player.y > H + 60) { lives--; if (lives <= 0) { end(); return; } player.x = 20; player.y = 280; player.vx = 0; player.vy = 0; camX = 0; }
+            // enemies
+            enemies.forEach(e => {
+                e.x += e.vx * e.dir; const ep = platforms.find(p => e.x >= p.x && e.x + e.w <= p.x + p.w); if (ep) { if (e.x <= ep.x || e.x + e.w >= ep.x + ep.w) e.dir *= -1; }
+                // player vs enemy
+                if (player.x < e.x + e.w && player.x + player.w > e.x && player.y < e.y + e.h && player.y + player.h > e.y) {
+                    if (player.vy > 0 && player.y + player.h < e.y + 16) { player.vy = -8; score += 50; e.x = -9999; } else { lives--; if (lives <= 0) { end(); return; } player.x = 20; player.y = 280; player.vx = 0; player.vy = 0; camX = 0; }
+                }
+            });
+            // coins
+            coins.forEach(cn => { cn.pulse += 0.05; if (!cn.taken && player.x < cn.x + cn.r && player.x + player.w > cn.x - cn.r && player.y < cn.y + cn.r && player.y + player.h > cn.y - cn.r) { cn.taken = true; score += 10; } });
+            if (coins.every(cn => cn.taken)) { level++; document.getElementById('level').textContent = level; mkLevel(level); }
+            camX = Math.max(0, player.x - 200); document.getElementById('score').textContent = score; document.getElementById('lives').textContent = lives;
+        }
+
+        function drawBg() { ctx.fillStyle = '#0a100c'; ctx.fillRect(0, 0, W, H); for (let i = 0; i < 15; i++) { ctx.fillStyle = `rgba(255,255,255,${0.05 + Math.sin(i * 1.3) * 0.03})`; ctx.beginPath(); ctx.arc((i * 80 - camX * 0.1) % W, 50 + i * 15, 1.5, 0, Math.PI * 2); ctx.fill(); } }
+
+        function draw() {
+            drawBg(); ctx.save(); ctx.translate(-camX, 0);
+            platforms.forEach(p => { const g = ctx.createLinearGradient(p.x, p.y, p.x, p.y + p.h); g.addColorStop(0, '#166534'); g.addColorStop(1, '#14532d'); ctx.fillStyle = g; ctx.shadowColor = '#22c55e'; ctx.shadowBlur = 6; ctx.beginPath(); ctx.roundRect(p.x, p.y, p.w, p.h, 4); ctx.fill(); ctx.shadowBlur = 0; });
+            enemies.forEach(e => { ctx.fillStyle = '#ef4444'; ctx.shadowColor = '#ef4444'; ctx.shadowBlur = 8; ctx.beginPath(); ctx.roundRect(e.x, e.y, e.w, e.h, 6); ctx.fill(); ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(e.x + 8, e.y + 8, 3.5, 0, Math.PI * 2); ctx.fill(); ctx.beginPath(); ctx.arc(e.x + 16, e.y + 8, 3.5, 0, Math.PI * 2); ctx.fill(); ctx.fillStyle = '#000'; ctx.beginPath(); ctx.arc(e.x + 9, e.y + 8, 1.5, 0, Math.PI * 2); ctx.fill(); ctx.beginPath(); ctx.arc(e.x + 17, e.y + 8, 1.5, 0, Math.PI * 2); ctx.fill(); ctx.shadowBlur = 0; });
+            coins.forEach(cn => { if (cn.taken) return; const pulse = Math.sin(cn.pulse) * 2; ctx.fillStyle = '#eab308'; ctx.shadowColor = '#eab308'; ctx.shadowBlur = 10; ctx.beginPath(); ctx.arc(cn.x, cn.y + pulse, cn.r, 0, Math.PI * 2); ctx.fill(); ctx.fillStyle = '#fef08a'; ctx.beginPath(); ctx.arc(cn.x - 2, cn.y + pulse - 2, 3, 0, Math.PI * 2); ctx.fill(); ctx.shadowBlur = 0; });
+            // player
+            ctx.fillStyle = '#10b981'; ctx.shadowColor = '#10b981'; ctx.shadowBlur = 10; ctx.save(); ctx.translate(player.x + player.w / 2, player.y + player.h / 2); if (player.dir === -1) ctx.scale(-1, 1); ctx.beginPath(); ctx.roundRect(-player.w / 2, -player.h / 2, player.w, player.h, 8); ctx.fill(); ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(4, -8, 5, 0, Math.PI * 2); ctx.fill(); ctx.fillStyle = '#000'; ctx.beginPath(); ctx.arc(5, -8, 2.5, 0, Math.PI * 2); ctx.fill(); ctx.restore(); ctx.shadowBlur = 0;
+            ctx.restore();
+        }
+
+        function end() { clearInterval(animId); running = false; document.getElementById('msg').textContent = `💀 Game Over! Score: ${score}`; document.getElementById('startBtn').textContent = '↩ Play Again'; }
+        function loop() { if (!running) return; update(); draw(); animId = requestAnimationFrame(loop); }
+        function start() { cancelAnimationFrame(animId); score = 0; lives = 3; level = 1; mkLevel(level); running = true; document.getElementById('msg').textContent = ''; document.getElementById('startBtn').textContent = '↩ Restart'; loop(); }
+
+        document.addEventListener('keydown', e => { keys[e.key] = true; if ((e.key === ' ' || e.key === 'ArrowUp') && running) { e.preventDefault(); if (player.jumps < 2) { player.vy = JUMP; player.jumps++; } } if (e.key === ' ' && !running) { start(); } });
+        document.addEventListener('keyup', e => keys[e.key] = false);
+        document.getElementById('startBtn').addEventListener('click', start);
+        draw();
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>Duck Hunt | 100 HTML Games</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        body {
+            background: #0a0a0f;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Outfit', sans-serif;
+            color: #fff;
+            padding: 16px
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 900;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #22c55e, #eab308);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text
+        }
+
+        .info {
+            display: flex;
+            gap: 24px;
+            margin-bottom: 10px;
+            font-size: 14px;
+            color: #64748b
+        }
+
+        .info span b {
+            color: #22c55e;
+            font-size: 1.2em
+        }
+
+        canvas {
+            border: 2px solid rgba(34, 197, 94, 0.3);
+            border-radius: 12px;
+            cursor: crosshair;
+            box-shadow: 0 0 30px rgba(34, 197, 94, 0.1)
+        }
+
+        .btn {
+            margin-top: 12px;
+            padding: 10px 28px;
+            background: linear-gradient(135deg, #22c55e, #eab308);
+            border: none;
+            border-radius: 999px;
+            color: #fff;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: 'Outfit', sans-serif;
+            transition: transform .15s
+        }
+
+        .btn:hover {
+            transform: scale(1.05)
+        }
+
+        #msg {
+            margin-top: 10px;
+            font-size: 13px;
+            color: #64748b;
+            min-height: 22px;
+            text-align: center
+        }
+
+        .back {
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            text-decoration: none;
+            color: #64748b;
+            font-size: 13px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 6px 14px;
+            border-radius: 999px
+        }
+
+        .back:hover {
+            color: #fff
+        }
+    </style>
+</head>
+
+<body>
+    <a href="../../index.html" class="back">← Back to Menu</a>
+    <h1>🦆 Duck Hunt</h1>
+    <div class="info"><span>Score: <b id="score">0</b></span><span>Ammo: <b id="ammo">3</b></span><span>Round: <b
+                id="round">1</b></span></div>
+    <canvas id="c" width="500" height="380"></canvas>
+    <div id="msg">Click on the ducks before they escape!</div>
+    <button class="btn" id="startBtn">▶ Start</button>
+    <script>
+        const c = document.getElementById('c'), ctx = c.getContext('2d'), W = 500, H = 380;
+        let ducks = [], feathers = [], score = 0, ammo = 3, round = 1, running = false, animId, frame = 0;
+        const GROUND = H - 50;
+
+        function spawnDuck() { const dir = Math.random() < 0.5 ? 1 : -1; ducks.push({ x: dir > 0 ? -30 : W + 30, y: 100 + Math.random() * 150, vx: dir * (2 + Math.random() * 3 + round * 0.3), vy: -1.5 - Math.random() * 2, size: 28, alive: true, flap: 0, escapeTimer: 200 }); }
+
+        function update() {
+            frame++;
+            ducks.forEach(d => { if (!d.alive) { d.vy += 0.3; d.y += d.vy; return; } d.x += d.vx; d.y += d.vy + Math.sin(frame * 0.1) * 0.5; d.flap = Math.sin(frame * 0.3) * 15; d.escapeTimer--; if (d.escapeTimer <= 0 || d.x < -50 || d.x > W + 50 || d.y < -50) d.escaped = true; });
+            ducks = ducks.filter(d => d.y < H + 50 && !d.escaped);
+            feathers.forEach(f => { f.x += f.vx; f.y += f.vy; f.vy += 0.08; f.life--; }); feathers = feathers.filter(f => f.life > 0);
+            if (running && ducks.every(d => !d.alive || d.escaped)) {
+                if (ducks.length > 0) { setTimeout(() => { round++; document.getElementById('round').textContent = round; ammo = 3; document.getElementById('ammo').textContent = 3; ducks = []; spawnDuck(); if (round % 3 === 0) spawnDuck(); }, 500); }
+                else { spawnDuck(); if (round > 3) spawnDuck(); }
+            }
+        }
+
+        function draw() {
+            // Sky gradient
+            const grad = ctx.createLinearGradient(0, 0, 0, GROUND); grad.addColorStop(0, '#0a1a30'); grad.addColorStop(1, '#162940'); ctx.fillStyle = grad; ctx.fillRect(0, 0, W, GROUND);
+            ctx.fillStyle = '#0a2010'; ctx.fillRect(0, GROUND, W, H - GROUND);
+            // Trees silhouette
+            for (let i = 0; i < W; i += 60) { ctx.fillStyle = '#0a1508'; ctx.beginPath(); ctx.moveTo(i, GROUND); ctx.lineTo(i + 20, GROUND - 40 - Math.random() * 20); ctx.lineTo(i + 40, GROUND); ctx.fill(); }
+            // Ducks
+            ducks.forEach(d => {
+                if (!d.alive) { ctx.fillStyle = '#ef4444'; ctx.font = '24px serif'; ctx.textAlign = 'center'; ctx.fillText('🦆', d.x, d.y); return; }
+                ctx.save(); ctx.translate(d.x, d.y); if (d.vx < 0) ctx.scale(-1, 1); ctx.fillStyle = '#8B4513'; ctx.beginPath(); ctx.ellipse(0, 0, d.size, d.size * 0.6, 0, 0, Math.PI * 2); ctx.fill(); ctx.fillStyle = '#22c55e'; ctx.beginPath(); ctx.ellipse(-d.size * 0.7, 0, d.size * 0.4, d.size * 0.35, 0, 0, Math.PI * 2); ctx.fill();
+                // wing flap
+                ctx.fillStyle = '#654321'; ctx.save(); ctx.rotate(d.flap * Math.PI / 180); ctx.beginPath(); ctx.ellipse(0, -d.size * 0.3, d.size * 0.8, d.size * 0.25, 0, 0, Math.PI * 2); ctx.fill(); ctx.restore();
+                ctx.fillStyle = '#f97316'; ctx.beginPath(); ctx.ellipse(-d.size, 0, 8, 4, 0, 0, Math.PI * 2); ctx.fill(); ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(-d.size * 0.5, -d.size * 0.15, 4, 0, Math.PI * 2); ctx.fill(); ctx.fillStyle = '#000'; ctx.beginPath(); ctx.arc(-d.size * 0.5, -d.size * 0.15, 2, 0, Math.PI * 2); ctx.fill(); ctx.restore();
+            });
+            feathers.forEach(f => { ctx.globalAlpha = f.life / 15; ctx.fillStyle = '#8B4513'; ctx.beginPath(); ctx.arc(f.x, f.y, 2, 0, Math.PI * 2); ctx.fill(); ctx.globalAlpha = 1; });
+        }
+
+        c.addEventListener('click', e => {
+            if (!running) return; if (ammo <= 0) return; ammo--; document.getElementById('ammo').textContent = ammo;
+            const r = c.getBoundingClientRect(); const mx = e.clientX - r.left, my = e.clientY - r.top; let hit = false;
+            ducks.forEach(d => {
+                if (!d.alive) return; if (Math.hypot(mx - d.x, my - d.y) < d.size + 10) {
+                    d.alive = false; d.vy = 0; hit = true; score += 10; document.getElementById('score').textContent = score;
+                    for (let i = 0; i < 8; i++)feathers.push({ x: d.x, y: d.y, vx: (Math.random() - .5) * 3, vy: (Math.random() - .5) * 3, life: 15 });
+                }
+            });
+            if (!hit && ammo <= 0) document.getElementById('msg').textContent = 'Out of ammo! Wait for next round...';
+        });
+
+        function loop() { if (!running) return; update(); draw(); animId = requestAnimationFrame(loop); }
+        function start() { ducks = []; feathers = []; score = 0; round = 1; ammo = 3; running = true; frame = 0; document.getElementById('score').textContent = 0; document.getElementById('round').textContent = 1; document.getElementById('ammo').textContent = 3; document.getElementById('msg').textContent = 'Shoot the ducks!'; document.getElementById('startBtn').textContent = '↩ Restart'; spawnDuck(); loop(); }
+        document.getElementById('startBtn').addEventListener('click', () => { cancelAnimationFrame(animId); start(); });
+        ctx.fillStyle = '#0a1a30'; ctx.fillRect(0, 0, W, H);
+    </script>
+</body>
+
+</html>

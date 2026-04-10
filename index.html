@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>100 HTML Games | Game Hub</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;900&display=swap"
+        rel="stylesheet" />
+    <style>
+        :root {
+            --bg: #0a0a0f;
+            --surface: #12121a;
+            --card: #1a1a28;
+            --border: rgba(255, 255, 255, 0.07);
+            --accent1: #7c3aed;
+            --text: #f1f5f9;
+            --muted: #64748b;
+            --radius: 16px;
+        }
+
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+        }
+
+        .hero {
+            position: relative;
+            overflow: hidden;
+            padding: 80px 24px 60px;
+            text-align: center;
+            background: radial-gradient(ellipse 80% 60% at 50% -10%, rgba(124, 58, 237, 0.35) 0%, transparent 70%);
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%237c3aed' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+            pointer-events: none;
+        }
+
+        .hero-badge {
+            display: inline-block;
+            background: rgba(124, 58, 237, 0.2);
+            border: 1px solid rgba(124, 58, 237, 0.4);
+            color: #a78bfa;
+            padding: 6px 16px;
+            border-radius: 999px;
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 20px;
+        }
+
+        .hero h1 {
+            font-size: clamp(2.5rem, 6vw, 4.5rem);
+            font-weight: 900;
+            line-height: 1.1;
+            background: linear-gradient(135deg, #fff 0%, #a78bfa 50%, #06b6d4 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 16px;
+        }
+
+        .hero p {
+            color: var(--muted);
+            font-size: 1.1rem;
+            max-width: 500px;
+            margin: 0 auto 40px;
+        }
+
+        .stats {
+            display: flex;
+            gap: 24px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 12px;
+        }
+
+        .stat {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 14px 24px;
+            text-align: center;
+        }
+
+        .stat-num {
+            font-size: 2rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, #7c3aed, #06b6d4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .stat-label {
+            color: var(--muted);
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .controls {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 32px 24px 16px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .search-wrap {
+            flex: 1;
+            min-width: 200px;
+            position: relative;
+        }
+
+        .search-wrap svg {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            opacity: 0.4;
+        }
+
+        #search {
+            width: 100%;
+            background: var(--card);
+            border: 1px solid var(--border);
+            color: var(--text);
+            border-radius: 12px;
+            padding: 12px 16px 12px 42px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 15px;
+            outline: none;
+            transition: border-color .2s;
+        }
+
+        #search:focus {
+            border-color: rgba(124, 58, 237, 0.5);
+        }
+
+        #search::placeholder {
+            color: var(--muted);
+        }
+
+        .filter-btns {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            background: var(--card);
+            border: 1px solid var(--border);
+            color: var(--muted);
+            padding: 8px 16px;
+            border-radius: 999px;
+            cursor: pointer;
+            font-family: 'Outfit', sans-serif;
+            font-size: 13px;
+            font-weight: 600;
+            transition: all .2s;
+        }
+
+        .filter-btn:hover,
+        .filter-btn.active {
+            background: var(--accent1);
+            border-color: var(--accent1);
+            color: white;
+        }
+
+        .grid-wrap {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px 80px;
+        }
+
+        .category-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin: 32px 0 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .category-title::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--border);
+        }
+
+        .games-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+            gap: 16px;
+        }
+
+        .game-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 20px 16px;
+            text-decoration: none;
+            color: var(--text);
+            transition: transform .2s, border-color .2s, box-shadow .2s;
+            position: relative;
+            overflow: hidden;
+            display: block;
+        }
+
+        .game-card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, var(--glow-color, rgba(124, 58, 237, 0.08)) 0%, transparent 60%);
+            opacity: 0;
+            transition: opacity .3s;
+        }
+
+        .game-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--glow-color, rgba(124, 58, 237, 0.4));
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .game-card:hover::before {
+            opacity: 1;
+        }
+
+        .game-num {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--muted);
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .game-icon {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            display: block;
+            line-height: 1;
+        }
+
+        .game-name {
+            font-size: 15px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .game-tag {
+            font-size: 11px;
+            color: var(--muted);
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 6px;
+            padding: 2px 8px;
+            display: inline-block;
+        }
+
+        .game-card.coming-soon {
+            opacity: 0.4;
+            cursor: default;
+            pointer-events: none;
+        }
+
+        .coming-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 9px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: var(--muted);
+            padding: 2px 6px;
+        }
+
+        .no-results {
+            text-align: center;
+            color: var(--muted);
+            padding: 60px 0;
+            font-size: 1.1rem;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="hero">
+        <div class="hero-badge">🎮 Game Collection</div>
+        <h1>100 HTML Games</h1>
+        <p>100 fun browser games in one place — zero installation required.</p>
+        <div class="stats">
+            <div class="stat">
+                <div class="stat-num">100</div>
+                <div class="stat-label">Total Games</div>
+            </div>
+            <div class="stat">
+                <div class="stat-num">5</div>
+                <div class="stat-label">Categories</div>
+            </div>
+            <div class="stat">
+                <div class="stat-num">0</div>
+                <div class="stat-label">Setup Required</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="controls">
+        <div class="search-wrap">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <circle cx="11" cy="11" r="8" />
+                <path d="m21 21-4.35-4.35" />
+            </svg>
+            <input type="text" id="search" placeholder="Search games..." />
+        </div>
+        <div class="filter-btns">
+            <button class="filter-btn active" data-cat="all">All</button>
+            <button class="filter-btn" data-cat="arcade">🕹️ Arcade</button>
+            <button class="filter-btn" data-cat="puzzle">🧩 Puzzle</button>
+            <button class="filter-btn" data-cat="action">🔫 Action</button>
+            <button class="filter-btn" data-cat="card">🃏 Card</button>
+            <button class="filter-btn" data-cat="fun">🎉 Fun</button>
+        </div>
+    </div>
+
+    <div class="grid-wrap" id="gridWrap"></div>
+
+    <script>
+        const GAMES = [
+            { id: 1, name: "Snake", icon: "🐍", cat: "arcade", glow: "rgba(16,185,129,0.15)", ready: true },
+            { id: 2, name: "Pong", icon: "🏓", cat: "arcade", glow: "rgba(6,182,212,0.15)", ready: true },
+            { id: 3, name: "Breakout", icon: "🧱", cat: "arcade", glow: "rgba(245,158,11,0.15)", ready: true },
+            { id: 4, name: "Tetris", icon: "🟦", cat: "arcade", glow: "rgba(124,58,237,0.15)", ready: true },
+            { id: 5, name: "Space Invaders", icon: "👾", cat: "arcade", glow: "rgba(16,185,129,0.15)", ready: true },
+            { id: 6, name: "Pac-Man", icon: "🟡", cat: "arcade", glow: "rgba(245,158,11,0.15)", ready: true },
+            { id: 7, name: "Frogger", icon: "🐸", cat: "arcade", glow: "rgba(16,185,129,0.15)", ready: true },
+            { id: 8, name: "Asteroids", icon: "🚀", cat: "arcade", glow: "rgba(6,182,212,0.15)", ready: true },
+            { id: 9, name: "Flappy Bird", icon: "🐦", cat: "arcade", glow: "rgba(245,158,11,0.15)", ready: true },
+            { id: 10, name: "Dino Runner", icon: "🦕", cat: "arcade", glow: "rgba(16,185,129,0.15)", ready: true },
+            { id: 11, name: "Whack-a-Mole", icon: "🦔", cat: "arcade", glow: "rgba(245,158,11,0.15)", ready: true },
+            { id: 12, name: "Simon Says", icon: "🔴", cat: "arcade", glow: "rgba(239,68,68,0.15)", ready: true },
+            { id: 13, name: "Memory Eslestirme", icon: "🃏", cat: "arcade", glow: "rgba(124,58,237,0.15)", ready: true },
+            { id: 14, name: "Minesweeper", icon: "💣", cat: "arcade", glow: "rgba(239,68,68,0.15)", ready: true },
+            { id: 15, name: "Sudoku", icon: "🔢", cat: "arcade", glow: "rgba(6,182,212,0.15)", ready: true },
+            { id: 16, name: "2048", icon: "🔲", cat: "arcade", glow: "rgba(245,158,11,0.15)", ready: true },
+            { id: 17, name: "Connect Four", icon: "🔴", cat: "arcade", glow: "rgba(239,68,68,0.15)", ready: true },
+            { id: 18, name: "Tic-Tac-Toe", icon: "❌", cat: "arcade", glow: "rgba(124,58,237,0.15)", ready: true },
+            { id: 19, name: "Checkers", icon: "⚫", cat: "arcade", glow: "rgba(100,116,139,0.15)", ready: true },
+            { id: 20, name: "Chess", icon: "♟️", cat: "arcade", glow: "rgba(245,158,11,0.15)", ready: true },
+            { id: 21, name: "Sliding Puzzle", icon: "🔀", cat: "puzzle", glow: "rgba(6,182,212,0.15)", ready: true },
+            { id: 22, name: "Jigsaw Puzzle", icon: "🧩", cat: "puzzle", glow: "rgba(124,58,237,0.15)", ready: true },
+            { id: 23, name: "Word Search", icon: "🔍", cat: "puzzle", glow: "rgba(16,185,129,0.15)", ready: true },
+            { id: 24, name: "Hangman", icon: "🪢", cat: "puzzle", glow: "rgba(239,68,68,0.15)", ready: true },
+            { id: 25, name: "Word Scramble", icon: "📝", cat: "puzzle", glow: "rgba(245,158,11,0.15)", ready: true },
+            { id: 26, name: "Number Guess", icon: "🎯", cat: "puzzle", glow: "rgba(16,185,129,0.15)", ready: true },
+            { id: 27, name: "Color Match", icon: "🎨", cat: "puzzle", glow: "rgba(239,68,68,0.15)", ready: true },
+            { id: 28, name: "Pattern Memory", icon: "🔷", cat: "puzzle", glow: "rgba(6,182,212,0.15)", ready: true },
+            { id: 29, name: "Maze Runner", icon: "🌀", cat: "puzzle", glow: "rgba(124,58,237,0.15)", ready: true },
+            { id: 30, name: "Lights Out", icon: "💡", cat: "puzzle", glow: "rgba(245,158,11,0.15)", ready: true },
+            { id: 31, name: "Tower of Hanoi", icon: "🗼", cat: "puzzle", glow: "rgba(239,68,68,0.15)", ready: true },
+            { id: 32, name: "Reaction Time", icon: "⚡", cat: "puzzle", glow: "rgba(245,158,11,0.15)", ready: true },
+            { id: 33, name: "Math Quiz", icon: "➕", cat: "puzzle", glow: "rgba(16,185,129,0.15)", ready: true },
+            { id: 34, name: "Typing Speed", icon: "⌨️", cat: "puzzle", glow: "rgba(6,182,212,0.15)", ready: true },
+            { id: 35, name: "Dots and Boxes", icon: "📐", cat: "puzzle", glow: "rgba(124,58,237,0.15)", ready: true },
+            { id: 36, name: "Reversi", icon: "⬛", cat: "puzzle", glow: "rgba(100,116,139,0.15)", ready: true },
+            { id: 37, name: "Battleship", icon: "🚢", cat: "puzzle", glow: "rgba(6,182,212,0.15)", ready: true },
+            { id: 38, name: "Logic Gates", icon: "⚡", cat: "puzzle", glow: "rgba(245,158,11,0.15)", ready: true },
+            { id: 39, name: "Nonogram", icon: "🎨", cat: "puzzle", glow: "rgba(124,58,237,0.15)", ready: true },
+            { id: 40, name: "Sequence Memory", icon: "🧠", cat: "puzzle", glow: "rgba(16,185,129,0.15)", ready: true },
+            { id: 41, name: "Tank Battle", icon: "🛡️", cat: "action", glow: "rgba(239,68,68,0.15)", ready: true },
+            { id: 42, name: "Duck Hunt", icon: "🦆", cat: "action", glow: "rgba(16,185,129,0.15)", ready: true },
+            { id: 43, name: "Bubble Shooter", icon: "🫧", cat: "action", glow: "rgba(6,182,212,0.15)", ready: true },
+            { id: 44, name: "Car Racing", icon: "🏎️", cat: "action", glow: "rgba(239,68,68,0.15)", ready: true },
+            { id: 45, name: "Fruit Ninja", icon: "🍉", cat: "action", glow: "rgba(16,185,129,0.15)", ready: true },
+            { id: 46, name: "Tower Defense", icon: "🏰", cat: "action", glow: "rgba(245,158,11,0.15)", ready: true },
+            { id: 47, name: "Archery", icon: "🏹", cat: "action", glow: "rgba(245,158,11,0.15)", ready: true },
+            { id: 48, name: "Pinball", icon: "🔮", cat: "action", glow: "rgba(124,58,237,0.15)", ready: true },
+            { id: 49, name: "Air Hockey", icon: "🏒", cat: "action", glow: "rgba(6,182,212,0.15)", ready: true },
+            { id: 50, name: "Pool", icon: "🎱", cat: "action", glow: "rgba(16,185,129,0.15)", ready: true },
+            { id: 51, name: "Brick Breaker", icon: "🧱", cat: "action", glow: "rgba(245,158,11,0.15)", ready: true },
+            { id: 52, name: "Coin Drop", icon: "🪙", cat: "action", glow: "rgba(245,158,11,0.15)", ready: true },
+            { id: 53, name: "Balloon Pop", icon: "🎈", cat: "action", glow: "rgba(239,68,68,0.15)", ready: true },
+            { id: 54, name: "Shooting Gallery", icon: "🎯", cat: "action", glow: "rgba(239,68,68,0.15)", ready: true },
+            { id: 55, name: "Space Defender", icon: "🛸", cat: "action", glow: "rgba(6,182,212,0.15)", ready: true },
+            { id: 56, name: "Zombie Shooter", icon: "🧟", cat: "action", glow: "rgba(16,185,129,0.15)", ready: true },
+            { id: 57, name: "Laser Maze", icon: "🔴", cat: "action", glow: "rgba(239,68,68,0.15)", ready: true },
+            { id: 58, name: "Cannon Ball", icon: "💣", cat: "action", glow: "rgba(245,158,11,0.15)", ready: true },
+            { id: 59, name: "Gravity Ball", icon: "🌀", cat: "action", glow: "rgba(16,185,129,0.15)", ready: true },
+            { id: 60, name: "Bouncing Ball", icon: "⚽", cat: "action", glow: "rgba(245,158,11,0.15)", ready: true },
+            { id: 61, name: "Blackjack", icon: "🂡", cat: "card", glow: "rgba(239,68,68,0.15)", ready: true },
+            { id: 62, name: "Solitaire", icon: "🂾", cat: "card", glow: "rgba(16,185,129,0.15)", ready: true },
+            { id: 63, name: "Card War", icon: "⚔️", cat: "card", glow: "rgba(239,68,68,0.15)", ready: true },
+            { id: 64, name: "Go Fish", icon: "🐟", cat: "card", glow: "rgba(6,182,212,0.15)", ready: true },
+            { id: 65, name: "Snap", icon: "⚡", cat: "card", glow: "rgba(245,158,11,0.15)", ready: true },
+            { id: 66, name: "Dice Roll", icon: "🎲", cat: "card", glow: "rgba(124,58,237,0.15)", ready: true },
+            { id: 67, name: "Yahtzee", icon: "🎰", cat: "card", glow: "rgba(245,158,11,0.15)", ready: true },
+            { id: 68, name: "Poker", icon: "🃏", cat: "card", glow: "rgba(239,68,68,0.15)", ready: true },
+            { id: 69, name: "Concentration", icon: "🧠", cat: "card", glow: "rgba(6,182,212,0.15)", ready: true },
+            { id: 70, name: "Old Maid", icon: "👵", cat: "card", glow: "rgba(124,58,237,0.15)", ready: true },
+            { id: 71, name: "Speed", icon: "⚡", cat: "card", glow: "rgba(245,158,11,0.15)", ready: true },
+            { id: 72, name: "Rummy", icon: "🃏", cat: "card", glow: "rgba(16,185,129,0.15)", ready: true },
+            { id: 73, name: "Crazy Eights", icon: "🎴", cat: "card", glow: "rgba(6,182,212,0.15)", ready: true },
+            { id: 74, name: "Uno", icon: "🟥", cat: "card", glow: "rgba(239,68,68,0.15)", ready: true },
+            { id: 75, name: "Cribbage", icon: "🎰", cat: "card", glow: "rgba(124,58,237,0.15)", ready: true },
+            { id: 76, name: "Ludo", icon: "🎲", cat: "card", glow: "rgba(16,185,129,0.15)", ready: true },
+            { id: 77, name: "Snakes and Ladders", icon: "🐍", cat: "card", glow: "rgba(245,158,11,0.15)", ready: true },
+            { id: 78, name: "Backgammon", icon: "🎲", cat: "card", glow: "rgba(239,68,68,0.15)", ready: true },
+            { id: 79, name: "Bingo", icon: "📢", cat: "card", glow: "rgba(16,185,129,0.15)", ready: true },
+            { id: 80, name: "Slot Machine", icon: "🎰", cat: "card", glow: "rgba(245,158,11,0.15)", ready: true },
+            { id: 81, name: "Platformer", icon: "🏃", cat: "fun", glow: "rgba(16,185,129,0.15)", ready: true },
+            { id: 82, name: "Cookie Clicker", icon: "🍪", cat: "fun", glow: "rgba(245,158,11,0.15)", ready: true },
+            { id: 83, name: "Idle Farm", icon: "🌾", cat: "fun", glow: "rgba(16,185,129,0.15)", ready: true },
+            { id: 84, name: "Rock Paper Scissors", icon: "✂️", cat: "fun", glow: "rgba(6,182,212,0.15)", ready: true },
+            { id: 85, name: "Trivia Quiz", icon: "❓", cat: "fun", glow: "rgba(124,58,237,0.15)", ready: true },
+            { id: 86, name: "True or False", icon: "✅", cat: "fun", glow: "rgba(16,185,129,0.15)", ready: true },
+            { id: 87, name: "Spin Wheel", icon: "🎡", cat: "fun", glow: "rgba(245,158,11,0.15)", ready: true },
+            { id: 88, name: "Paint Mixer", icon: "🎨", cat: "fun", glow: "rgba(245,158,11,0.15)", ready: true },
+            { id: 89, name: "Drawing Canvas", icon: "🖌️", cat: "fun", glow: "rgba(124,58,237,0.15)", ready: true },
+            { id: 90, name: "Pixel Art Maker", icon: "🎨", cat: "fun", glow: "rgba(239,68,68,0.15)", ready: true },
+            { id: 91, name: "Color Picker Game", icon: "🌈", cat: "fun", glow: "rgba(6,182,212,0.15)", ready: true },
+            { id: 92, name: "Drum Pad", icon: "🥁", cat: "fun", glow: "rgba(239,68,68,0.15)", ready: true },
+            { id: 93, name: "Virtual Piano", icon: "🎹", cat: "fun", glow: "rgba(6,182,212,0.15)", ready: true },
+            { id: 94, name: "Metronome", icon: "🎵", cat: "fun", glow: "rgba(124,58,237,0.15)", ready: true },
+            { id: 95, name: "Rhythm Tap", icon: "🎶", cat: "fun", glow: "rgba(245,158,11,0.15)", ready: true },
+            { id: 96, name: "Geography Quiz", icon: "🌍", cat: "fun", glow: "rgba(16,185,129,0.15)", ready: true },
+            { id: 97, name: "Animal Sound Quiz", icon: "🐾", cat: "fun", glow: "rgba(245,158,11,0.15)", ready: true },
+            { id: 98, name: "Flag Guesser", icon: "🏳️", cat: "fun", glow: "rgba(239,68,68,0.15)", ready: true },
+            { id: 99, name: "Emoji Match", icon: "😀", cat: "fun", glow: "rgba(245,158,11,0.15)", ready: true },
+            { id: 100, name: "Escape Room", icon: "🚪", cat: "fun", glow: "rgba(124,58,237,0.15)", ready: true },
+        ];
+
+        const CAT_LABELS = { all: "All", arcade: "🕹️ Classic Arcade", puzzle: "🧩 Puzzle & Brain", action: "🔫 Action & Shooting", card: "🃏 Card & Dice", fun: "🎉 Fun & Misc" };
+        const CAT_ORDER = ["arcade", "puzzle", "action", "card", "fun"];
+
+        let activeCat = "all", searchQ = "";
+
+        function padId(n) { return String(n).padStart(2, "0"); }
+        function gameUrl(g) { return `games/${padId(g.id)}-${g.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/-+$/, "")}/index.html`; }
+
+        function render() {
+            const wrap = document.getElementById("gridWrap"); wrap.innerHTML = "";
+            const q = searchQ.toLowerCase();
+            const filtered = GAMES.filter(g => {
+                return (activeCat === "all" || g.cat === activeCat) && (!q || g.name.toLowerCase().includes(q));
+            });
+            if (!filtered.length) { wrap.innerHTML = `<div class="no-results">🎮 No games found for "${searchQ}".</div>`; return; }
+            const cats = activeCat === "all" ? CAT_ORDER : [activeCat];
+            cats.forEach(cat => {
+                const catGames = filtered.filter(g => g.cat === cat);
+                if (!catGames.length) return;
+                const title = document.createElement("div"); title.className = "category-title"; title.textContent = CAT_LABELS[cat]; wrap.appendChild(title);
+                const grid = document.createElement("div"); grid.className = "games-grid";
+                catGames.forEach(g => {
+                    const a = document.createElement("a");
+                    a.className = "game-card" + (g.ready ? "" : " coming-soon");
+                    a.href = g.ready ? gameUrl(g) : "#";
+                    a.style.setProperty("--glow-color", g.glow);
+                    a.innerHTML = `${!g.ready ? '<span class="coming-badge">Soon</span>' : ''}<div class="game-num">#${padId(g.id)}</div><span class="game-icon">${g.icon}</span><div class="game-name">${g.name}</div><span class="game-tag">${CAT_LABELS[g.cat].replace(/^[^\s]+\s/, "")}</span>`;
+                    grid.appendChild(a);
+                });
+                wrap.appendChild(grid);
+            });
+        }
+
+        document.getElementById("search").addEventListener("input", e => { searchQ = e.target.value; render(); });
+        document.querySelectorAll(".filter-btn").forEach(btn => {
+            btn.addEventListener("click", () => {
+                document.querySelectorAll(".filter-btn").forEach(b => b.classList.remove("active"));
+                btn.classList.add("active"); activeCat = btn.dataset.cat; render();
+            });
+        });
+        render();
+    </script>
+</body>
+
+</html>

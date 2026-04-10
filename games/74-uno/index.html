@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>UNO | 100 HTML Games</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        body {
+            background: #0a0a0f;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Outfit', sans-serif;
+            color: #fff;
+            padding: 16px
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 900;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #ef4444, #eab308, #22c55e, #3b82f6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text
+        }
+
+        .info {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 10px;
+            font-size: 13px;
+            color: #64748b
+        }
+
+        .info b {
+            color: #ef4444
+        }
+
+        .pile-area {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+            margin: 12px 0
+        }
+
+        .top-card {
+            width: 80px;
+            height: 112px;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            font-size: 1.6rem;
+            border: 3px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4)
+        }
+
+        .draw-card {
+            width: 80px;
+            height: 112px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #1e293b, #0f172a);
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            cursor: pointer;
+            transition: all .15s
+        }
+
+        .draw-card:hover {
+            border-color: #3b82f6
+        }
+
+        .hand {
+            display: flex;
+            gap: 6px;
+            margin: 8px 0;
+            flex-wrap: wrap;
+            justify-content: center;
+            max-width: 560px
+        }
+
+        .card {
+            width: 54px;
+            height: 76px;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            cursor: pointer;
+            transition: all .15s;
+            border: 2px solid rgba(0, 0, 0, 0.2)
+        }
+
+        .card:hover {
+            transform: translateY(-6px)
+        }
+
+        .card.playable {
+            box-shadow: 0 0 12px rgba(255, 255, 255, 0.3)
+        }
+
+        .color-pick {
+            display: flex;
+            gap: 8px;
+            margin: 8px 0;
+            justify-content: center
+        }
+
+        .cpick {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 3px solid rgba(255, 255, 255, 0.2);
+            transition: all .15s
+        }
+
+        .cpick:hover {
+            transform: scale(1.2);
+            border-color: #fff
+        }
+
+        #msg {
+            font-size: 1rem;
+            font-weight: 700;
+            min-height: 28px;
+            text-align: center;
+            margin: 8px 0;
+            color: #64748b
+        }
+
+        .label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #64748b;
+            margin: 6px 0
+        }
+
+        .btn {
+            padding: 10px 22px;
+            background: linear-gradient(135deg, #ef4444, #eab308);
+            border: none;
+            border-radius: 999px;
+            color: #fff;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: 'Outfit', sans-serif;
+            transition: transform .15s
+        }
+
+        .btn:hover {
+            transform: scale(1.05)
+        }
+
+        .back {
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            text-decoration: none;
+            color: #64748b;
+            font-size: 13px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 6px 14px;
+            border-radius: 999px
+        }
+
+        .back:hover {
+            color: #fff
+        }
+    </style>
+</head>
+
+<body>
+    <a href="../../index.html" class="back">← Back to Menu</a>
+    <h1>🎴 UNO</h1>
+    <div class="info"><span>You: <b id="yc">0</b></span><span>CPU: <b id="cc">0</b></span><span>Deck: <b
+                id="dc">0</b></span></div>
+    <div class="pile-area">
+        <div class="draw-card" id="drawPile">🂠</div>
+        <div class="top-card" id="topCard">-</div>
+    </div>
+    <div class="color-pick" id="colorPick" style="display:none"></div>
+    <div id="msg">Play a matching card or draw!</div>
+    <div class="label">Your Hand</div>
+    <div class="hand" id="yourHand"></div>
+    <button class="btn" id="newBtn">🔄 New Game</button>
+    <script>
+        const COLORS = [{ name: 'Red', bg: '#ef4444', fg: '#fff' }, { name: 'Blue', bg: '#3b82f6', fg: '#fff' }, { name: 'Green', bg: '#22c55e', fg: '#fff' }, { name: 'Yellow', bg: '#eab308', fg: '#000' }];
+        const NUMBERS = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
+        const SPECIALS = ['Skip', 'Rev', 'D+2'];
+        function mkDeck() {
+            const d = []; COLORS.forEach((c, ci) => { NUMBERS.forEach(n => { d.push({ color: ci, val: n }); if (n !== '0') d.push({ color: ci, val: n }); }); SPECIALS.forEach(s => { d.push({ color: ci, val: s }); d.push({ color: ci, val: s }); }); });
+            for (let i = 0; i < 4; i++) { d.push({ color: -1, val: 'Wild' }); d.push({ color: -1, val: 'W+4' }); } return d.sort(() => Math.random() - .5);
+        }
+
+        let deck, you, cpu, top, currentColor, turn, phase;
+        function init() { deck = mkDeck(); you = deck.splice(0, 7); cpu = deck.splice(0, 7); do { top = deck.pop(); } while (top.color === -1); currentColor = top.color; turn = 'you'; phase = 'play'; document.getElementById('msg').textContent = 'Play a matching card or draw!'; render(); }
+
+        function canPlay(c) { if (c.color === -1) return true; return c.color === currentColor || c.val === top.val; }
+        function colorName(c) { return c >= 0 ? COLORS[c].name : 'Wild'; }
+
+        function play(i) {
+            if (turn !== 'you' || phase !== 'play') return; const c = you[i]; if (!canPlay(c)) return;
+            top = you.splice(i, 1)[0];
+            if (top.color === -1) { showColorPicker(); return; }
+            currentColor = top.color; applySpecial(top, 'cpu'); afterPlay();
+        }
+
+        function showColorPicker() {
+            const cp = document.getElementById('colorPick'); cp.style.display = 'flex'; cp.innerHTML = '';
+            COLORS.forEach((c, i) => { const b = document.createElement('div'); b.className = 'cpick'; b.style.background = c.bg; b.addEventListener('click', () => { currentColor = i; cp.style.display = 'none'; applySpecial(top, 'cpu'); afterPlay(); }); cp.appendChild(b); });
+        }
+
+        function applySpecial(card, target) {
+            if (card.val === 'D+2') { const hand = target === 'cpu' ? cpu : you; for (let i = 0; i < 2; i++)if (deck.length) hand.push(deck.pop()); }
+            if (card.val === 'W+4') { const hand = target === 'cpu' ? cpu : you; for (let i = 0; i < 4; i++)if (deck.length) hand.push(deck.pop()); }
+            if (card.val === 'Skip') { }// skip opponent turn
+        }
+
+        function afterPlay() {
+            render(); if (you.length === 0) { document.getElementById('msg').textContent = '🏆 You win!'; phase = 'done'; return; }
+            turn = 'cpu'; document.getElementById('msg').textContent = 'CPU thinking...';
+            setTimeout(cpuTurn, 700);
+        }
+
+        function cpuTurn() {
+            const playable = cpu.findIndex(c => canPlay(c));
+            if (playable >= 0) { top = cpu.splice(playable, 1)[0]; if (top.color === -1) currentColor = Math.floor(Math.random() * 4); else currentColor = top.color; applySpecial(top, 'you'); document.getElementById('msg').textContent = `CPU plays ${top.val} ${colorName(top.color === -1 ? currentColor : top.color)}`; }
+            else if (deck.length) { cpu.push(deck.pop()); document.getElementById('msg').textContent = 'CPU draws.'; }
+            if (cpu.length === 0) { document.getElementById('msg').textContent = '💀 CPU wins!'; phase = 'done'; render(); return; }
+            turn = 'you'; phase = 'play'; render();
+        }
+
+        document.getElementById('drawPile').addEventListener('click', () => { if (turn !== 'you' || phase !== 'play' || !deck.length) return; you.push(deck.pop()); document.getElementById('msg').textContent = 'Drew a card.'; render(); });
+
+        function render() {
+            document.getElementById('yc').textContent = you.length; document.getElementById('cc').textContent = cpu.length; document.getElementById('dc').textContent = deck.length;
+            const tc = document.getElementById('topCard'); const ci = top.color >= 0 ? top.color : currentColor; tc.style.background = COLORS[ci].bg; tc.style.color = COLORS[ci].fg; tc.textContent = top.val;
+            const yh = document.getElementById('yourHand'); yh.innerHTML = '';
+            you.forEach((c, i) => { const el = document.createElement('div'); const bgc = c.color >= 0 ? COLORS[c.color] : null; el.className = `card${canPlay(c) ? ' playable' : ''}`; el.style.background = bgc ? bgc.bg : '#1e293b'; el.style.color = bgc ? bgc.fg : '#fff'; el.innerHTML = `<div style="font-size:0.7rem">${c.val}</div>`; el.addEventListener('click', () => play(i)); yh.appendChild(el); });
+        }
+
+        document.getElementById('newBtn').addEventListener('click', init); init();
+    </script>
+</body>
+
+</html>

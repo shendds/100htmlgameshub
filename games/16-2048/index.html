@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>2048 | 100 HTML Games</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        body {
+            background: #0a0a0f;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Outfit', sans-serif;
+            color: #fff
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 900;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #f59e0b, #ef4444);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text
+        }
+
+        .info {
+            display: flex;
+            gap: 24px;
+            margin-bottom: 14px
+        }
+
+        .score-box {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 8px 20px;
+            text-align: center;
+            min-width: 90px
+        }
+
+        .score-label {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #64748b
+        }
+
+        .score-val {
+            font-size: 1.5rem;
+            font-weight: 900;
+            color: #f59e0b
+        }
+
+        #grid {
+            display: grid;
+            grid-template-columns: repeat(4, 100px);
+            gap: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 14px;
+            border-radius: 16px;
+            margin-bottom: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.08)
+        }
+
+        .tile {
+            width: 100px;
+            height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+            font-size: 1.8rem;
+            font-weight: 900;
+            transition: all .12s;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.06)
+        }
+
+        .btn {
+            padding: 10px 24px;
+            background: linear-gradient(135deg, #f59e0b, #ef4444);
+            border: none;
+            border-radius: 999px;
+            color: #fff;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform .15s;
+            font-family: 'Outfit', sans-serif
+        }
+
+        .btn:hover {
+            transform: scale(1.05)
+        }
+
+        #msg {
+            font-size: 1rem;
+            min-height: 24px;
+            margin-bottom: 12px;
+            text-align: center;
+            color: #64748b
+        }
+
+        .back {
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            text-decoration: none;
+            color: #64748b;
+            font-size: 13px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 6px 14px;
+            border-radius: 999px
+        }
+
+        .back:hover {
+            color: #fff
+        }
+
+        .hint {
+            font-size: 12px;
+            color: #334155;
+            margin-top: 8px
+        }
+    </style>
+</head>
+
+<body>
+    <a href="../../index.html" class="back">← Back to Menu</a>
+    <h1>🔲 2048</h1>
+    <div class="info">
+        <div class="score-box">
+            <div class="score-label">Score</div>
+            <div class="score-val" id="score">0</div>
+        </div>
+        <div class="score-box">
+            <div class="score-label">Best</div>
+            <div class="score-val" id="best">0</div>
+        </div>
+    </div>
+    <div id="grid"></div>
+    <div id="msg">Combine tiles to reach 2048!</div>
+    <button class="btn" id="newBtn">▶ New Game</button>
+    <div class="hint">Arrow keys or swipe to move</div>
+    <script>
+        const COLORS = { 2: '#1e293b', 4: '#1e3a5f', 8: '#1e4d3f', 16: '#713f12', 32: '#7c2d12', 64: '#991b1b', 128: '#6d28d9', 256: '#7c3aed', 512: '#0369a1', 1024: '#0e7490', 2048: '#b45309', 4096: '#9f1239' };
+        const TEXT_COLORS = { 2: '#cbd5e1', 4: '#93c5fd', 8: '#6ee7b7', 16: '#fde68a', 32: '#fca5a5', 64: '#f87171', 128: '#c4b5fd', 256: '#a78bfa', 512: '#7dd3fc', 1024: '#67e8f9', 2048: '#fcd34d', 4096: '#fca5a5' };
+
+        let grid, score, best = 0;
+        function init() { grid = Array(16).fill(0); score = 0; addTile(); addTile(); render(); }
+
+        function addTile() { const empty = grid.reduce((a, v, i) => { if (!v) a.push(i); return a; }, []); if (!empty.length) return; const i = empty[Math.floor(Math.random() * empty.length)]; grid[i] = Math.random() < 0.9 ? 2 : 4; }
+
+        function slide(row) { const f = row.filter(v => v); for (let i = 0; i < f.length - 1; i++) { if (f[i] === f[i + 1]) { f[i] *= 2; score += f[i]; if (score > best) { best = score; document.getElementById('best').textContent = best; } f.splice(i + 1, 1); } } while (f.length < 4) f.push(0); return f; }
+
+        function move(dir) {
+            const old = [...grid]; let rows = Array.from({ length: 4 }, (_, r) => grid.slice(r * 4, r * 4 + 4));
+            if (dir === 'up' || dir === 'down') { rows = Array.from({ length: 4 }, (_, c) => grid.filter((_, i) => i % 4 === c)); }
+            if (dir === 'right' || dir === 'down') rows = rows.map(r => [...r].reverse());
+            rows = rows.map(slide);
+            if (dir === 'right' || dir === 'down') rows = rows.map(r => [...r].reverse());
+            if (dir === 'left' || dir === 'right') { rows.forEach((r, i) => r.forEach((v, j) => grid[i * 4 + j] = v)); }
+            else { rows.forEach((c, i) => c.forEach((v, j) => grid[j * 4 + i] = v)); }
+            if (grid.some((v, i) => v !== old[i])) { addTile(); }
+            render();
+            if (grid.includes(2048) && !document.getElementById('msg').textContent.includes('🏆')) document.getElementById('msg').textContent = '🏆 You reached 2048!';
+            if (!grid.includes(0)) { let hasMove = false; for (let i = 0; i < 4; i++)for (let j = 0; j < 4; j++) { if (j < 3 && grid[i * 4 + j] === grid[i * 4 + j + 1]) hasMove = true; if (i < 3 && grid[i * 4 + j] === grid[i * 4 + j + 4]) hasMove = true; } if (!hasMove) document.getElementById('msg').textContent = '💀 Game Over! No moves left.'; }
+        }
+
+        function render() {
+            document.getElementById('score').textContent = score; document.getElementById('best').textContent = best;
+            const el = document.getElementById('grid'); el.innerHTML = '';
+            grid.forEach(v => { const d = document.createElement('div'); d.className = 'tile'; if (v) { d.textContent = v; d.style.background = COLORS[v] || '#4a044e'; d.style.color = TEXT_COLORS[v] || '#f0abfc'; d.style.boxShadow = `0 0 20px ${COLORS[v] || '#4a044e'}88`; } el.appendChild(d); });
+        }
+
+        document.addEventListener('keydown', e => { const m = { ArrowLeft: 'left', ArrowRight: 'right', ArrowUp: 'up', ArrowDown: 'down' }; if (m[e.key]) { e.preventDefault(); move(m[e.key]); } });
+        // Touch swipe
+        let tx = 0, ty = 0;
+        document.addEventListener('touchstart', e => { tx = e.touches[0].clientX; ty = e.touches[0].clientY; });
+        document.addEventListener('touchend', e => { const dx = e.changedTouches[0].clientX - tx, dy = e.changedTouches[0].clientY - ty; if (Math.abs(dx) > Math.abs(dy)) move(dx > 0 ? 'right' : 'left'); else move(dy > 0 ? 'down' : 'up'); });
+        document.getElementById('newBtn').addEventListener('click', () => { init(); document.getElementById('msg').textContent = 'Combine tiles to reach 2048!'; });
+        init();
+    </script>
+</body>
+
+</html>

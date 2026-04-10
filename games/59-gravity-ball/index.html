@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>Gravity Ball | 100 HTML Games</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        body {
+            background: #0a0a0f;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Outfit', sans-serif;
+            color: #fff;
+            padding: 16px
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 900;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #7c3aed, #ec4899);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text
+        }
+
+        .info {
+            display: flex;
+            gap: 24px;
+            margin-bottom: 10px;
+            font-size: 14px;
+            color: #64748b
+        }
+
+        .info span b {
+            color: #7c3aed;
+            font-size: 1.2em
+        }
+
+        canvas {
+            border: 2px solid rgba(124, 58, 237, 0.3);
+            border-radius: 12px;
+            background: #050510;
+            cursor: pointer;
+            box-shadow: 0 0 30px rgba(124, 58, 237, 0.1)
+        }
+
+        .btn {
+            margin-top: 12px;
+            padding: 10px 28px;
+            background: linear-gradient(135deg, #7c3aed, #ec4899);
+            border: none;
+            border-radius: 999px;
+            color: #fff;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: 'Outfit', sans-serif;
+            transition: transform .15s
+        }
+
+        .btn:hover {
+            transform: scale(1.05)
+        }
+
+        #msg {
+            margin-top: 10px;
+            font-size: 13px;
+            color: #64748b;
+            min-height: 22px;
+            text-align: center
+        }
+
+        .back {
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            text-decoration: none;
+            color: #64748b;
+            font-size: 13px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 6px 14px;
+            border-radius: 999px
+        }
+
+        .back:hover {
+            color: #fff
+        }
+    </style>
+</head>
+
+<body>
+    <a href="../../index.html" class="back">← Back to Menu</a>
+    <h1>🌀 Gravity Ball</h1>
+    <div class="info"><span>Score: <b id="score">0</b></span><span>Level: <b id="level">1</b></span><span>Lives: <b
+                id="lives">3</b></span></div>
+    <canvas id="c" width="440" height="440"></canvas>
+    <div id="msg">Click to apply gravity toward cursor — guide ball to the star!</div>
+    <button class="btn" id="startBtn">▶ Start</button>
+    <script>
+        const c = document.getElementById('c'), ctx = c.getContext('2d'), W = 440, H = 440;
+        let ball, target, obstacles, score, level, lives, running, animId, mouseX = W / 2, mouseY = H / 2, clicking = false;
+
+        function init() {
+            ball = { x: 50, y: H - 50, vx: 0, vy: 0, r: 10 }; target = { x: W - 50, y: 50, r: 14 }; obstacles = [];
+            for (let i = 0; i < 2 + level; i++) { obstacles.push({ x: 80 + Math.random() * (W - 160), y: 80 + Math.random() * (H - 160), r: 18 + Math.random() * 20 }); }
+        }
+
+        function start() { score = 0; level = 1; lives = 3; running = true;['score', 'level', 'lives'].forEach(id => document.getElementById(id).textContent = id === 'lives' ? 3 : id === 'level' ? 1 : 0); document.getElementById('msg').textContent = ''; document.getElementById('startBtn').textContent = '↩ Restart'; init(); cancelAnimationFrame(animId); loop(); }
+
+        function update() {
+            if (clicking) { const dx = mouseX - ball.x, dy = mouseY - ball.y; const d = Math.max(20, Math.hypot(dx, dy)); ball.vx += dx / d * 0.4; ball.vy += dy / d * 0.4; }
+            ball.vx *= 0.99; ball.vy *= 0.99; ball.x += ball.vx; ball.y += ball.vy;
+            if (ball.x < ball.r) { ball.x = ball.r; ball.vx *= -0.7; } if (ball.x > W - ball.r) { ball.x = W - ball.r; ball.vx *= -0.7; }
+            if (ball.y < ball.r) { ball.y = ball.r; ball.vy *= -0.7; } if (ball.y > H - ball.r) { ball.y = H - ball.r; ball.vy *= -0.7; }
+            // obstacles
+            for (const o of obstacles) { const dx = ball.x - o.x, dy = ball.y - o.y, d = Math.hypot(dx, dy); if (d < ball.r + o.r) { lives--; document.getElementById('lives').textContent = lives; if (lives <= 0) { running = false; document.getElementById('msg').textContent = `💀 Game Over! Score: ${score}`; return; } ball.x = 50; ball.y = H - 50; ball.vx = 0; ball.vy = 0; return; } }
+            // target
+            const dx = ball.x - target.x, dy = ball.y - target.y; if (Math.hypot(dx, dy) < ball.r + target.r) { score += 10 * level; level++; document.getElementById('score').textContent = score; document.getElementById('level').textContent = level; init(); }
+        }
+
+        function draw() {
+            ctx.fillStyle = 'rgba(5,5,16,0.3)'; ctx.fillRect(0, 0, W, H);
+            // Gravity field
+            if (clicking) { ctx.strokeStyle = 'rgba(124,58,237,0.15)'; ctx.lineWidth = 1; for (let r = 20; r < 200; r += 30) { ctx.beginPath(); ctx.arc(mouseX, mouseY, r, 0, Math.PI * 2); ctx.stroke(); } }
+            obstacles.forEach(o => { ctx.fillStyle = 'rgba(239,68,68,0.3)'; ctx.shadowColor = '#ef4444'; ctx.shadowBlur = 10; ctx.beginPath(); ctx.arc(o.x, o.y, o.r, 0, Math.PI * 2); ctx.fill(); ctx.shadowBlur = 0; });
+            // Target
+            ctx.fillStyle = '#eab308'; ctx.shadowColor = '#eab308'; ctx.shadowBlur = 20; ctx.beginPath(); ctx.arc(target.x, target.y, target.r, 0, Math.PI * 2); ctx.fill(); ctx.font = '20px serif'; ctx.textAlign = 'center'; ctx.fillText('⭐', target.x, target.y + 7); ctx.shadowBlur = 0;
+            // Ball
+            ctx.fillStyle = '#7c3aed'; ctx.shadowColor = '#7c3aed'; ctx.shadowBlur = 16; ctx.beginPath(); ctx.arc(ball.x, ball.y, ball.r, 0, Math.PI * 2); ctx.fill(); ctx.shadowBlur = 0;
+        }
+
+        function loop() { if (!running) return; update(); draw(); animId = requestAnimationFrame(loop); }
+        c.addEventListener('mousemove', e => { const r = c.getBoundingClientRect(); mouseX = e.clientX - r.left; mouseY = e.clientY - r.top; });
+        c.addEventListener('mousedown', () => clicking = true); c.addEventListener('mouseup', () => clicking = false);
+        c.addEventListener('touchstart', e => { clicking = true; const r = c.getBoundingClientRect(); mouseX = e.touches[0].clientX - r.left; mouseY = e.touches[0].clientY - r.top; }, { passive: true });
+        c.addEventListener('touchmove', e => { const r = c.getBoundingClientRect(); mouseX = e.touches[0].clientX - r.left; mouseY = e.touches[0].clientY - r.top; }, { passive: true });
+        c.addEventListener('touchend', () => clicking = false);
+        document.getElementById('startBtn').addEventListener('click', start);
+        ctx.fillStyle = '#050510'; ctx.fillRect(0, 0, W, H);
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>Checkers | 100 HTML Games</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        body {
+            background: #0a0a0f;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Outfit', sans-serif;
+            color: #fff;
+            padding: 16px
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 900;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #94a3b8, #e2e8f0);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text
+        }
+
+        #board {
+            display: grid;
+            grid-template-columns: repeat(8, 58px);
+            gap: 0;
+            border: 2px solid rgba(255, 255, 255, 0.15);
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 16px;
+            box-shadow: 0 0 40px rgba(0, 0, 0, 0.5)
+        }
+
+        .sq {
+            width: 58px;
+            height: 58px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            position: relative;
+            transition: background .1s
+        }
+
+        .sq.dark {
+            background: #1e3a5f
+        }
+
+        .sq.light {
+            background: #0f172a
+        }
+
+        .sq.dark:hover {
+            background: #1e4d7f
+        }
+
+        .sq.selected {
+            background: rgba(124, 58, 237, 0.5) !important
+        }
+
+        .sq.valid-move {
+            background: rgba(34, 197, 94, 0.3) !important
+        }
+
+        .sq.valid-move::after {
+            content: '';
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: rgba(34, 197, 94, 0.7);
+            position: absolute
+        }
+
+        .piece {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            border: 3px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.5);
+            transition: transform .15s
+        }
+
+        .piece:hover {
+            transform: scale(1.1)
+        }
+
+        .piece.red {
+            background: radial-gradient(circle, #f87171, #ef4444)
+        }
+
+        .piece.black {
+            background: radial-gradient(circle, #475569, #1e293b)
+        }
+
+        .info {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 14px;
+            font-size: 14px;
+            color: #64748b
+        }
+
+        .info span b {
+            font-size: 1.2em
+        }
+
+        #turn-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 14px;
+            font-weight: 700;
+            font-size: 1rem
+        }
+
+        .btn {
+            padding: 10px 22px;
+            background: linear-gradient(135deg, #475569, #94a3b8);
+            border: none;
+            border-radius: 999px;
+            color: #fff;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform .15s;
+            font-family: 'Outfit', sans-serif
+        }
+
+        .btn:hover {
+            transform: scale(1.05)
+        }
+
+        #msg {
+            font-size: 1rem;
+            min-height: 24px;
+            margin-bottom: 12px;
+            text-align: center;
+            color: #64748b
+        }
+
+        .back {
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            text-decoration: none;
+            color: #64748b;
+            font-size: 13px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 6px 14px;
+            border-radius: 999px
+        }
+
+        .back:hover {
+            color: #fff
+        }
+    </style>
+</head>
+
+<body>
+    <a href="../../index.html" class="back">← Back to Menu</a>
+    <h1>⚫ Checkers</h1>
+    <div class="info">
+        <span>🔴 Red: <b id="redCount">12</b></span>
+        <span>⚫ Black: <b id="blackCount">12</b></span>
+    </div>
+    <div id="turn-indicator" id="turnInd">🔴 Red's Turn</div>
+    <div id="board"></div>
+    <div id="msg">Click a piece to select it</div>
+    <button class="btn" id="newBtn">▶ New Game</button>
+    <script>
+        // 0=empty, 1=red, 2=black, 3=red king, 4=black king
+        let board, turn, selected, validMoves;
+
+        function initBoard() {
+            board = Array.from({ length: 8 }, () => Array(8).fill(0));
+            for (let r = 0; r < 3; r++)for (let c = 0; c < 8; c++) { if ((r + c) % 2 === 1) board[r][c] = 2; }
+            for (let r = 5; r < 8; r++)for (let c = 0; c < 8; c++) { if ((r + c) % 2 === 1) board[r][c] = 1; }
+            turn = 1; selected = null; validMoves = [];
+            document.getElementById('msg').textContent = 'Click a red piece to select';
+            updateCount(); render();
+        }
+
+        function isRed(v) { return v === 1 || v === 3; } function isBlack(v) { return v === 2 || v === 4; }
+        function isKing(v) { return v === 3 || v === 4; } function isOwn(v) { return turn === 1 ? isRed(v) : isBlack(v); }
+
+        function getMoves(r, c, boardState, jumpOnly = false) {
+            const v = boardState[r][c]; const dirs = [];
+            if (isRed(v) || isKing(v)) dirs.push(-1); if (isBlack(v) || isKing(v)) dirs.push(1);
+            const moves = [];
+            for (const dr of dirs) for (const dc of [-1, 1]) {
+                const nr = r + dr, nc = c + dc;
+                if (nr < 0 || nr >= 8 || nc < 0 || nc >= 8) continue;
+                if (!boardState[nr][nc] && !jumpOnly) { moves.push({ r: nr, c: nc, jump: false }); }
+                else if ((turn === 1 ? isBlack(boardState[nr][nc]) : isRed(boardState[nr][nc]))) { const jr = r + dr * 2, jc = c + dc * 2; if (jr >= 0 && jr < 8 && jc >= 0 && jc < 8 && !boardState[jr][jc]) moves.push({ r: jr, c: jc, jump: true, jr: nr, jc: nc }); }
+            }
+            return moves;
+        }
+
+        function hasJumps() {
+            for (let r = 0; r < 8; r++)for (let c = 0; c < 8; c++)if (isOwn(board[r][c]) && getMoves(r, c, board, true).length) return true; return false;
+        }
+
+        function select(r, c) {
+            if (selected && validMoves.find(m => m.r === r && m.c === c)) {
+                const move = validMoves.find(m => m.r === r && m.c === c);
+                board[r][c] = board[selected.r][selected.c]; board[selected.r][selected.c] = 0;
+                if (move.jump) { board[move.jr][move.jc] = 0; }
+                // king promotion
+                if (board[r][c] === 1 && r === 0) board[r][c] = 3; if (board[r][c] === 2 && r === 7) board[r][c] = 4;
+                selected = null; validMoves = []; updateCount();
+                const rc = board.flat().filter(isRed).length, bc = board.flat().filter(isBlack).length;
+                if (!rc) { document.getElementById('msg').textContent = '🏆 Black wins!'; render(); return; }
+                if (!bc) { document.getElementById('msg').textContent = '🏆 Red wins!'; render(); return; }
+                turn = turn === 1 ? 2 : 1; document.getElementById('turn-indicator').textContent = turn === 1 ? '🔴 Red\'s Turn' : '⚫ Black\'s Turn';
+                document.getElementById('msg').textContent = `Click a ${turn === 1 ? 'red' : 'black'} piece`;
+                render(); return;
+            }
+            if (isOwn(board[r][c])) {
+                const jump = hasJumps(); const moves = getMoves(r, c, board).filter(m => !jump || m.jump);
+                selected = { r, c }; validMoves = moves; render();
+            }
+        }
+
+        function updateCount() { document.getElementById('redCount').textContent = board.flat().filter(isRed).length; document.getElementById('blackCount').textContent = board.flat().filter(isBlack).length; }
+
+        function render() {
+            const el = document.getElementById('board'); el.innerHTML = '';
+            for (let r = 0; r < 8; r++)for (let c = 0; c < 8; c++) {
+                const sq = document.createElement('div'); sq.className = `sq ${(r + c) % 2 ? 'dark' : 'light'}`;
+                if (selected && selected.r === r && selected.c === c) sq.classList.add('selected');
+                if (validMoves.find(m => m.r === r && m.c === c)) sq.classList.add('valid-move');
+                if (board[r][c]) { const p = document.createElement('div'); p.className = `piece ${isRed(board[r][c]) ? 'red' : 'black'}`; p.textContent = isKing(board[r][c]) ? '👑' : ''; sq.appendChild(p); }
+                sq.addEventListener('click', () => select(r, c)); el.appendChild(sq);
+            }
+        }
+
+        document.getElementById('newBtn').addEventListener('click', initBoard);
+        initBoard();
+    </script>
+</body>
+
+</html>

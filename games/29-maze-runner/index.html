@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>Maze Runner | 100 HTML Games</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        body {
+            background: #0a0a0f;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Outfit', sans-serif;
+            color: #fff;
+            padding: 16px
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 900;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #7c3aed, #06b6d4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text
+        }
+
+        .info {
+            display: flex;
+            gap: 24px;
+            margin-bottom: 12px;
+            font-size: 14px;
+            color: #64748b
+        }
+
+        .info span b {
+            color: #7c3aed;
+            font-size: 1.2em
+        }
+
+        canvas {
+            border: 2px solid rgba(124, 58, 237, 0.3);
+            border-radius: 12px;
+            background: #080814;
+            box-shadow: 0 0 30px rgba(124, 58, 237, 0.1)
+        }
+
+        #msg {
+            margin-top: 14px;
+            font-size: 1rem;
+            color: #64748b;
+            min-height: 24px;
+            text-align: center
+        }
+
+        .btns {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px
+        }
+
+        .btn {
+            padding: 10px 22px;
+            background: linear-gradient(135deg, #7c3aed, #06b6d4);
+            border: none;
+            border-radius: 999px;
+            color: #fff;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform .15s;
+            font-family: 'Outfit', sans-serif
+        }
+
+        .btn:hover {
+            transform: scale(1.05)
+        }
+
+        .dpad {
+            display: grid;
+            grid-template-columns: repeat(3, 48px);
+            gap: 4px;
+            margin-top: 12px
+        }
+
+        .dpad-btn {
+            width: 48px;
+            height: 48px;
+            background: rgba(255, 255, 255, 0.07);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 8px;
+            color: #e2e8f0;
+            font-size: 1.2rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all .1s;
+            font-family: 'Outfit', sans-serif
+        }
+
+        .dpad-btn:active {
+            background: rgba(124, 58, 237, 0.3);
+            transform: scale(0.9)
+        }
+
+        .back {
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            text-decoration: none;
+            color: #64748b;
+            font-size: 13px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 6px 14px;
+            border-radius: 999px
+        }
+
+        .back:hover {
+            color: #fff
+        }
+    </style>
+</head>
+
+<body>
+    <a href="../../index.html" class="back">← Back to Menu</a>
+    <h1>🌀 Maze Runner</h1>
+    <div class="info">
+        <span>Level: <b id="level">1</b></span>
+        <span>Steps: <b id="steps">0</b></span>
+        <span>Time: <b id="time">0</b>s</span>
+    </div>
+    <canvas id="c"></canvas>
+    <div id="msg">Use arrow keys to navigate to the exit 🚪</div>
+    <div class="btns"><button class="btn" id="newBtn">🔀 New Maze</button></div>
+    <div class="dpad">
+        <div></div><button class="dpad-btn" data-dir="up">↑</button>
+        <div></div>
+        <button class="dpad-btn" data-dir="left">←</button>
+        <div></div><button class="dpad-btn" data-dir="right">→</button>
+        <div></div><button class="dpad-btn" data-dir="down">↓</button>
+        <div></div>
+    </div>
+    <script>
+        const CELL = 24; let COLS = 21, ROWS = 21, maze, player, steps, level = 1, elapsed, timerInt, started = false;
+        const canvas = document.getElementById('c'), ctx = canvas.getContext('2d');
+
+        function generate(cols, rows) {
+            // Recursive backtracker
+            const grid = Array.from({ length: rows }, () => Array(cols).fill(1));
+            function carve(x, y) {
+                const dirs = [[0, -2], [0, 2], [-2, 0], [2, 0]].sort(() => Math.random() - .5);
+                grid[y][x] = 0;
+                for (const [dx, dy] of dirs) { const nx = x + dx, ny = y + dy; if (nx > 0 && nx < cols - 1 && ny > 0 && ny < rows - 1 && grid[ny][nx] === 1) { grid[y + dy / 2][x + dx / 2] = 0; carve(nx, ny); } }
+            }
+            carve(1, 1); grid[rows - 2][cols - 2] = 0; return grid;
+        }
+
+        function init() {
+            clearInterval(timerInt); started = false; steps = 0; elapsed = 0;
+            COLS = Math.min(21 + level * 2, 37); ROWS = Math.min(21 + level * 2, 37); if (COLS % 2 === 0) COLS++; if (ROWS % 2 === 0) ROWS++;
+            canvas.width = COLS * CELL; canvas.height = ROWS * CELL;
+            maze = generate(COLS, ROWS); player = { x: 1, y: 1 };
+            document.getElementById('steps').textContent = 0; document.getElementById('time').textContent = 0; document.getElementById('msg').textContent = 'Navigate to the exit 🚪';
+            draw();
+        }
+
+        function move(dx, dy) {
+            if (!started) { started = true; timerInt = setInterval(() => { elapsed++; document.getElementById('time').textContent = elapsed; }, 1000); }
+            const nx = player.x + dx, ny = player.y + dy;
+            if (nx < 0 || nx >= COLS || ny < 0 || ny >= ROWS || maze[ny][nx] === 1) return;
+            player.x = nx; player.y = ny; steps++; document.getElementById('steps').textContent = steps;
+            if (nx === COLS - 2 && ny === ROWS - 2) { clearInterval(timerInt); document.getElementById('msg').textContent = `🏆 Level ${level} complete! ${steps} steps, ${elapsed}s`; level++; document.getElementById('level').textContent = level; setTimeout(init, 1200); }
+            draw();
+        }
+
+        function draw() {
+            ctx.fillStyle = '#080814'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+            for (let r = 0; r < ROWS; r++)for (let c = 0; c < COLS; c++) {
+                if (maze[r][c] === 1) { ctx.fillStyle = '#1e1b4b'; ctx.fillRect(c * CELL, r * CELL, CELL, CELL); ctx.strokeStyle = 'rgba(124,58,237,0.12)'; ctx.lineWidth = 0.5; ctx.strokeRect(c * CELL, r * CELL, CELL, CELL); }
+            }
+            // start
+            ctx.fillStyle = 'rgba(16,185,129,0.3)'; ctx.fillRect(CELL, CELL, CELL, CELL);
+            // exit
+            ctx.fillStyle = 'rgba(245,158,11,0.4)'; ctx.shadowColor = '#f59e0b'; ctx.shadowBlur = 10; ctx.fillRect((COLS - 2) * CELL, (ROWS - 2) * CELL, CELL, CELL); ctx.shadowBlur = 0;
+            ctx.font = `${CELL - 4}px serif`; ctx.textAlign = 'center'; ctx.fillText('🚪', (COLS - 2) * CELL + CELL / 2, (ROWS - 2) * CELL + CELL - 2);
+            // player
+            ctx.shadowColor = '#7c3aed'; ctx.shadowBlur = 16; ctx.fillStyle = '#a78bfa'; ctx.beginPath(); ctx.arc(player.x * CELL + CELL / 2, player.y * CELL + CELL / 2, CELL / 2 - 3, 0, Math.PI * 2); ctx.fill(); ctx.shadowBlur = 0;
+            ctx.fillStyle = '#fff'; ctx.font = 'bold 12px Outfit'; ctx.fillText('😊', player.x * CELL + CELL / 2, player.y * CELL + CELL + 1);
+        }
+
+        document.addEventListener('keydown', e => { const m = { ArrowUp: [0, -1], ArrowDown: [0, 1], ArrowLeft: [-1, 0], ArrowRight: [1, 0] }; const d = m[e.key]; if (d) { e.preventDefault(); move(...d); } });
+        document.querySelectorAll('.dpad-btn').forEach(b => b.addEventListener('click', () => { const d = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] }; move(...d[b.dataset.dir]); b.classList.add('active'); setTimeout(() => b.classList.remove('active'), 100); }));
+        document.getElementById('newBtn').addEventListener('click', () => { level = 1; document.getElementById('level').textContent = level; init(); });
+        init();
+    </script>
+</body>
+
+</html>

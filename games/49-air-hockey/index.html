@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>Air Hockey | 100 HTML Games</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        body {
+            background: #0a0a0f;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Outfit', sans-serif;
+            color: #fff;
+            padding: 16px
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 900;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #ef4444, #3b82f6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text
+        }
+
+        .info {
+            display: flex;
+            gap: 24px;
+            margin-bottom: 10px;
+            font-size: 14px;
+            color: #64748b
+        }
+
+        .info span b {
+            font-size: 1.4em
+        }
+
+        canvas {
+            border: 2px solid rgba(255, 255, 255, 0.15);
+            border-radius: 12px;
+            cursor: pointer;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
+            touch-action: none
+        }
+
+        .btn {
+            margin-top: 12px;
+            padding: 10px 28px;
+            background: linear-gradient(135deg, #ef4444, #3b82f6);
+            border: none;
+            border-radius: 999px;
+            color: #fff;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: 'Outfit', sans-serif;
+            transition: transform .15s
+        }
+
+        .btn:hover {
+            transform: scale(1.05)
+        }
+
+        #msg {
+            margin-top: 10px;
+            font-size: 1rem;
+            color: #64748b;
+            min-height: 24px;
+            text-align: center
+        }
+
+        .back {
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            text-decoration: none;
+            color: #64748b;
+            font-size: 13px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 6px 14px;
+            border-radius: 999px
+        }
+
+        .back:hover {
+            color: #fff
+        }
+    </style>
+</head>
+
+<body>
+    <a href="../../index.html" class="back">← Back to Menu</a>
+    <h1>🏒 Air Hockey</h1>
+    <div class="info"><span style="color:#ef4444"><b id="s1">0</b> You</span><span style="color:#3b82f6"><b
+                id="s2">0</b> CPU</span></div>
+    <canvas id="c" width="340" height="500"></canvas>
+    <div id="msg">Move your paddle with the mouse!</div>
+    <button class="btn" id="newBtn">🔄 New Game</button>
+    <script>
+        const c = document.getElementById('c'), ctx = c.getContext('2d'), W = 340, H = 500;
+        const GOAL_W = 100, PAD_R = 24, PUCK_R = 14;
+        let player = { x: W / 2, y: H - 60 }, cpu = { x: W / 2, y: 60 }, puck = { x: W / 2, y: H / 2, vx: 0, vy: 0 }, s1 = 0, s2 = 0, animId;
+
+        function reset() { puck.x = W / 2; puck.y = H / 2; puck.vx = (Math.random() - .5) * 4; puck.vy = (Math.random() < .5 ? -1 : 1) * 4; }
+
+        function update() {
+            // CPU AI
+            const tdx = puck.x - cpu.x; cpu.x += tdx * 0.06; cpu.x = Math.max(PAD_R, Math.min(W - PAD_R, cpu.x));
+            // Puck physics
+            puck.x += puck.vx; puck.y += puck.vy; puck.vx *= 0.998; puck.vy *= 0.998;
+            // Wall bounces
+            if (puck.x < PUCK_R) { puck.x = PUCK_R; puck.vx *= -0.9; } if (puck.x > W - PUCK_R) { puck.x = W - PUCK_R; puck.vx *= -0.9; }
+            // Goals
+            const gx1 = (W - GOAL_W) / 2, gx2 = (W + GOAL_W) / 2;
+            if (puck.y < PUCK_R) { if (puck.x > gx1 && puck.x < gx2) { s1++; document.getElementById('s1').textContent = s1; document.getElementById('msg').textContent = '🎉 You scored!'; reset(); } else { puck.y = PUCK_R; puck.vy *= -0.9; } }
+            if (puck.y > H - PUCK_R) { if (puck.x > gx1 && puck.x < gx2) { s2++; document.getElementById('s2').textContent = s2; document.getElementById('msg').textContent = '💀 CPU scored!'; reset(); } else { puck.y = H - PUCK_R; puck.vy *= -0.9; } }
+            // Paddle-puck collision
+            [{ p: player }, { p: cpu }].forEach(({ p }) => { const dx = puck.x - p.x, dy = puck.y - p.y, d = Math.hypot(dx, dy); if (d < PAD_R + PUCK_R) { const nx = dx / d, ny = dy / d; puck.vx = nx * 6; puck.vy = ny * 6; puck.x = p.x + nx * (PAD_R + PUCK_R + 1); puck.y = p.y + ny * (PAD_R + PUCK_R + 1); } });
+            if (s1 >= 7 || s2 >= 7) { document.getElementById('msg').textContent = s1 >= 7 ? '🏆 You win!' : '💀 CPU wins!'; cancelAnimationFrame(animId); return; }
+        }
+
+        function draw() {
+            ctx.fillStyle = '#0a1020'; ctx.fillRect(0, 0, W, H);
+            // Center line
+            ctx.setLineDash([8, 8]); ctx.strokeStyle = 'rgba(255,255,255,0.1)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(0, H / 2); ctx.lineTo(W, H / 2); ctx.stroke(); ctx.setLineDash([]);
+            ctx.beginPath(); ctx.arc(W / 2, H / 2, 50, 0, Math.PI * 2); ctx.strokeStyle = 'rgba(255,255,255,0.08)'; ctx.stroke();
+            // Goals
+            const gx1 = (W - GOAL_W) / 2; ctx.fillStyle = 'rgba(239,68,68,0.2)'; ctx.fillRect(gx1, 0, GOAL_W, 8); ctx.fillStyle = 'rgba(59,130,246,0.2)'; ctx.fillRect(gx1, H - 8, GOAL_W, 8);
+            // Paddles
+            ctx.fillStyle = '#ef4444'; ctx.shadowColor = '#ef4444'; ctx.shadowBlur = 16; ctx.beginPath(); ctx.arc(player.x, player.y, PAD_R, 0, Math.PI * 2); ctx.fill();
+            ctx.fillStyle = '#3b82f6'; ctx.shadowColor = '#3b82f6'; ctx.beginPath(); ctx.arc(cpu.x, cpu.y, PAD_R, 0, Math.PI * 2); ctx.fill(); ctx.shadowBlur = 0;
+            // Puck
+            ctx.fillStyle = '#fff'; ctx.shadowColor = '#fff'; ctx.shadowBlur = 12; ctx.beginPath(); ctx.arc(puck.x, puck.y, PUCK_R, 0, Math.PI * 2); ctx.fill(); ctx.shadowBlur = 0;
+        }
+
+        function loop() { update(); draw(); animId = requestAnimationFrame(loop); }
+
+        c.addEventListener('mousemove', e => { const r = c.getBoundingClientRect(); player.x = Math.max(PAD_R, Math.min(W - PAD_R, e.clientX - r.left)); player.y = Math.max(H / 2 + PAD_R, Math.min(H - PAD_R, e.clientY - r.top)); });
+        c.addEventListener('touchmove', e => { e.preventDefault(); const r = c.getBoundingClientRect(); player.x = Math.max(PAD_R, Math.min(W - PAD_R, e.touches[0].clientX - r.left)); player.y = Math.max(H / 2 + PAD_R, Math.min(H - PAD_R, e.touches[0].clientY - r.top)); }, { passive: false });
+
+        function init() { s1 = 0; s2 = 0; document.getElementById('s1').textContent = 0; document.getElementById('s2').textContent = 0; document.getElementById('msg').textContent = 'Move your paddle!'; player.x = W / 2; player.y = H - 60; cpu.x = W / 2; cpu.y = 60; reset(); cancelAnimationFrame(animId); loop(); }
+        document.getElementById('newBtn').addEventListener('click', init); init();
+    </script>
+</body>
+
+</html>

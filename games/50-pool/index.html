@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>Pool | 100 HTML Games</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        body {
+            background: #0a0a0f;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Outfit', sans-serif;
+            color: #fff;
+            padding: 16px
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 900;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #22c55e, #064e3b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text
+        }
+
+        .info {
+            display: flex;
+            gap: 24px;
+            margin-bottom: 10px;
+            font-size: 14px;
+            color: #64748b
+        }
+
+        .info span b {
+            color: #22c55e;
+            font-size: 1.2em
+        }
+
+        canvas {
+            border-radius: 12px;
+            cursor: crosshair;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.5)
+        }
+
+        .btn {
+            margin-top: 12px;
+            padding: 10px 28px;
+            background: linear-gradient(135deg, #22c55e, #064e3b);
+            border: none;
+            border-radius: 999px;
+            color: #fff;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: 'Outfit', sans-serif;
+            transition: transform .15s
+        }
+
+        .btn:hover {
+            transform: scale(1.05)
+        }
+
+        #msg {
+            margin-top: 10px;
+            font-size: 13px;
+            color: #64748b;
+            min-height: 22px;
+            text-align: center
+        }
+
+        .back {
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            text-decoration: none;
+            color: #64748b;
+            font-size: 13px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 6px 14px;
+            border-radius: 999px
+        }
+
+        .back:hover {
+            color: #fff
+        }
+    </style>
+</head>
+
+<body>
+    <a href="../../index.html" class="back">← Back to Menu</a>
+    <h1>🎱 Pool</h1>
+    <div class="info"><span>Sunk: <b id="sunk">0</b>/15</span><span>Shots: <b id="shots">0</b></span></div>
+    <canvas id="c" width="540" height="300"></canvas>
+    <div id="msg">Click and drag on the white cue ball to shoot!</div>
+    <button class="btn" id="newBtn">🔄 New Game</button>
+    <script>
+        const c = document.getElementById('c'), ctx = c.getContext('2d'), W = 540, H = 300, R = 10, PAD = 25;
+        const POCKETS = [[PAD, PAD], [W / 2, PAD - 4], [W - PAD, PAD], [PAD, H - PAD], [W / 2, H - PAD + 4], [W - PAD, H - PAD]];
+        const COLORS = ['#eab308', '#3b82f6', '#ef4444', '#7c3aed', '#f97316', '#22c55e', '#dc2626', '#1e293b', '#fbbf24', '#60a5fa', '#f87171', '#a78bfa', '#fb923c', '#4ade80', '#b91c1c'];
+        let balls = [], cue, drag = null, sunkCount = 0, shotCount = 0;
+
+        function init() {
+            balls = []; sunkCount = 0; shotCount = 0; document.getElementById('sunk').textContent = 0; document.getElementById('shots').textContent = 0;
+            cue = { x: 150, y: H / 2, vx: 0, vy: 0, color: '#fff', r: R }; balls.push(cue);
+            // triangle rack
+            const sx = 380, sy = H / 2; let idx = 0;
+            for (let row = 0; row < 5; row++)for (let col = 0; col <= row; col++) { if (idx >= 15) break; balls.push({ x: sx + row * R * 1.8, y: sy + (col - row / 2) * R * 2.1, vx: 0, vy: 0, color: COLORS[idx], r: R, num: idx + 1 }); idx++; }
+        }
+
+        function update() {
+            let moving = false;
+            balls.forEach(b => {
+                b.x += b.vx; b.y += b.vy; b.vx *= 0.985; b.vy *= 0.985; if (Math.abs(b.vx) < 0.01) b.vx = 0; if (Math.abs(b.vy) < 0.01) b.vy = 0; if (b.vx || b.vy) moving = true;
+                if (b.x < PAD + R) { b.x = PAD + R; b.vx *= -0.7; } if (b.x > W - PAD - R) { b.x = W - PAD - R; b.vx *= -0.7; } if (b.y < PAD + R) { b.y = PAD + R; b.vy *= -0.7; } if (b.y > H - PAD - R) { b.y = H - PAD - R; b.vy *= -0.7; }
+            });
+            // collisions
+            for (let i = 0; i < balls.length; i++)for (let j = i + 1; j < balls.length; j++) { const a = balls[i], b = balls[j]; const dx = b.x - a.x, dy = b.y - a.y, d = Math.hypot(dx, dy); if (d < R * 2 && d > 0) { const nx = dx / d, ny = dy / d; const dvx = a.vx - b.vx, dvy = a.vy - b.vy; const dvn = dvx * nx + dvy * ny; if (dvn > 0) { a.vx -= nx * dvn; a.vy -= ny * dvn; b.vx += nx * dvn; b.vy += ny * dvn; const ov = (R * 2 - d) / 2; a.x -= nx * ov; a.y -= ny * ov; b.x += nx * ov; b.y += ny * ov; } } }
+            // pockets
+            balls = balls.filter(b => { for (const p of POCKETS) { if (Math.hypot(b.x - p[0], b.y - p[1]) < 18) { if (b === cue) { setTimeout(() => { cue.x = 150; cue.y = H / 2; cue.vx = 0; cue.vy = 0; balls.unshift(cue); }, 500); return false; } sunkCount++; document.getElementById('sunk').textContent = sunkCount; if (sunkCount >= 15) document.getElementById('msg').textContent = '🏆 All balls sunk!'; return false; } } return true; });
+        }
+
+        function draw() {
+            ctx.fillStyle = '#0a3d0a'; ctx.fillRect(0, 0, W, H); ctx.fillStyle = '#064e3b'; ctx.fillRect(PAD, PAD, W - PAD * 2, H - PAD * 2);
+            POCKETS.forEach(p => { ctx.fillStyle = '#000'; ctx.beginPath(); ctx.arc(p[0], p[1], 14, 0, Math.PI * 2); ctx.fill(); });
+            balls.forEach(b => {
+                ctx.fillStyle = b.color; ctx.shadowColor = b.color; ctx.shadowBlur = b === cue ? 10 : 6; ctx.beginPath(); ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2); ctx.fill(); ctx.shadowBlur = 0;
+                if (b.num) { ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(b.x, b.y, 5, 0, Math.PI * 2); ctx.fill(); ctx.fillStyle = '#000'; ctx.font = 'bold 7px Outfit'; ctx.textAlign = 'center'; ctx.fillText(b.num, b.x, b.y + 3); }
+            });
+            if (drag) { ctx.strokeStyle = 'rgba(255,255,255,0.3)'; ctx.lineWidth = 2; ctx.setLineDash([5, 5]); ctx.beginPath(); ctx.moveTo(cue.x, cue.y); ctx.lineTo(cue.x - (drag.dx) * 2, cue.y - (drag.dy) * 2); ctx.stroke(); ctx.setLineDash([]); }
+        }
+
+        c.addEventListener('mousedown', e => { const r = c.getBoundingClientRect(); const mx = e.clientX - r.left, my = e.clientY - r.top; if (Math.hypot(mx - cue.x, my - cue.y) < R + 10 && !cue.vx && !cue.vy) { drag = { sx: mx, sy: my, dx: 0, dy: 0 }; } });
+        c.addEventListener('mousemove', e => { if (drag) { const r = c.getBoundingClientRect(); drag.dx = e.clientX - r.left - drag.sx; drag.dy = e.clientY - r.top - drag.sy; } });
+        c.addEventListener('mouseup', () => { if (drag) { const power = Math.min(15, Math.hypot(drag.dx, drag.dy) * 0.15); cue.vx = -drag.dx * 0.15; cue.vy = -drag.dy * 0.15; shotCount++; document.getElementById('shots').textContent = shotCount; drag = null; } });
+        document.getElementById('newBtn').addEventListener('click', init);
+        function loop() { update(); draw(); requestAnimationFrame(loop); } init(); loop();
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>Space Invaders | 100 HTML Games</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        body {
+            background: #0a0a0f;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            font-family: 'Segoe UI', sans-serif;
+            color: #fff
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 900;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #10b981, #06b6d4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text
+        }
+
+        .info {
+            display: flex;
+            gap: 32px;
+            margin-bottom: 12px;
+            font-size: 14px;
+            color: #64748b
+        }
+
+        .info span b {
+            color: #10b981;
+            font-size: 1.2em
+        }
+
+        canvas {
+            border: 2px solid rgba(16, 185, 129, 0.3);
+            border-radius: 12px;
+            background: #00080a;
+            box-shadow: 0 0 40px rgba(16, 185, 129, 0.1)
+        }
+
+        #msg {
+            margin-top: 14px;
+            font-size: 1rem;
+            color: #64748b;
+            min-height: 24px;
+            text-align: center
+        }
+
+        .btn {
+            margin-top: 10px;
+            padding: 10px 28px;
+            background: linear-gradient(135deg, #10b981, #06b6d4);
+            border: none;
+            border-radius: 999px;
+            color: #fff;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform .15s
+        }
+
+        .btn:hover {
+            transform: scale(1.05)
+        }
+
+        .back {
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            text-decoration: none;
+            color: #64748b;
+            font-size: 13px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 6px 14px;
+            border-radius: 999px
+        }
+
+        .back:hover {
+            color: #fff
+        }
+
+        .hint {
+            font-size: 12px;
+            color: #334155;
+            margin-top: 8px
+        }
+    </style>
+</head>
+
+<body>
+    <a href="../../index.html" class="back">← Back to Menu</a>
+    <h1>👾 Space Invaders</h1>
+    <div class="info">
+        <span>Score: <b id="scoreDisp">0</b></span>
+        <span>Lives: <b id="livesDisp">❤️❤️❤️</b></span>
+        <span>Wave: <b id="waveDisp">1</b></span>
+    </div>
+    <canvas id="c" width="480" height="520"></canvas>
+    <div id="msg">Press SPACE or the button to start</div>
+    <button class="btn" id="startBtn">▶ Start</button>
+    <div class="hint">← → to move | SPACE to shoot</div>
+    <script>
+        const c = document.getElementById('c'), ctx = c.getContext('2d');
+        const W = 480, H = 520, AC = 10, AR = 5, A_W = 32, A_H = 24, A_PAD_X = 12, A_PAD_Y = 10;
+        let player, bullets, aliens, alienBullets, score, lives, wave, running = false, animId, stars = [];
+        let alienDir = 1, frame = 0, alienFrameTimer = 0;
+        const COLORS = ['#ef4444', '#f59e0b', '#eab308', '#22c55e', '#06b6d4'];
+        function initStars() { stars = Array.from({ length: 80 }, () => ({ x: Math.random() * W, y: Math.random() * H, r: Math.random() * 1.5 + 0.3, speed: Math.random() * 0.5 + 0.2 })); }
+        function initAliens(w) {
+            aliens = [];
+            for (let r = 0; r < AR; r++)for (let cl = 0; cl < AC; cl++)aliens.push({ x: cl * (A_W + A_PAD_X) + 40, y: r * (A_H + A_PAD_Y) + 60, alive: true, row: r, speed: 0.5 + w * 0.2 });
+        }
+        function init() { player = { x: W / 2 - 20, y: H - 50, w: 40, h: 20, speed: 5 }; bullets = []; alienBullets = []; score = 0; lives = 3; wave = 1; alienDir = 1; initAliens(1); initStars(); }
+        function drawAlien(a, f) {
+            const color = COLORS[a.row]; ctx.fillStyle = color; ctx.shadowColor = color; ctx.shadowBlur = 8;
+            const x = a.x, y = a.y, fl = f % 2;
+            ctx.beginPath(); ctx.roundRect(x + 6, y, A_W - 12, A_H / 2, 4); ctx.fill();
+            if (fl) { ctx.beginPath(); ctx.roundRect(x + 2, y + A_H / 2, A_W - 4, A_H / 2 - 2, 2); ctx.fill(); ctx.fillRect(x, y + A_H - 4, 6, 4); ctx.fillRect(x + A_W - 6, y + A_H - 4, 6, 4); ctx.fillRect(x + 12, y + A_H - 4, 6, 4); ctx.fillRect(x + A_W - 18, y + A_H - 4, 6, 4); }
+            else { ctx.beginPath(); ctx.roundRect(x + 4, y + A_H / 2, A_W - 8, A_H / 2 - 2, 2); ctx.fill(); ctx.fillRect(x - 4, y + A_H - 6, 8, 6); ctx.fillRect(x + A_W - 4, y + A_H - 6, 8, 6); ctx.fillRect(x + 10, y + A_H - 6, 8, 6); ctx.fillRect(x + A_W - 18, y + A_H - 6, 8, 6); }
+            ctx.fillStyle = '#000'; ctx.shadowBlur = 0; ctx.beginPath(); ctx.arc(x + 9, y + 8, 3, 0, Math.PI * 2); ctx.fill(); ctx.beginPath(); ctx.arc(x + A_W - 9, y + 8, 3, 0, Math.PI * 2); ctx.fill();
+        }
+        let keys = {};
+        function update() {
+            frame++; stars.forEach(s => { s.y += s.speed; if (s.y > H) s.y = 0; });
+            if (keys['ArrowLeft']) player.x = Math.max(0, player.x - player.speed);
+            if (keys['ArrowRight']) player.x = Math.min(W - player.w, player.x + player.speed);
+            if ((keys[' '] || keys['ArrowUp']) && frame - lastShot > 20) { bullets.push({ x: player.x + player.w / 2, y: player.y, vy: -8 }); lastShot = frame; }
+            bullets = bullets.filter(b => { b.y += b.vy; return b.y > 0; }); alienBullets = alienBullets.filter(b => { b.y += b.vy; return b.y < H; });
+            alienFrameTimer++;
+            const alive = aliens.filter(a => a.alive);
+            if (!alive.length) { wave++; initAliens(wave); alienDir = 1; return; }
+            alive.forEach(a => a.x += alienDir * a.speed);
+            if (alienFrameTimer % 40 === 0) alive.forEach(a => a.frame = (a.frame || 0) + 1);
+            const right = Math.max(...alive.map(a => a.x + A_W)), left = Math.min(...alive.map(a => a.x));
+            if (right >= W - 4) { alienDir = -1; alive.forEach(a => a.y += 20); }
+            if (left <= 4) { alienDir = 1; alive.forEach(a => a.y += 20); }
+            if (Math.random() < 0.01 && alive.length) { const s = alive[Math.floor(Math.random() * alive.length)]; alienBullets.push({ x: s.x + A_W / 2, y: s.y + A_H, vy: 4 + wave * 0.3 }); }
+            for (const b of bullets) for (const a of aliens) { if (!a.alive) continue; if (b.x > a.x && b.x < a.x + A_W && b.y > a.y && b.y < a.y + A_H) { a.alive = false; b.y = -100; score += 10 * (5 - a.row); break; } }
+            for (const b of alienBullets) { if (b.x > player.x && b.x < player.x + player.w && b.y > player.y && b.y < player.y + player.h) { b.y = H + 100; lives--; updateUI(); if (lives <= 0) { end(); return; } } }
+            if (alive.some(a => a.y + A_H >= player.y)) { end(); return; }
+            updateUI();
+        }
+        let lastShot = 0;
+        function draw() {
+            ctx.fillStyle = '#00080a'; ctx.fillRect(0, 0, W, H);
+            stars.forEach(s => { ctx.fillStyle = `rgba(255,255,255,${s.r / 2})`; ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2); ctx.fill(); });
+            ctx.strokeStyle = 'rgba(16,185,129,0.2)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(0, H - 35); ctx.lineTo(W, H - 35); ctx.stroke();
+            const af = Math.floor(frame / 20); aliens.forEach(a => { if (a.alive) drawAlien(a, af); });
+            ctx.fillStyle = '#10b981'; ctx.shadowColor = '#10b981'; ctx.shadowBlur = 16; ctx.beginPath(); ctx.moveTo(player.x + player.w / 2, player.y); ctx.lineTo(player.x, player.y + player.h); ctx.lineTo(player.x + player.w, player.y + player.h); ctx.closePath(); ctx.fill(); ctx.shadowBlur = 0;
+            ctx.fillRect(player.x + player.w / 2 - 3, player.y - 8, 6, 10);
+            bullets.forEach(b => { ctx.fillStyle = '#fff'; ctx.shadowColor = '#10b981'; ctx.shadowBlur = 10; ctx.fillRect(b.x - 2, b.y, 4, 12); ctx.shadowBlur = 0; });
+            alienBullets.forEach(b => { ctx.fillStyle = '#ef4444'; ctx.shadowColor = '#ef4444'; ctx.shadowBlur = 8; ctx.beginPath(); ctx.arc(b.x, b.y, 4, 0, Math.PI * 2); ctx.fill(); ctx.shadowBlur = 0; });
+        }
+        function updateUI() { document.getElementById('scoreDisp').textContent = score; document.getElementById('livesDisp').textContent = '❤️'.repeat(lives); document.getElementById('waveDisp').textContent = wave; }
+        function end() { cancelAnimationFrame(animId); running = false; document.getElementById('msg').textContent = `💀 Game Over! Score: ${score}`; document.getElementById('startBtn').textContent = '↩ Play Again'; }
+        function loop() { if (!running) return; update(); draw(); animId = requestAnimationFrame(loop); }
+        function start() { cancelAnimationFrame(animId); init(); running = true; document.getElementById('msg').textContent = ''; document.getElementById('startBtn').textContent = '↩ Restart'; loop(); }
+        document.addEventListener('keydown', e => { keys[e.key] = true; if (e.key === ' ') { e.preventDefault(); if (!running) start(); } });
+        document.addEventListener('keyup', e => { keys[e.key] = false; });
+        document.getElementById('startBtn').addEventListener('click', start);
+        draw();
+    </script>
+</body>
+
+</html>

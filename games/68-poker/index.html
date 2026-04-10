@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>Poker | 100 HTML Games</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        body {
+            background: #0a0f07;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Outfit', sans-serif;
+            color: #fff;
+            padding: 20px
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 900;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #eab308, #22c55e);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text
+        }
+
+        .info {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 12px;
+            font-size: 14px;
+            color: #64748b
+        }
+
+        .info b {
+            color: #eab308;
+            font-size: 1.2em
+        }
+
+        .hand {
+            display: flex;
+            gap: 8px;
+            margin: 12px 0;
+            justify-content: center
+        }
+
+        .card {
+            width: 62px;
+            height: 86px;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            border: 2px solid rgba(255, 255, 255, 0.15);
+            cursor: pointer;
+            transition: all .2s;
+            background: #fff;
+            position: relative
+        }
+
+        .card:hover {
+            transform: translateY(-4px)
+        }
+
+        .card.selected {
+            border-color: #eab308;
+            box-shadow: 0 0 14px rgba(234, 179, 8, 0.5);
+            transform: translateY(-8px)
+        }
+
+        .card.red {
+            color: #dc2626
+        }
+
+        .card.black {
+            color: #1e293b
+        }
+
+        .result {
+            font-size: 1.3rem;
+            font-weight: 900;
+            min-height: 32px;
+            margin: 8px 0;
+            text-align: center
+        }
+
+        .btn {
+            padding: 10px 22px;
+            background: linear-gradient(135deg, #eab308, #22c55e);
+            border: none;
+            border-radius: 999px;
+            color: #000;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: 'Outfit', sans-serif;
+            transition: transform .15s;
+            margin: 4px
+        }
+
+        .btn:hover {
+            transform: scale(1.05)
+        }
+
+        #msg {
+            font-size: 13px;
+            color: #64748b;
+            min-height: 22px;
+            text-align: center;
+            margin: 4px 0
+        }
+
+        .back {
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            text-decoration: none;
+            color: #64748b;
+            font-size: 13px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 6px 14px;
+            border-radius: 999px
+        }
+
+        .back:hover {
+            color: #fff
+        }
+    </style>
+</head>
+
+<body>
+    <a href="../../index.html" class="back">← Back to Menu</a>
+    <h1>🃏 5-Card Draw Poker</h1>
+    <div class="info"><span>Balance: <b id="balance">$100</b></span><span>Bet: <b id="bet">$10</b></span></div>
+    <div class="hand" id="hand"></div>
+    <div class="result" id="result"></div>
+    <div id="msg">Click cards to hold/discard, then draw.</div>
+    <div><button class="btn" id="dealBtn">🃏 Deal ($10)</button><button class="btn" id="drawBtn" disabled>🔄
+            Draw</button></div>
+    <script>
+        const SUITS = ['♥', '♦', '♣', '♠'], VALS = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
+        const RANK = { ...Object.fromEntries(VALS.map((v, i) => ([v, i + 2]))) };
+        function isRed(s) { return s === '♥' || s === '♦'; }
+        function mk() { const d = []; SUITS.forEach(s => VALS.forEach(v => d.push({ s, v }))); return d.sort(() => Math.random() - .5); }
+
+        let deck, hand = [], held = [], balance = 100, phase = 'bet';
+
+        function deal() {
+            if (balance < 10) { document.getElementById('msg').textContent = 'Not enough balance!'; return; }
+            balance -= 10; document.getElementById('balance').textContent = '$' + balance;
+            deck = mk(); hand = deck.splice(0, 5); held = [false, false, false, false, false]; phase = 'hold';
+            document.getElementById('drawBtn').disabled = false; document.getElementById('dealBtn').disabled = true; document.getElementById('result').textContent = ''; document.getElementById('msg').textContent = 'Click cards to hold, then press Draw.'; render();
+        }
+
+        function draw() {
+            hand.forEach((c, i) => { if (!held[i]) hand[i] = deck.pop(); }); phase = 'done';
+            const res = evaluate(hand); const win = res.payout * 10; balance += win; document.getElementById('balance').textContent = '$' + balance;
+            document.getElementById('result').textContent = `${res.name}${win ? ` — Win $${win}!` : ''}`; document.getElementById('result').style.color = win ? '#22c55e' : '#ef4444';
+            document.getElementById('drawBtn').disabled = true; document.getElementById('dealBtn').disabled = false; render();
+        }
+
+        function evaluate(h) {
+            const vals = h.map(c => RANK[c.v]).sort((a, b) => a - b); const suits = h.map(c => c.s); const flush = suits.every(s => s === suits[0]); const straight = vals[4] - vals[0] === 4 && new Set(vals).size === 5 || (vals.join(',') == '2,3,4,5,14');
+            const counts = {}; vals.forEach(v => counts[v] = (counts[v] || 0) + 1); const cv = Object.values(counts).sort((a, b) => b - a);
+            if (flush && straight && vals[4] === 14) return { name: '🏆 Royal Flush!', payout: 250 };
+            if (flush && straight) return { name: '⭐ Straight Flush!', payout: 50 };
+            if (cv[0] === 4) return { name: '💎 Four of a Kind!', payout: 25 };
+            if (cv[0] === 3 && cv[1] === 2) return { name: '🏠 Full House!', payout: 9 };
+            if (flush) return { name: '♠ Flush!', payout: 6 };
+            if (straight) return { name: '📏 Straight!', payout: 4 };
+            if (cv[0] === 3) return { name: '3️⃣ Three of a Kind!', payout: 3 };
+            if (cv[0] === 2 && cv[1] === 2) return { name: '✌️ Two Pair!', payout: 2 };
+            if (cv[0] === 2 && vals.find(v => counts[v] === 2) >= 11) return { name: '👑 Jacks or Better!', payout: 1 };
+            return { name: 'No winning hand', payout: 0 };
+        }
+
+        function render() {
+            const el = document.getElementById('hand'); el.innerHTML = '';
+            hand.forEach((c, i) => {
+                const card = document.createElement('div'); card.className = `card ${isRed(c.s) ? 'red' : 'black'}${held[i] ? ' selected' : ''}`; card.innerHTML = `<div style="font-size:1.1rem">${c.v}</div><div>${c.s}</div>${held[i] ? '<div style="position:absolute;bottom:2px;font-size:9px;color:#eab308">HELD</div>' : ''}`;
+                if (phase === 'hold') card.addEventListener('click', () => { held[i] = !held[i]; render(); }); el.appendChild(card);
+            });
+        }
+
+        document.getElementById('dealBtn').addEventListener('click', deal); document.getElementById('drawBtn').addEventListener('click', draw);
+    </script>
+</body>
+
+</html>

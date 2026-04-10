@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>Balloon Pop | 100 HTML Games</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        body {
+            background: #0a0a0f;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Outfit', sans-serif;
+            color: #fff;
+            padding: 16px
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 900;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #ec4899, #f97316);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text
+        }
+
+        .info {
+            display: flex;
+            gap: 24px;
+            margin-bottom: 10px;
+            font-size: 14px;
+            color: #64748b
+        }
+
+        .info span b {
+            color: #ec4899;
+            font-size: 1.2em
+        }
+
+        canvas {
+            border: 2px solid rgba(236, 72, 153, 0.3);
+            border-radius: 12px;
+            background: #050510;
+            cursor: crosshair;
+            box-shadow: 0 0 30px rgba(236, 72, 153, 0.1)
+        }
+
+        .btn {
+            margin-top: 12px;
+            padding: 10px 28px;
+            background: linear-gradient(135deg, #ec4899, #f97316);
+            border: none;
+            border-radius: 999px;
+            color: #fff;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: 'Outfit', sans-serif;
+            transition: transform .15s
+        }
+
+        .btn:hover {
+            transform: scale(1.05)
+        }
+
+        #msg {
+            margin-top: 10px;
+            font-size: 1rem;
+            color: #64748b;
+            min-height: 24px;
+            text-align: center
+        }
+
+        .back {
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            text-decoration: none;
+            color: #64748b;
+            font-size: 13px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 6px 14px;
+            border-radius: 999px
+        }
+
+        .back:hover {
+            color: #fff
+        }
+    </style>
+</head>
+
+<body>
+    <a href="../../index.html" class="back">← Back to Menu</a>
+    <h1>🎈 Balloon Pop</h1>
+    <div class="info"><span>Score: <b id="score">0</b></span><span>Missed: <b id="missed">0</b></span><span>Time: <b
+                id="time">60</b>s</span></div>
+    <canvas id="c" width="420" height="500"></canvas>
+    <div id="msg">Click Start to pop balloons!</div>
+    <button class="btn" id="startBtn">▶ Start</button>
+    <script>
+        const c = document.getElementById('c'), ctx = c.getContext('2d'), W = 420, H = 500;
+        const COLORS = ['#ef4444', '#f97316', '#eab308', '#22c55e', '#06b6d4', '#7c3aed', '#ec4899', '#10b981'];
+        let balloons = [], particles = [], score = 0, missed = 0, timeLeft = 60, running = false, timerInt, animId;
+
+        function spawn() { const x = 30 + Math.random() * (W - 60), r = 18 + Math.random() * 14, speed = 1 + Math.random() * 2 + score / 100; const color = COLORS[Math.floor(Math.random() * COLORS.length)]; balloons.push({ x, y: H + r, r, speed, color, popped: false }); }
+
+        function pop(b, mx, my) { b.popped = true; score += Math.round(10 + b.speed * 5); document.getElementById('score').textContent = score; for (let i = 0; i < 12; i++) { particles.push({ x: mx, y: my, vx: (Math.random() - .5) * 6, vy: (Math.random() - .5) * 6 - 2, life: 25, color: b.color, size: 2 + Math.random() * 3 }); } }
+
+        function update() {
+            balloons.forEach(b => { if (!b.popped) b.y -= b.speed; if (b.y < -b.r && !b.popped) { b.popped = true; missed++; document.getElementById('missed').textContent = missed; } });
+            balloons = balloons.filter(b => !b.popped || b.y > -50);
+            particles.forEach(p => { p.x += p.vx; p.y += p.vy; p.vy += 0.15; p.life--; }); particles = particles.filter(p => p.life > 0);
+            if (Math.random() < 0.06 + score / 2000) spawn();
+        }
+
+        function draw() {
+            ctx.fillStyle = 'rgba(5,5,16,0.3)'; ctx.fillRect(0, 0, W, H);
+            balloons.forEach(b => {
+                if (b.popped) return;
+                ctx.fillStyle = b.color; ctx.shadowColor = b.color; ctx.shadowBlur = 14; ctx.beginPath(); ctx.ellipse(b.x, b.y, b.r, b.r * 1.3, 0, 0, Math.PI * 2); ctx.fill(); ctx.shadowBlur = 0;
+                const g = ctx.createRadialGradient(b.x - b.r * 0.3, b.y - b.r * 0.4, 1, b.x, b.y, b.r); g.addColorStop(0, 'rgba(255,255,255,0.35)'); g.addColorStop(1, 'transparent'); ctx.fillStyle = g; ctx.beginPath(); ctx.ellipse(b.x, b.y, b.r, b.r * 1.3, 0, 0, Math.PI * 2); ctx.fill();
+                ctx.strokeStyle = b.color; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(b.x, b.y + b.r * 1.3); ctx.lineTo(b.x, b.y + b.r * 1.3 + 20); ctx.stroke();
+            });
+            particles.forEach(p => { ctx.globalAlpha = p.life / 25; ctx.fillStyle = p.color; ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2); ctx.fill(); ctx.globalAlpha = 1; });
+        }
+
+        function loop() { if (!running) return; update(); draw(); animId = requestAnimationFrame(loop); }
+
+        c.addEventListener('click', e => {
+            if (!running) return; const rect = c.getBoundingClientRect(); const mx = e.clientX - rect.left, my = e.clientY - rect.top;
+            balloons.forEach(b => { if (b.popped) return; const dx = mx - b.x, dy = my - b.y; if (dx * dx / (b.r * b.r) + dy * dy / (b.r * 1.3) ** 2 < 1) pop(b, mx, my); });
+        });
+
+        function start() {
+            balloons = []; particles = []; score = 0; missed = 0; timeLeft = 60; running = true; document.getElementById('score').textContent = 0; document.getElementById('missed').textContent = 0; document.getElementById('time').textContent = 60; document.getElementById('msg').textContent = ''; document.getElementById('startBtn').textContent = '↩ Restart'; ctx.fillStyle = '#050510'; ctx.fillRect(0, 0, W, H);
+            clearInterval(timerInt); timerInt = setInterval(() => { timeLeft--; document.getElementById('time').textContent = timeLeft; if (timeLeft <= 0) { clearInterval(timerInt); running = false; document.getElementById('msg').textContent = `🏆 Time's up! Score: ${score} | Missed: ${missed}`; } }, 1000); loop();
+        }
+
+        document.getElementById('startBtn').addEventListener('click', start);
+    </script>
+</body>
+
+</html>

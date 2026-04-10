@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>Word Search | 100 HTML Games</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        body {
+            background: #0a0a0f;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Outfit', sans-serif;
+            color: #fff;
+            padding: 16px
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 900;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #06b6d4, #22c55e);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text
+        }
+
+        .main {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: flex-start
+        }
+
+        #grid {
+            display: grid;
+            gap: 3px;
+            user-select: none
+        }
+
+        .cell {
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            font-weight: 900;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all .15s;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            color: #94a3b8
+        }
+
+        .cell:hover {
+            background: rgba(6, 182, 212, 0.15);
+            border-color: rgba(6, 182, 212, 0.3)
+        }
+
+        .cell.selected {
+            background: rgba(6, 182, 212, 0.3);
+            border-color: #06b6d4;
+            color: #fff
+        }
+
+        .cell.found {
+            background: rgba(34, 197, 94, 0.25);
+            border-color: #22c55e;
+            color: #86efac
+        }
+
+        .word-list {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 14px;
+            padding: 14px;
+            min-width: 160px
+        }
+
+        .wl-title {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #64748b;
+            margin-bottom: 8px
+        }
+
+        .word-item {
+            padding: 5px 0;
+            font-size: 14px;
+            font-weight: 600;
+            color: #94a3b8;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04)
+        }
+
+        .word-item.found {
+            color: #22c55e;
+            text-decoration: line-through;
+            opacity: 0.6
+        }
+
+        .info {
+            font-size: 13px;
+            color: #64748b;
+            margin-bottom: 12px
+        }
+
+        .info b {
+            color: #06b6d4
+        }
+
+        .btn {
+            padding: 8px 22px;
+            background: linear-gradient(135deg, #06b6d4, #22c55e);
+            border: none;
+            border-radius: 999px;
+            color: #fff;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: 'Outfit', sans-serif;
+            transition: transform .15s;
+            margin-top: 10px
+        }
+
+        .btn:hover {
+            transform: scale(1.05)
+        }
+
+        #msg {
+            font-size: 14px;
+            min-height: 22px;
+            text-align: center;
+            color: #64748b;
+            font-weight: 600;
+            margin-bottom: 8px
+        }
+
+        .back {
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            text-decoration: none;
+            color: #64748b;
+            font-size: 13px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 6px 14px;
+            border-radius: 999px
+        }
+
+        .back:hover {
+            color: #fff
+        }
+    </style>
+</head>
+
+<body>
+    <a href="../../index.html" class="back">← Back to Menu</a>
+    <h1>🔍 Word Search</h1>
+    <div class="info">Found: <b id="foundCount">0</b>/<b id="totalCount">0</b></div>
+    <div id="msg">Find all hidden words!</div>
+    <div class="main">
+        <div id="grid"></div>
+        <div class="word-list">
+            <div class="wl-title">📝 Words to Find</div>
+            <div id="wordList"></div>
+            <button class="btn" id="newBtn">🔀 New Puzzle</button>
+        </div>
+    </div>
+    <script>
+        const SIZE = 12;
+        const WORD_POOL = ['JAVASCRIPT', 'PYTHON', 'CODING', 'ALGORITHM', 'FUNCTION', 'VARIABLE', 'ARRAY', 'OBJECT', 'STRING', 'NUMBER', 'BOOLEAN', 'LOOP', 'CLASS', 'METHOD', 'PIXEL', 'BINARY', 'STACK', 'QUEUE', 'GRAPH', 'DEBUG'];
+        const DIRS = [[0, 1], [1, 0], [1, 1], [1, -1], [0, -1], [-1, 0], [-1, -1], [-1, 1]];
+        let grid, words, foundWords, selecting = false, selCells = [];
+
+        function init() {
+            grid = Array.from({ length: SIZE }, () => Array(SIZE).fill(''));
+            words = []; foundWords = new Set(); selCells = [];
+            const pool = [...WORD_POOL].sort(() => Math.random() - .5);
+            for (const w of pool) { if (words.length >= 8) break; if (tryPlace(w)) words.push(w); }
+            // Fill empty cells
+            for (let r = 0; r < SIZE; r++)for (let c = 0; c < SIZE; c++)if (!grid[r][c]) grid[r][c] = String.fromCharCode(65 + Math.floor(Math.random() * 26));
+            document.getElementById('totalCount').textContent = words.length; document.getElementById('foundCount').textContent = 0; document.getElementById('msg').textContent = 'Click and drag to select words!';
+            render(); renderWordList();
+        }
+
+        function tryPlace(word) {
+            for (let attempt = 0; attempt < 100; attempt++) {
+                const dir = DIRS[Math.floor(Math.random() * DIRS.length)]; const [dr, dc] = dir;
+                const r = Math.floor(Math.random() * SIZE), c = Math.floor(Math.random() * SIZE);
+                let ok = true; const cells = [];
+                for (let i = 0; i < word.length; i++) { const nr = r + dr * i, nc = c + dc * i; if (nr < 0 || nr >= SIZE || nc < 0 || nc >= SIZE) { ok = false; break; } if (grid[nr][nc] && grid[nr][nc] !== word[i]) { ok = false; break; } cells.push([nr, nc]); }
+                if (ok) { cells.forEach(([nr, nc], i) => grid[nr][nc] = word[i]); return true; }
+            }
+            return false;
+        }
+
+        function render() {
+            const el = document.getElementById('grid'); el.innerHTML = ''; el.style.gridTemplateColumns = `repeat(${SIZE},36px)`;
+            for (let r = 0; r < SIZE; r++)for (let c = 0; c < SIZE; c++) {
+                const cell = document.createElement('div'); cell.className = 'cell'; cell.textContent = grid[r][c]; cell.dataset.r = r; cell.dataset.c = c;
+                if (foundWords.has(`${r},${c}`)) cell.classList.add('found');
+                cell.addEventListener('mousedown', e => { e.preventDefault(); selecting = true; selCells = [{ r, c }]; highlightSel(); });
+                cell.addEventListener('mouseover', () => { if (selecting) { selCells.push({ r, c }); highlightSel(); } });
+                cell.addEventListener('mouseup', () => { selecting = false; checkSelection(); });
+                el.appendChild(cell);
+            }
+        }
+
+        function highlightSel() { document.querySelectorAll('.cell').forEach(c => c.classList.remove('selected')); selCells.forEach(({ r, c }) => { const cell = document.querySelector(`[data-r="${r}"][data-c="${c}"]`); if (cell) cell.classList.add('selected'); }); }
+
+        function checkSelection() {
+            const word = selCells.map(({ r, c }) => grid[r][c]).join(''); const rev = [...word].reverse().join('');
+            const match = words.find(w => w === word || w === rev);
+            if (match && !document.querySelector(`.word-item[data-word="${match}"]`).classList.contains('found')) {
+                selCells.forEach(({ r, c }) => foundWords.add(`${r},${c}`));
+                document.querySelector(`.word-item[data-word="${match}"]`).classList.add('found');
+                document.getElementById('foundCount').textContent = document.querySelectorAll('.word-item.found').length;
+                if (document.querySelectorAll('.word-item.found').length === words.length) document.getElementById('msg').textContent = '🏆 All words found!';
+                else document.getElementById('msg').textContent = `✅ Found: ${match}!`;
+            }
+            selCells = []; render();
+        }
+
+        function renderWordList() {
+            const el = document.getElementById('wordList'); el.innerHTML = '';
+            words.forEach(w => { const item = document.createElement('div'); item.className = 'word-item'; item.dataset.word = w; item.textContent = w; el.appendChild(item); });
+        }
+
+        document.getElementById('newBtn').addEventListener('click', init);
+        init();
+    </script>
+</body>
+
+</html>

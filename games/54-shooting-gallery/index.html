@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>Shooting Gallery | 100 HTML Games</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        body {
+            background: #0a0a0f;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Outfit', sans-serif;
+            color: #fff;
+            padding: 16px
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 900;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #ef4444, #f97316);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text
+        }
+
+        .info {
+            display: flex;
+            gap: 24px;
+            margin-bottom: 10px;
+            font-size: 14px;
+            color: #64748b
+        }
+
+        .info span b {
+            color: #ef4444;
+            font-size: 1.2em
+        }
+
+        canvas {
+            border: 2px solid rgba(239, 68, 68, 0.3);
+            border-radius: 12px;
+            background: #0a0508;
+            cursor: crosshair;
+            box-shadow: 0 0 30px rgba(239, 68, 68, 0.1)
+        }
+
+        .btn {
+            margin-top: 12px;
+            padding: 10px 28px;
+            background: linear-gradient(135deg, #ef4444, #f97316);
+            border: none;
+            border-radius: 999px;
+            color: #fff;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: 'Outfit', sans-serif;
+            transition: transform .15s
+        }
+
+        .btn:hover {
+            transform: scale(1.05)
+        }
+
+        #msg {
+            margin-top: 10px;
+            font-size: 1rem;
+            color: #64748b;
+            min-height: 24px;
+            text-align: center
+        }
+
+        .back {
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            text-decoration: none;
+            color: #64748b;
+            font-size: 13px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 6px 14px;
+            border-radius: 999px
+        }
+
+        .back:hover {
+            color: #fff
+        }
+    </style>
+</head>
+
+<body>
+    <a href="../../index.html" class="back">← Back to Menu</a>
+    <h1>🎯 Shooting Gallery</h1>
+    <div class="info"><span>Score: <b id="score">0</b></span><span>Shots: <b id="shots">0</b></span><span>Time: <b
+                id="time">45</b>s</span></div>
+    <canvas id="c" width="500" height="380"></canvas>
+    <div id="msg">Click Start and shoot the targets!</div>
+    <button class="btn" id="startBtn">▶ Start</button>
+    <script>
+        const c = document.getElementById('c'), ctx = c.getContext('2d'), W = 500, H = 380;
+        const TARGETS_EMOJIS = ['🎯', '🦆', '🎪', '⭐', '🎁'];
+        let targets = [], particles = [], score = 0, shots = 0, timeLeft = 45, running = false, timerInt, animId;
+
+        function spawn() {
+            const row = Math.floor(Math.random() * 3); const y = 80 + row * 100; const dir = Math.random() < 0.5 ? 1 : -1; const x = dir > 0 ? -30 : W + 30; const speed = (2 + Math.random() * 2) * dir; const sz = 25 + Math.random() * 15; const emoji = TARGETS_EMOJIS[Math.floor(Math.random() * TARGETS_EMOJIS.length)]; const pts = Math.round((50 - sz) * 2 + speed * 10);
+            targets.push({ x, y, speed, sz, emoji, pts: Math.max(10, pts), hit: false });
+        }
+
+        function update() {
+            targets.forEach(t => { if (!t.hit) t.x += t.speed; });
+            targets = targets.filter(t => !t.hit && t.x > -60 && t.x < W + 60);
+            particles.forEach(p => { p.x += p.vx; p.y += p.vy; p.vy += 0.1; p.life--; }); particles = particles.filter(p => p.life > 0);
+            if (Math.random() < 0.04 + score / 3000) spawn();
+        }
+
+        function draw() {
+            ctx.fillStyle = '#0a0508'; ctx.fillRect(0, 0, W, H);
+            // shelves
+            [0, 1, 2].forEach(r => { const y = 105 + r * 100; ctx.fillStyle = 'rgba(139,69,19,0.3)'; ctx.fillRect(0, y, W, 6); ctx.fillStyle = 'rgba(139,69,19,0.15)'; ctx.fillRect(0, y + 6, W, 10); });
+            targets.forEach(t => { if (t.hit) return; ctx.font = `${t.sz * 2}px serif`; ctx.textAlign = 'center'; ctx.fillText(t.emoji, t.x, t.y); });
+            particles.forEach(p => { ctx.globalAlpha = p.life / 20; ctx.fillStyle = p.color; ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2); ctx.fill(); ctx.globalAlpha = 1; });
+        }
+
+        c.addEventListener('click', e => {
+            if (!running) return; shots++; document.getElementById('shots').textContent = shots;
+            const rect = c.getBoundingClientRect(); const mx = e.clientX - rect.left, my = e.clientY - rect.top;
+            let hit = false; targets.forEach(t => {
+                if (t.hit) return; if (Math.abs(mx - t.x) < t.sz && Math.abs(my - t.y) < t.sz) {
+                    t.hit = true; hit = true; score += t.pts;
+                    for (let i = 0; i < 10; i++)particles.push({ x: t.x, y: t.y, vx: (Math.random() - .5) * 6, vy: (Math.random() - .5) * 6, life: 20, color: ['#ef4444', '#f97316', '#eab308'][Math.floor(Math.random() * 3)], size: 2 + Math.random() * 3 });
+                    // floating score
+                    ctx.fillStyle = '#f59e0b'; ctx.font = 'bold 16px Outfit'; ctx.textAlign = 'center'; ctx.fillText(`+${t.pts}`, t.x, t.y - 20);
+                }
+            });
+            document.getElementById('score').textContent = score;
+        });
+
+        function loop() { if (!running) return; update(); draw(); animId = requestAnimationFrame(loop); }
+        function start() { targets = []; particles = []; score = 0; shots = 0; timeLeft = 45; running = true;['score', 'shots'].forEach(id => document.getElementById(id).textContent = 0); document.getElementById('time').textContent = 45; document.getElementById('msg').textContent = ''; document.getElementById('startBtn').textContent = '↩ Restart'; ctx.fillStyle = '#0a0508'; ctx.fillRect(0, 0, W, H); clearInterval(timerInt); timerInt = setInterval(() => { timeLeft--; document.getElementById('time').textContent = timeLeft; if (timeLeft <= 0) { clearInterval(timerInt); running = false; const acc = shots > 0 ? Math.round(score / shots) + 'pts/shot' : 'N/A'; document.getElementById('msg').textContent = `🏆 Score: ${score} | Accuracy: ${acc}`; } }, 1000); loop(); }
+        document.getElementById('startBtn').addEventListener('click', start);
+    </script>
+</body>
+
+</html>

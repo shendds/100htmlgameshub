@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>Speed | 100 HTML Games</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        body {
+            background: #0a0a0f;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Outfit', sans-serif;
+            color: #fff;
+            padding: 20px
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 900;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #ef4444, #f97316);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text
+        }
+
+        .piles {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            margin: 16px 0
+        }
+
+        .pile-card {
+            width: 70px;
+            height: 98px;
+            border-radius: 10px;
+            background: #fff;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            font-size: 1.3rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4)
+        }
+
+        .pile-card.red {
+            color: #dc2626
+        }
+
+        .pile-card.black {
+            color: #1e293b
+        }
+
+        .hand {
+            display: flex;
+            gap: 6px;
+            margin: 8px 0;
+            flex-wrap: wrap;
+            justify-content: center;
+            max-width: 440px
+        }
+
+        .card {
+            width: 50px;
+            height: 70px;
+            border-radius: 8px;
+            background: #fff;
+            border: 2px solid rgba(255, 255, 255, 0.15);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: .85rem;
+            font-weight: 900;
+            cursor: pointer;
+            transition: all .15s
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+            border-color: #ef4444
+        }
+
+        .card.red {
+            color: #dc2626
+        }
+
+        .card.black {
+            color: #1e293b
+        }
+
+        .label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #64748b;
+            margin: 6px 0
+        }
+
+        #msg {
+            font-size: 1rem;
+            font-weight: 700;
+            min-height: 28px;
+            text-align: center;
+            margin: 8px 0;
+            color: #64748b
+        }
+
+        .btn {
+            padding: 10px 22px;
+            background: linear-gradient(135deg, #ef4444, #f97316);
+            border: none;
+            border-radius: 999px;
+            color: #fff;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: 'Outfit', sans-serif;
+            transition: transform .15s;
+            margin: 4px
+        }
+
+        .btn:hover {
+            transform: scale(1.05)
+        }
+
+        .info {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 10px;
+            font-size: 13px;
+            color: #64748b
+        }
+
+        .info b {
+            color: #ef4444
+        }
+
+        .back {
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            text-decoration: none;
+            color: #64748b;
+            font-size: 13px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 6px 14px;
+            border-radius: 999px
+        }
+
+        .back:hover {
+            color: #fff
+        }
+    </style>
+</head>
+
+<body>
+    <a href="../../index.html" class="back">← Back to Menu</a>
+    <h1>⚡ Speed</h1>
+    <div class="info"><span>You: <b id="yc">0</b> cards</span><span>CPU: <b id="cc">0</b> cards</span></div>
+    <div class="label">Center Piles</div>
+    <div class="piles">
+        <div class="pile-card" id="pile1">-</div>
+        <div style="font-size:1.5rem;color:#334155">VS</div>
+        <div class="pile-card" id="pile2">-</div>
+    </div>
+    <div id="msg">Play cards ±1 rank from center piles!</div>
+    <div class="label">Your Hand</div>
+    <div class="hand" id="yourHand"></div>
+    <button class="btn" id="flipBtn">🔄 Flip New Cards</button><button class="btn" id="newBtn">🔄 New Game</button>
+    <script>
+        const SUITS = ['♥', '♦', '♣', '♠'], VALS = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
+        const RANK = Object.fromEntries(VALS.map((v, i) => ([v, i])));
+        function isRed(s) { return s === '♥' || s === '♦'; }
+        function mk() { const d = []; SUITS.forEach(s => VALS.forEach(v => d.push({ s, v }))); return d.sort(() => Math.random() - .5); }
+        function adj(a, b) { const d = Math.abs(RANK[a] - RANK[b]); return d === 1 || d === 12; }
+
+        let deck, you, cpu, piles, cpuTimer;
+        function init() { deck = mk(); you = deck.splice(0, 15); cpu = deck.splice(0, 15); piles = [deck.pop(), deck.pop()]; clearInterval(cpuTimer); cpuTimer = setInterval(cpuPlay, 1500); render(); }
+
+        function playCard(i, pileIdx) {
+            if (!adj(you[i].v, piles[pileIdx].v)) return; piles[pileIdx] = you.splice(i, 1)[0]; render();
+            if (you.length === 0) { clearInterval(cpuTimer); document.getElementById('msg').textContent = '🏆 You win!'; }
+        }
+
+        function cpuPlay() {
+            for (let i = 0; i < cpu.length; i++)for (let p = 0; p < 2; p++) { if (adj(cpu[i].v, piles[p].v)) { piles[p] = cpu.splice(i, 1)[0]; render(); if (cpu.length === 0) { clearInterval(cpuTimer); document.getElementById('msg').textContent = '💀 CPU wins!'; } return; } }
+        }
+
+        function flipNew() { if (deck.length >= 2) { piles = [deck.pop(), deck.pop()]; render(); } else document.getElementById('msg').textContent = 'No cards left to flip!'; }
+
+        function render() {
+            document.getElementById('yc').textContent = you.length; document.getElementById('cc').textContent = cpu.length;
+            [0, 1].forEach(p => { const el = document.getElementById('pile' + (p + 1)); const c = piles[p]; el.className = `pile-card ${isRed(c.s) ? 'red' : 'black'}`; el.innerHTML = `<div>${c.v}</div><div style="font-size:1rem">${c.s}</div>`; });
+            const yh = document.getElementById('yourHand'); yh.innerHTML = '';
+            you.forEach((c, i) => {
+                const el = document.createElement('div'); el.className = `card ${isRed(c.s) ? 'red' : 'black'}`; el.innerHTML = `<div>${c.v}</div><div>${c.s}</div>`;
+                el.addEventListener('click', () => { if (adj(c.v, piles[0].v)) playCard(i, 0); else if (adj(c.v, piles[1].v)) playCard(i, 1); }); yh.appendChild(el);
+            });
+        }
+
+        document.getElementById('flipBtn').addEventListener('click', flipNew); document.getElementById('newBtn').addEventListener('click', init); init();
+    </script>
+</body>
+
+</html>

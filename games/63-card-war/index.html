@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>Card War | 100 HTML Games</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        body {
+            background: #0a0f07;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Outfit', sans-serif;
+            color: #fff;
+            padding: 24px
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 900;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #ef4444, #7c3aed);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text
+        }
+
+        .battle {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+            justify-content: center
+        }
+
+        .side {
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px
+        }
+
+        .side-label {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #64748b;
+            font-weight: 600
+        }
+
+        .card {
+            width: 90px;
+            height: 126px;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            padding: 8px;
+            position: relative;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+            border: 2px solid rgba(255, 255, 255, 0.15)
+        }
+
+        .card.face-up {
+            background: linear-gradient(to bottom right, #fff, #f8fafc)
+        }
+
+        .card.face-down {
+            background: linear-gradient(135deg, #1e3a5f, #0f172a);
+            background-image: repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.03) 0, rgba(255, 255, 255, 0.03) 1px, transparent 0, transparent 50%);
+            background-size: 6px 6px
+        }
+
+        .card-val {
+            font-size: 1.4rem;
+            font-weight: 900;
+            line-height: 1
+        }
+
+        .card-suit {
+            font-size: 1.2rem;
+            position: absolute;
+            bottom: 6px;
+            right: 8px
+        }
+
+        .card.red .card-val,
+        .card.red .card-suit {
+            color: #dc2626
+        }
+
+        .card.black .card-val,
+        .card.black .card-suit {
+            color: #1e293b
+        }
+
+        .vs {
+            font-size: 1.8rem;
+            font-weight: 900;
+            color: #334155
+        }
+
+        .result-badge {
+            padding: 6px 14px;
+            border-radius: 999px;
+            font-weight: 900;
+            font-size: 1rem
+        }
+
+        .counts {
+            display: flex;
+            gap: 24px;
+            font-size: 1rem;
+            color: #94a3b8;
+            margin-bottom: 10px
+        }
+
+        .counts b {
+            font-size: 1.4rem;
+            font-weight: 900
+        }
+
+        .war-pile {
+            display: flex;
+            gap: 4px;
+            margin: 4px 0
+        }
+
+        .mini-card {
+            width: 30px;
+            height: 42px;
+            border-radius: 4px;
+            background: linear-gradient(135deg, #1e3a5f, #0f172a);
+            border: 1px solid rgba(255, 255, 255, 0.1)
+        }
+
+        #msg {
+            font-size: 1rem;
+            font-weight: 700;
+            text-align: center;
+            min-height: 28px;
+            margin: 10px 0;
+            color: #94a3b8
+        }
+
+        .btn {
+            padding: 12px 28px;
+            background: linear-gradient(135deg, #ef4444, #7c3aed);
+            border: none;
+            border-radius: 999px;
+            color: #fff;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform .15s;
+            font-family: 'Outfit', sans-serif
+        }
+
+        .btn:hover {
+            transform: scale(1.05)
+        }
+
+        .back {
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            text-decoration: none;
+            color: #64748b;
+            font-size: 13px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 6px 14px;
+            border-radius: 999px
+        }
+
+        .back:hover {
+            color: #fff
+        }
+    </style>
+</head>
+
+<body>
+    <a href="../../index.html" class="back">← Back to Menu</a>
+    <h1>⚔️ Card War</h1>
+    <div class="counts">
+        <div>You: <b id="youCount">26</b> cards</div>
+        <div>CPU: <b id="cpuCount">26</b> cards</div>
+    </div>
+    <div class="battle">
+        <div class="side">
+            <div class="side-label">CPU</div>
+            <div class="card face-down" id="cpuCard"></div>
+            <div id="cpuResult"></div>
+        </div>
+        <div class="vs">VS</div>
+        <div class="side">
+            <div class="side-label">You</div>
+            <div class="card face-down" id="youCard"></div>
+            <div id="youResult"></div>
+        </div>
+    </div>
+    <div class="war-pile" id="warPile"></div>
+    <div id="msg">Click "Battle!" to flip cards</div>
+    <button class="btn" id="battleBtn">⚔️ Battle!</button>
+    <script>
+        const SUITS = ['♥', '♦', '♣', '♠'], VALS = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
+        const RANKS = { '2': 2, '3': 3, '4': 4, '5': 5, '6': 6, '7': 7, '8': 8, '9': 9, '10': 10, 'J': 11, 'Q': 12, 'K': 13, 'A': 14 };
+
+        function mkDeck() { const d = []; for (const s of SUITS) for (const v of VALS) d.push({ s, v, r: RANKS[v] }); return d.sort(() => Math.random() - .5); }
+        function isRed(s) { return s === '♥' || s === '♦'; }
+
+        let youDeck, cpuDeck, warPot;
+        function init() { const d = mkDeck(); youDeck = d.slice(26); cpuDeck = d.slice(0, 26); warPot = []; update(); document.getElementById('msg').textContent = 'Click Battle to flip cards!'; renderCard('youCard', null); renderCard('cpuCard', null); document.getElementById('youResult').textContent = ''; document.getElementById('cpuResult').textContent = ''; document.getElementById('warPile').innerHTML = ''; }
+
+        function renderCard(id, card) {
+            const el = document.getElementById(id); el.innerHTML = '';
+            if (!card) { el.className = 'card face-down'; return; }
+            el.className = `card face-up ${isRed(card.s) ? 'red' : 'black'}`;
+            el.innerHTML = `<div class="card-val">${card.v}</div><div style="font-size:1.5rem">${card.s}</div><div class="card-suit">${card.v}</div>`;
+        }
+
+        function update() { document.getElementById('youCount').textContent = youDeck.length; document.getElementById('cpuCount').textContent = cpuDeck.length; }
+
+        function battle() {
+            if (!youDeck.length || !cpuDeck.length) { endGame(); return; }
+            const yc = youDeck.shift(), cc = cpuDeck.shift(); renderCard('youCard', yc); renderCard('cpuCard', cc);
+            warPot.push(yc, cc);
+            if (yc.r > cc.r) { youDeck.push(...warPot.sort(() => Math.random() - .5)); warPot = []; document.getElementById('msg').textContent = `🏆 You win this round! (+${warPot.length || 2} cards)`; document.getElementById('youResult').textContent = '✅ WIN'; document.getElementById('cpuResult').textContent = ''; }
+            else if (cc.r > yc.r) { cpuDeck.push(...warPot.sort(() => Math.random() - .5)); warPot = []; document.getElementById('msg').textContent = `❌ CPU wins this round!`; document.getElementById('cpuResult').textContent = '✅ WIN'; document.getElementById('youResult').textContent = ''; }
+            else {
+                document.getElementById('msg').textContent = `⚔️ WAR! Drawing 3 cards each...`; document.getElementById('youResult').textContent = 'WAR!'; document.getElementById('cpuResult').textContent = 'WAR!';// war
+                const wp = document.getElementById('warPile'); wp.innerHTML = ''; for (let i = 0; i < 3 && youDeck.length && cpuDeck.length; i++) { warPot.push(youDeck.shift(), cpuDeck.shift()); const mc = document.createElement('div'); mc.className = 'mini-card'; wp.appendChild(mc); }
+            }
+            update(); if (!youDeck.length || !cpuDeck.length) setTimeout(endGame, 800);
+        }
+
+        function endGame() { const w = youDeck.length > cpuDeck.length ? 'You win! 🏆' : 'CPU wins! 💀'; document.getElementById('msg').textContent = `Game Over! ${w}`; document.getElementById('battleBtn').textContent = '▶ Play Again'; document.getElementById('battleBtn').onclick = () => { init(); document.getElementById('battleBtn').textContent = '⚔️ Battle!'; document.getElementById('battleBtn').onclick = battle; }; }
+
+        document.getElementById('battleBtn').addEventListener('click', battle);
+        init();
+    </script>
+</body>
+
+</html>

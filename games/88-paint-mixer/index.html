@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>Paint Mixer | 100 HTML Games</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        body {
+            background: #0a0a0f;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Outfit', sans-serif;
+            color: #fff;
+            padding: 24px
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 900;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #ec4899, #f97316, #eab308);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text
+        }
+
+        .info {
+            font-size: 14px;
+            color: #64748b;
+            margin-bottom: 16px;
+            text-align: center
+        }
+
+        .target-area {
+            margin-bottom: 20px;
+            text-align: center
+        }
+
+        .target-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #64748b;
+            margin-bottom: 8px
+        }
+
+        .target-box {
+            width: 160px;
+            height: 80px;
+            border-radius: 12px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 13px
+        }
+
+        .mix-area {
+            display: flex;
+            gap: 20px;
+            align-items: flex-end;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            justify-content: center
+        }
+
+        .paint-col {
+            text-align: center
+        }
+
+        .paint-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #64748b;
+            margin-bottom: 6px
+        }
+
+        .paint-bucket {
+            width: 80px;
+            height: 120px;
+            border-radius: 0 0 16px 16px;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            padding-bottom: 8px;
+            cursor: ns-resize;
+            position: relative;
+            overflow: hidden;
+            border: 2px solid rgba(255, 255, 255, 0.15)
+        }
+
+        .paint-fill {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            transition: height .2s;
+            border-radius: 0 0 12px 12px
+        }
+
+        .paint-percent {
+            position: relative;
+            z-index: 1;
+            font-size: 14px;
+            font-weight: 900;
+            color: rgba(255, 255, 255, 0.9)
+        }
+
+        .result-area {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            justify-content: center
+        }
+
+        .result-box {
+            width: 120px;
+            height: 80px;
+            border-radius: 12px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            font-size: 13px;
+            font-weight: 700
+        }
+
+        #similarity {
+            font-size: 2rem;
+            font-weight: 900
+        }
+
+        .slider-wrap {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            width: 80px
+        }
+
+        .paint-slider {
+            width: 80px;
+            -webkit-appearance: none;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 999px;
+            cursor: pointer;
+            accent-color: inherit
+        }
+
+        .btns {
+            display: flex;
+            gap: 10px
+        }
+
+        .btn {
+            padding: 10px 22px;
+            background: linear-gradient(135deg, #ec4899, #f97316);
+            border: none;
+            border-radius: 999px;
+            color: #fff;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform .15s;
+            font-family: 'Outfit', sans-serif
+        }
+
+        .btn:hover {
+            transform: scale(1.05)
+        }
+
+        #msg {
+            font-size: 1rem;
+            min-height: 24px;
+            text-align: center;
+            margin-bottom: 12px;
+            color: #64748b;
+            font-weight: 700
+        }
+
+        .back {
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            text-decoration: none;
+            color: #64748b;
+            font-size: 13px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 6px 14px;
+            border-radius: 999px
+        }
+
+        .back:hover {
+            color: #fff
+        }
+    </style>
+</head>
+
+<body>
+    <a href="../../index.html" class="back">← Back to Menu</a>
+    <h1>🎨 Paint Mixer</h1>
+    <div class="info">Mix the paints to match the target color! Drag sliders to adjust amounts.</div>
+    <div class="target-area">
+        <div class="target-label">🎯 Target Color</div>
+        <div class="target-box" id="targetBox"></div>
+    </div>
+    <div class="mix-area" id="mixArea"></div>
+    <div class="result-area">
+        <div class="result-box" id="resultBox">
+            <div>Your Mix</div>
+        </div>
+        <div>
+            <div id="similarity" style="color:#f59e0b">—</div>
+            <div style="font-size:12px;color:#64748b">Match %</div>
+        </div>
+    </div>
+    <div id="msg"></div>
+    <div class="btns">
+        <button class="btn" id="newBtn">🎲 New Color</button>
+        <button class="btn" style="background:linear-gradient(135deg,#22c55e,#10b981)" id="checkBtn">✓ Submit</button>
+    </div>
+    <script>
+        const PAINTS = [
+            { name: 'Red', color: '#ef4444', rgb: [239, 68, 68] },
+            { name: 'Yellow', color: '#eab308', rgb: [234, 179, 8] },
+            { name: 'Blue', color: '#3b82f6', rgb: [59, 130, 246] },
+            { name: 'White', color: '#f0f0f0', rgb: [240, 240, 240] },
+            { name: 'Black', color: '#374151', rgb: [55, 65, 81] },
+        ];
+        let amounts, target, score = 0;
+
+        function mix() {
+            const total = amounts.reduce((a, b) => a + b, 0) || 1;
+            const rgb = [0, 0, 0]; amounts.forEach((a, i) => { const p = a / total; PAINTS[i].rgb.forEach((c, j) => rgb[j] += c * p); });
+            return rgb.map(v => Math.round(v));
+        }
+
+        function rgbStr(rgb) { return `rgb(${rgb[0]},${rgb[1]},${rgb[2]})`; }
+        function hexToRgb(hex) { const r = parseInt(hex.slice(1, 3), 16), g = parseInt(hex.slice(3, 5), 16), b = parseInt(hex.slice(5, 7), 16); return [r, g, b]; }
+
+        function similarity(a, b) { const d = Math.sqrt(a.reduce((s, v, i) => { const diff = v - b[i]; return s + diff * diff; }, 0)); return Math.max(0, 100 - Math.round(d / 4.41)); }
+
+        function randomColor() { const r = Math.floor(Math.random() * 256), g = Math.floor(Math.random() * 256), b = Math.floor(Math.random() * 256); return { hex: `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`, rgb: [r, g, b] }; }
+
+        function update() {
+            const mixed = mix(); document.getElementById('resultBox').style.background = rgbStr(mixed);
+            const sim = similarity(mixed, target.rgb); document.getElementById('similarity').textContent = sim + '%'; document.getElementById('similarity').style.color = sim >= 80 ? '#22c55e' : sim >= 50 ? '#f59e0b' : '#ef4444';
+        }
+
+        function build() {
+            const ma = document.getElementById('mixArea'); ma.innerHTML = ''; amounts = PAINTS.map(() => 0);
+            PAINTS.forEach((p, i) => {
+                const wrap = document.createElement('div'); wrap.className = 'paint-col'; wrap.innerHTML = `<div class="paint-label">${p.name}</div>`;
+                const bucket = document.createElement('div'); bucket.className = 'paint-bucket'; const fill = document.createElement('div'); fill.className = 'paint-fill'; fill.style.background = p.color; fill.style.height = '0%'; bucket.appendChild(fill);
+                const pct = document.createElement('div'); pct.className = 'paint-percent'; pct.textContent = '0%'; bucket.appendChild(pct);
+                const sWrap = document.createElement('div'); sWrap.className = 'slider-wrap';
+                const sl = document.createElement('input'); sl.type = 'range'; sl.className = 'paint-slider'; sl.min = 0; sl.max = 100; sl.value = 0; sl.style.accentColor = p.color;
+                sl.addEventListener('input', () => { amounts[i] = parseInt(sl.value); fill.style.height = sl.value + '%'; pct.textContent = sl.value + '%'; update(); });
+                sWrap.appendChild(sl); wrap.appendChild(bucket); wrap.appendChild(sWrap); ma.appendChild(wrap);
+            });
+        }
+
+        function newGame() {
+            target = randomColor(); document.getElementById('targetBox').style.background = target.hex; document.getElementById('msg').textContent = ''; document.getElementById('resultBox').style.background = 'rgba(255,255,255,0.05)'; document.getElementById('similarity').textContent = '—'; build();
+        }
+
+        document.getElementById('checkBtn').addEventListener('click', () => { const sim = parseInt(document.getElementById('similarity').textContent) || 0; if (isNaN(sim)) return; const msg = sim >= 90 ? '🏆 Excellent!' : sim >= 70 ? '✅ Good mix!' : sim >= 50 ? '👍 Getting closer...' : '❌ Keep trying!'; document.getElementById('msg').textContent = `${msg} Match: ${sim}%`; document.getElementById('msg').style.color = sim >= 80 ? '#22c55e' : sim >= 50 ? '#f59e0b' : '#ef4444'; });
+        document.getElementById('newBtn').addEventListener('click', newGame);
+        newGame();
+    </script>
+</body>
+
+</html>

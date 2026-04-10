@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>Brick Breaker | 100 HTML Games</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        body {
+            background: #0a0a0f;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Outfit', sans-serif;
+            color: #fff;
+            padding: 16px
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 900;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #06b6d4, #7c3aed);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text
+        }
+
+        .info {
+            display: flex;
+            gap: 24px;
+            margin-bottom: 10px;
+            font-size: 14px;
+            color: #64748b
+        }
+
+        .info span b {
+            color: #06b6d4;
+            font-size: 1.2em
+        }
+
+        canvas {
+            border: 2px solid rgba(6, 182, 212, 0.3);
+            border-radius: 12px;
+            background: #050510;
+            box-shadow: 0 0 30px rgba(6, 182, 212, 0.1)
+        }
+
+        .btn {
+            margin-top: 12px;
+            padding: 10px 28px;
+            background: linear-gradient(135deg, #06b6d4, #7c3aed);
+            border: none;
+            border-radius: 999px;
+            color: #fff;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: 'Outfit', sans-serif;
+            transition: transform .15s
+        }
+
+        .btn:hover {
+            transform: scale(1.05)
+        }
+
+        #msg {
+            margin-top: 10px;
+            font-size: 13px;
+            color: #64748b;
+            min-height: 22px;
+            text-align: center
+        }
+
+        .back {
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            text-decoration: none;
+            color: #64748b;
+            font-size: 13px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 6px 14px;
+            border-radius: 999px
+        }
+
+        .back:hover {
+            color: #fff
+        }
+    </style>
+</head>
+
+<body>
+    <a href="../../index.html" class="back">← Back to Menu</a>
+    <h1>🧱 Brick Breaker</h1>
+    <div class="info"><span>Score: <b id="score">0</b></span><span>Lives: <b id="lives">3</b></span><span>Level: <b
+                id="level">1</b></span></div>
+    <canvas id="c" width="440" height="480"></canvas>
+    <div id="msg">Move paddle with mouse | Press Start</div>
+    <button class="btn" id="startBtn">▶ Start</button>
+    <script>
+        const c = document.getElementById('c'), ctx = c.getContext('2d'), W = 440, H = 480, COLS = 10, ROWS = 6, BW = 40, BH = 16, BPAD = 2;
+        const COLORS = ['#ef4444', '#f97316', '#eab308', '#22c55e', '#06b6d4', '#7c3aed'];
+        let pad = { x: W / 2, w: 70, h: 12 }, ball = { x: W / 2, y: H - 40, vx: 3, vy: -4, r: 7 }, bricks = [], score = 0, lives = 3, level = 1, running = false, animId;
+
+        function mkBricks() { bricks = []; const ox = (W - COLS * (BW + BPAD)) / 2; for (let r = 0; r < ROWS; r++)for (let cc = 0; cc < COLS; cc++) { bricks.push({ x: ox + cc * (BW + BPAD), y: 40 + r * (BH + BPAD), w: BW, h: BH, color: COLORS[r % COLORS.length], hp: 1 + Math.floor(r / 3), alive: true }); } }
+
+        function init() { score = 0; lives = 3; level = 1;['score', 'lives', 'level'].forEach(id => document.getElementById(id).textContent = id === 'lives' ? 3 : id === 'level' ? 1 : 0); mkBricks(); resetBall(); running = true; document.getElementById('msg').textContent = ''; document.getElementById('startBtn').textContent = '↩ Restart'; cancelAnimationFrame(animId); loop(); }
+
+        function resetBall() { ball.x = W / 2; ball.y = H - 40; ball.vx = 3 * (Math.random() < 0.5 ? 1 : -1); ball.vy = -4; }
+
+        function update() {
+            ball.x += ball.vx; ball.y += ball.vy;
+            if (ball.x < ball.r || ball.x > W - ball.r) ball.vx *= -1; if (ball.y < ball.r) ball.vy *= -1;
+            if (ball.y > H) { lives--; document.getElementById('lives').textContent = lives; if (lives <= 0) { running = false; document.getElementById('msg').textContent = `Game Over! Score: ${score}`; } else resetBall(); }
+            // paddle
+            if (ball.y + ball.r > H - 30 && ball.y < H - 15 && ball.x > pad.x - pad.w / 2 && ball.x < pad.x + pad.w / 2) { ball.vy = -Math.abs(ball.vy); ball.vx += (ball.x - pad.x) * 0.1; }
+            // bricks
+            bricks.forEach(b => { if (!b.alive) return; if (ball.x > b.x && ball.x < b.x + b.w && ball.y > b.y && ball.y < b.y + b.h) { b.hp--; if (b.hp <= 0) { b.alive = false; score += 10 * level; document.getElementById('score').textContent = score; } ball.vy *= -1; } });
+            if (bricks.every(b => !b.alive)) { level++; document.getElementById('level').textContent = level; mkBricks(); resetBall(); }
+        }
+
+        function draw() {
+            ctx.fillStyle = '#050510'; ctx.fillRect(0, 0, W, H);
+            bricks.forEach(b => { if (!b.alive) return; ctx.fillStyle = b.color; ctx.shadowColor = b.color; ctx.shadowBlur = 4; ctx.fillRect(b.x, b.y, b.w, b.h); ctx.shadowBlur = 0; if (b.hp > 1) { ctx.fillStyle = 'rgba(0,0,0,0.3)'; ctx.fillRect(b.x, b.y, b.w, b.h); } });
+            ctx.fillStyle = '#06b6d4'; ctx.shadowColor = '#06b6d4'; ctx.shadowBlur = 10; ctx.beginPath(); ctx.roundRect(pad.x - pad.w / 2, H - 30, pad.w, pad.h, 6); ctx.fill();
+            ctx.fillStyle = '#fff'; ctx.shadowColor = '#fff'; ctx.shadowBlur = 10; ctx.beginPath(); ctx.arc(ball.x, ball.y, ball.r, 0, Math.PI * 2); ctx.fill(); ctx.shadowBlur = 0;
+        }
+
+        c.addEventListener('mousemove', e => { const r = c.getBoundingClientRect(); pad.x = Math.max(pad.w / 2, Math.min(W - pad.w / 2, e.clientX - r.left)); });
+        function loop() { if (!running) return; update(); draw(); animId = requestAnimationFrame(loop); }
+        document.getElementById('startBtn').addEventListener('click', init); ctx.fillStyle = '#050510'; ctx.fillRect(0, 0, W, H);
+    </script>
+</body>
+
+</html>

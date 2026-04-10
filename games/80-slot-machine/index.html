@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>Slot Machine | 100 HTML Games</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        body {
+            background: #0a0a0f;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Outfit', sans-serif;
+            color: #fff;
+            padding: 24px
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 900;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #f59e0b, #eab308);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text
+        }
+
+        .machine {
+            background: radial-gradient(ellipse at top, #1e1028, #0d0a14);
+            border: 3px solid #7c3aed;
+            border-radius: 24px;
+            padding: 28px;
+            box-shadow: 0 0 60px rgba(124, 58, 237, 0.3), inset 0 0 40px rgba(0, 0, 0, 0.5);
+            margin: 10px 0;
+            width: 380px
+        }
+
+        .balance {
+            text-align: center;
+            margin-bottom: 12px;
+            font-size: 1rem;
+            color: #94a3b8
+        }
+
+        .balance b {
+            color: #f59e0b;
+            font-size: 1.4rem
+        }
+
+        .reels {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            margin-bottom: 16px
+        }
+
+        .reel {
+            width: 90px;
+            height: 90px;
+            background: #0a0014;
+            border: 2px solid rgba(124, 58, 237, 0.4);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            overflow: hidden;
+            position: relative;
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.5)
+        }
+
+        .reel-inner {
+            transition: transform .5s cubic-bezier(.25, .46, .45, .94)
+        }
+
+        .reel.spinning .reel-inner {
+            animation: spin .12s linear infinite
+        }
+
+        @keyframes spin {
+            from {
+                transform: translateY(-100%)
+            }
+
+            to {
+                transform: translateY(100%)
+            }
+        }
+
+        .payline {
+            width: 100%;
+            height: 3px;
+            background: rgba(245, 158, 11, 0.4);
+            border-radius: 999px;
+            margin-bottom: 14px;
+            position: relative
+        }
+
+        .bet-area {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 14px
+        }
+
+        .bet-btn {
+            width: 36px;
+            height: 36px;
+            background: rgba(255, 255, 255, 0.07);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 8px;
+            color: #fff;
+            font-size: 1.2rem;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: 'Outfit', sans-serif;
+            transition: all .15s
+        }
+
+        .bet-btn:hover {
+            background: rgba(124, 58, 237, 0.3);
+            border-color: rgba(124, 58, 237, 0.5)
+        }
+
+        .bet-val {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #f59e0b;
+            min-width: 60px;
+            text-align: center
+        }
+
+        .spin-btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #7c3aed, #ec4899);
+            border: none;
+            border-radius: 14px;
+            color: #fff;
+            font-size: 1.2rem;
+            font-weight: 900;
+            cursor: pointer;
+            transition: transform .15s;
+            font-family: 'Outfit', sans-serif;
+            letter-spacing: 1px
+        }
+
+        .spin-btn:hover:not(:disabled) {
+            transform: scale(1.03);
+            box-shadow: 0 0 20px rgba(124, 58, 237, 0.4)
+        }
+
+        .spin-btn:disabled {
+            opacity: 0.5;
+            cursor: default
+        }
+
+        #msg {
+            text-align: center;
+            font-size: 1.1rem;
+            font-weight: 700;
+            min-height: 32px;
+            margin: 8px 0;
+            padding: 6px 12px;
+            border-radius: 10px
+        }
+
+        .paytable {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 12px;
+            padding: 12px 16px;
+            width: 380px;
+            max-width: 100%
+        }
+
+        .paytable-title {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #64748b;
+            margin-bottom: 8px
+        }
+
+        .paytable-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            padding: 3px 0;
+            color: #94a3b8
+        }
+
+        .paytable-row b {
+            color: #f59e0b
+        }
+
+        .back {
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            text-decoration: none;
+            color: #64748b;
+            font-size: 13px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 6px 14px;
+            border-radius: 999px
+        }
+
+        .back:hover {
+            color: #fff
+        }
+    </style>
+</head>
+
+<body>
+    <a href="../../index.html" class="back">← Back to Menu</a>
+    <h1>🎰 Slot Machine</h1>
+    <div class="machine">
+        <div class="balance">Balance: <b id="balance">$500</b></div>
+        <div class="reels" id="reels">
+            <div class="reel" id="r0">
+                <div class="reel-inner">🍒</div>
+            </div>
+            <div class="reel" id="r1">
+                <div class="reel-inner">🍒</div>
+            </div>
+            <div class="reel" id="r2">
+                <div class="reel-inner">🍒</div>
+            </div>
+        </div>
+        <div class="payline"></div>
+        <div class="bet-area">
+            <button class="bet-btn" id="betDown">−</button>
+            <div class="bet-val">$<span id="bet">10</span></div>
+            <button class="bet-btn" id="betUp">+</button>
+        </div>
+        <div id="msg">Feeling lucky? Spin!</div>
+        <button class="spin-btn" id="spinBtn">🎰 SPIN</button>
+    </div>
+    <div class="paytable">
+        <div class="paytable-title">💰 Pay Table</div>
+        <div class="paytable-row"><span>🍒🍒🍒</span><b>2× bet</b></div>
+        <div class="paytable-row"><span>🍊🍊🍊</span><b>3× bet</b></div>
+        <div class="paytable-row"><span>🍋🍋🍋</span><b>4× bet</b></div>
+        <div class="paytable-row"><span>⭐⭐⭐</span><b>10× bet</b></div>
+        <div class="paytable-row"><span>💎💎💎</span><b>25× bet</b></div>
+        <div class="paytable-row"><span>🎰🎰🎰</span><b>50× bet</b></div>
+        <div class="paytable-row"><span>Any two matching</span><b>0.5× bet back</b></div>
+    </div>
+    <script>
+        const SYMBOLS = ['🍒', '🍊', '🍋', '⭐', '💎', '🎰', '🍀', '🔔'];
+        const WEIGHTS = [30, 25, 20, 10, 8, 3, 12, 15];
+        const PAYOUTS = { '🍒🍒🍒': 2, '🍊🍊🍊': 3, '🍋🍋🍋': 4, '⭐⭐⭐': 10, '💎💎💎': 25, '🎰🎰🎰': 50 };
+        let balance = 500, bet = 10, spinning = false;
+
+        function weightedRandom() { const total = WEIGHTS.reduce((a, b) => a + b, 0); let r = Math.random() * total; for (let i = 0; i < WEIGHTS.length; i++) { r -= WEIGHTS[i]; if (r <= 0) return SYMBOLS[i]; } return SYMBOLS[0]; }
+
+        function spin() {
+            if (spinning || balance < bet) return; balance -= bet; spinning = true; document.getElementById('balance').textContent = '$' + balance; document.getElementById('spinBtn').disabled = true; document.getElementById('msg').textContent = ''; document.getElementById('msg').style.background = '';
+            const reels = [document.getElementById('r0'), document.getElementById('r1'), document.getElementById('r2')];
+            const results = []; reels.forEach(r => { r.classList.add('spinning'); });
+            reels.forEach((r, i) => { setTimeout(() => { r.classList.remove('spinning'); const sym = weightedRandom(); results[i] = sym; r.querySelector('.reel-inner').textContent = sym; if (i === 2) evaluate(results); }, 500 + i * 400); });
+        }
+
+        function evaluate(res) {
+            spinning = false; document.getElementById('spinBtn').disabled = false; const key = res.join(''); let win = 0; let msg = '', color = '#94a3b8';
+            if (PAYOUTS[key]) { win = bet * PAYOUTS[key]; msg = `🏆 ${key} — WIN $${win}!`; color = '#22c55e'; }
+            else if (res[0] === res[1] || res[1] === res[2] || res[0] === res[2]) { win = Math.floor(bet * 0.5); msg = `✅ Two of a kind! Win $${win}`; color = '#f59e0b'; }
+            else { msg = '💀 No match. Try again!'; color = '#ef4444'; }
+            if (win) balance += win; document.getElementById('balance').textContent = '$' + balance;
+            document.getElementById('msg').textContent = msg; document.getElementById('msg').style.color = color; document.getElementById('msg').style.background = `${color}15`;
+            if (balance <= 0) { document.getElementById('msg').textContent = '💸 Out of money!'; document.getElementById('spinBtn').disabled = true; }
+        }
+
+        const bets = [5, 10, 25, 50, 100]; let betIdx = 1;
+        document.getElementById('betDown').addEventListener('click', () => { betIdx = Math.max(0, betIdx - 1); bet = bets[betIdx]; document.getElementById('bet').textContent = bet; });
+        document.getElementById('betUp').addEventListener('click', () => { betIdx = Math.min(bets.length - 1, betIdx + 1); bet = bets[betIdx]; document.getElementById('bet').textContent = bet; });
+        document.getElementById('spinBtn').addEventListener('click', spin);
+        document.addEventListener('keydown', e => { if (e.code === 'Space') { e.preventDefault(); spin(); } });
+    </script>
+</body>
+
+</html>

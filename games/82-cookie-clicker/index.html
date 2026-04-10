@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>Cookie Clicker | 100 HTML Games</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        body {
+            background: #0a0a0f;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Outfit', sans-serif;
+            color: #fff;
+            padding: 20px
+        }
+
+        .game {
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            gap: 20px;
+            align-items: start;
+            max-width: 900px;
+            width: 100%
+        }
+
+        .panel {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            padding: 16px
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            font-weight: 900;
+            text-align: center;
+            background: linear-gradient(135deg, #f59e0b, #eab308);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 4px
+        }
+
+        .cookie-area {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px
+        }
+
+        #bigCookie {
+            font-size: 7rem;
+            cursor: pointer;
+            transition: transform .08s;
+            filter: drop-shadow(0 0 20px rgba(245, 158, 11, 0.5));
+            user-select: none;
+            line-height: 1
+        }
+
+        #bigCookie:active {
+            transform: scale(0.9)
+        }
+
+        .counter {
+            text-align: center;
+            margin-bottom: 4px
+        }
+
+        .counter .count {
+            font-size: 2.5rem;
+            font-weight: 900;
+            color: #f59e0b
+        }
+
+        .counter .rate {
+            font-size: 13px;
+            color: #64748b
+        }
+
+        .upgrades-panel {
+            max-height: 520px;
+            overflow-y: auto
+        }
+
+        .upgrades-panel::-webkit-scrollbar {
+            width: 4px
+        }
+
+        .upgrades-panel::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 999px
+        }
+
+        .panel-title {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #64748b;
+            margin-bottom: 12px
+        }
+
+        .upgrade-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: all .15s
+        }
+
+        .upgrade-item:hover:not(.locked) {
+            background: rgba(245, 158, 11, 0.1);
+            border-color: rgba(245, 158, 11, 0.3);
+            transform: translateX(3px)
+        }
+
+        .upgrade-item.locked {
+            opacity: 0.3;
+            cursor: default
+        }
+
+        .upgrade-icon {
+            font-size: 1.8rem;
+            width: 40px;
+            text-align: center
+        }
+
+        .upgrade-info {
+            flex: 1
+        }
+
+        .upgrade-name {
+            font-size: 14px;
+            font-weight: 700;
+            color: #e2e8f0
+        }
+
+        .upgrade-desc {
+            font-size: 11px;
+            color: #64748b
+        }
+
+        .upgrade-cost {
+            font-size: 13px;
+            font-weight: 700;
+            color: #f59e0b
+        }
+
+        .upgrade-owned {
+            font-size: 12px;
+            color: #64748b;
+            padding: 2px 6px;
+            background: rgba(255, 255, 255, 0.06);
+            border-radius: 4px
+        }
+
+        .milestones {
+            display: flex;
+            flex-direction: column;
+            gap: 6px
+        }
+
+        .milestone {
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            font-size: 12px;
+            color: #64748b
+        }
+
+        .milestone.achieved {
+            border-color: rgba(34, 197, 94, 0.4);
+            background: rgba(34, 197, 94, 0.08);
+            color: #86efac
+        }
+
+        .float-cookie {
+            position: fixed;
+            font-size: 1.1rem;
+            font-weight: 900;
+            color: #f59e0b;
+            pointer-events: none;
+            animation: floatUp 1.2s ease forwards;
+            text-shadow: 0 0 10px rgba(245, 158, 11, 0.5)
+        }
+
+        @keyframes floatUp {
+            from {
+                opacity: 1;
+                transform: translate(-50%, -50%)
+            }
+
+            to {
+                opacity: 0;
+                transform: translate(-50%, -200%)
+            }
+        }
+
+        .back {
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            text-decoration: none;
+            color: #64748b;
+            font-size: 13px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 6px 14px;
+            border-radius: 999px
+        }
+
+        .back:hover {
+            color: #fff
+        }
+    </style>
+</head>
+
+<body>
+    <a href="../../index.html" class="back">← Back to Menu</a>
+    <div class="game">
+        <div class="panel upgrades-panel" id="shopPanel">
+            <div class="panel-title">🏪 Shop</div>
+            <div id="shop"></div>
+        </div>
+        <div class="cookie-area">
+            <h1>🍪 Cookie Clicker</h1>
+            <div class="counter">
+                <div class="count" id="cookieCount">0</div>
+                <div class="rate" id="cps">0 cookies/s</div>
+            </div>
+            <div id="bigCookie">🍪</div>
+            <div style="font-size:12px;color:#334155;text-align:center">Click the cookie!</div>
+        </div>
+        <div class="panel">
+            <div class="panel-title">🏆 Milestones</div>
+            <div class="milestones" id="milestones"></div>
+        </div>
+    </div>
+    <script>
+        let cookies = 0, cps = 0, clickPower = 1;
+        const UPGRADES = [
+            { id: 'cursor', name: 'Cursor', icon: '🖱️', desc: '+1 CPS each', base: 15, cps: 1, owned: 0 },
+            { id: 'grandma', name: 'Grandma', icon: '👵', desc: '+5 CPS each', base: 100, cps: 5, owned: 0 },
+            { id: 'farm', name: 'Cookie Farm', icon: '🌾', desc: '+25 CPS each', base: 500, cps: 25, owned: 0 },
+            { id: 'factory', name: 'Factory', icon: '🏭', desc: '+100 CPS each', base: 2000, cps: 100, owned: 0 },
+            { id: 'mine', name: 'Cookie Mine', icon: '⛏️', desc: '+400 CPS each', base: 8000, cps: 400, owned: 0 },
+            { id: 'lab', name: 'Laboratory', icon: '🔬', desc: '+2000 CPS each', base: 40000, cps: 2000, owned: 0 },
+            { id: 'portal', name: 'Portal', icon: '🌀', desc: '+10000 CPS each', base: 200000, cps: 10000, owned: 0 },
+            { id: 'clicker', name: 'Super Clicker', icon: '⚡', desc: '+5 per click', base: 250, click: 5, owned: 0 },
+            { id: 'golden', name: 'Golden Click', icon: '✨', desc: '+25 per click', base: 5000, click: 25, owned: 0 },
+        ];
+        const MILESTONES = [{ n: 100, l: 'First 100 🎉' }, { n: 1000, l: '1K Club' }, { n: 10000, l: '10K Legend' }, { n: 100000, l: '100K Wizard' }, { n: 1000000, l: '1M Master!' }, { n: 1e8, l: '100M Deity!' }];
+
+        function cost(u) { return Math.floor(u.base * Math.pow(1.15, u.owned)); }
+
+        function buy(id) {
+            const u = UPGRADES.find(u => u.id === id); const c = cost(u); if (cookies < c) return;
+            cookies -= c; u.owned++; if (u.cps) cps = UPGRADES.reduce((s, x) => s + x.cps * x.owned, 0); if (u.click) clickPower = 1 + UPGRADES.filter(x => x.click).reduce((s, x) => s + x.click * x.owned, 0);
+            renderShop();
+        }
+
+        function renderShop() {
+            document.getElementById('shop').innerHTML = '';
+            UPGRADES.forEach(u => {
+                const c = cost(u); const locked = cookies < c;
+                const el = document.createElement('div'); el.className = 'upgrade-item' + (locked ? ' locked' : '');
+                el.innerHTML = `<div class="upgrade-icon">${u.icon}</div><div class="upgrade-info"><div class="upgrade-name">${u.name}</div><div class="upgrade-desc">${u.desc}</div><div class="upgrade-cost">🍪 ${fmt(c)}</div></div><div class="upgrade-owned">${u.owned}</div>`;
+                el.addEventListener('click', () => buy(u.id)); document.getElementById('shop').appendChild(el);
+            });
+        }
+
+        function renderMilestones() {
+            document.getElementById('milestones').innerHTML = '';
+            MILESTONES.forEach(m => { const el = document.createElement('div'); el.className = 'milestone' + (cookies >= m.n ? ' achieved' : ''); el.textContent = (cookies >= m.n ? '✅ ' : '🔒 ') + m.l + ' (' + fmt(m.n) + ')'; document.getElementById('milestones').appendChild(el); });
+        }
+
+        function fmt(n) { if (n >= 1e9) return (n / 1e9).toFixed(1) + 'B'; if (n >= 1e6) return (n / 1e6).toFixed(1) + 'M'; if (n >= 1e3) return (n / 1e3).toFixed(1) + 'K'; return Math.floor(n); }
+
+        document.getElementById('bigCookie').addEventListener('click', (e) => {
+            cookies += clickPower;
+            const fp = document.createElement('div'); fp.className = 'float-cookie'; fp.textContent = '+' + clickPower; fp.style.left = e.clientX + 'px'; fp.style.top = e.clientY + 'px'; document.body.appendChild(fp); setTimeout(() => fp.remove(), 1200);
+        });
+
+        setInterval(() => { cookies += cps / 20; document.getElementById('cookieCount').textContent = fmt(cookies) + ' 🍪'; document.getElementById('cps').textContent = fmt(cps) + ' cookies/s'; renderShop(); renderMilestones(); }, 50);
+    </script>
+</body>
+
+</html>
