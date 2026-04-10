@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>Emoji Match | 100 HTML Games</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        body {
+            background: #0a0a0f;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Outfit', sans-serif;
+            color: #fff;
+            padding: 24px
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 900;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #f59e0b, #ec4899);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text
+        }
+
+        h2 {
+            font-size: 1rem;
+            color: #64748b;
+            margin-bottom: 16px;
+            text-align: center
+        }
+
+        .info {
+            display: flex;
+            gap: 24px;
+            margin-bottom: 14px;
+            font-size: 14px;
+            color: #64748b
+        }
+
+        .info span b {
+            color: #f59e0b;
+            font-size: 1.2em
+        }
+
+        .target {
+            font-size: 5rem;
+            margin-bottom: 16px;
+            line-height: 1;
+            animation: pulse .8s ease infinite alternate
+        }
+
+        @keyframes pulse {
+            from {
+                transform: scale(1)
+            }
+
+            to {
+                transform: scale(1.08)
+            }
+        }
+
+        #options {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            width: 360px;
+            max-width: 100%;
+            margin-bottom: 16px
+        }
+
+        .opt {
+            height: 72px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 14px;
+            font-size: 2.5rem;
+            cursor: pointer;
+            transition: all .15s;
+            display: flex;
+            align-items: center;
+            justify-content: center
+        }
+
+        .opt:hover {
+            background: rgba(245, 158, 11, 0.15);
+            border-color: rgba(245, 158, 11, 0.5);
+            transform: scale(1.08)
+        }
+
+        .opt.correct {
+            background: rgba(34, 197, 94, 0.2);
+            border-color: #22c55e;
+            animation: pop .3s ease
+        }
+
+        .opt.wrong {
+            background: rgba(239, 68, 68, 0.15);
+            border-color: #ef4444;
+            animation: shake .3s ease
+        }
+
+        @keyframes pop {
+
+            0%,
+            100% {
+                transform: scale(1)
+            }
+
+            50% {
+                transform: scale(1.2)
+            }
+        }
+
+        @keyframes shake {
+
+            0%,
+            100% {
+                transform: translateX(0)
+            }
+
+            25% {
+                transform: translateX(-6px)
+            }
+
+            75% {
+                transform: translateX(6px)
+            }
+        }
+
+        .timer-bar {
+            width: 360px;
+            max-width: 100%;
+            height: 5px;
+            background: rgba(255, 255, 255, 0.07);
+            border-radius: 999px;
+            margin-bottom: 12px;
+            overflow: hidden
+        }
+
+        .timer-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #f59e0b, #ec4899);
+            border-radius: 999px;
+            transition: width .1s
+        }
+
+        #feedback {
+            font-size: 1rem;
+            font-weight: 700;
+            min-height: 28px;
+            text-align: center;
+            margin-bottom: 8px;
+            color: #64748b
+        }
+
+        .btn {
+            padding: 10px 28px;
+            background: linear-gradient(135deg, #f59e0b, #ec4899);
+            border: none;
+            border-radius: 999px;
+            color: #fff;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform .15s;
+            font-family: 'Outfit', sans-serif
+        }
+
+        .btn:hover {
+            transform: scale(1.05)
+        }
+
+        .back {
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            text-decoration: none;
+            color: #64748b;
+            font-size: 13px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 6px 14px;
+            border-radius: 999px
+        }
+
+        .back:hover {
+            color: #fff
+        }
+    </style>
+</head>
+
+<body>
+    <a href="../../index.html" class="back">← Back to Menu</a>
+    <h1>😄 Emoji Match</h1>
+    <h2>Find the matching emoji!</h2>
+    <div class="info">
+        <span>Score: <b id="score">0</b></span>
+        <span>Level: <b id="level">1</b></span>
+        <span>Streak: <b id="streak">0</b>🔥</span>
+    </div>
+    <div class="timer-bar">
+        <div class="timer-fill" id="timerFill" style="width:100%"></div>
+    </div>
+    <div id="target" class="target">🎯</div>
+    <div id="options"></div>
+    <div id="feedback">Press Start to play!</div>
+    <button class="btn" id="startBtn">▶ Start</button>
+    <script>
+        const EMOJIS = ['😀', '😂', '😍', '🤔', '😎', '🥳', '😴', '🤯', '👻', '💀', '🤖', '👽', '🎃', '🦁', '🐢', '🦊', '🐸', '🐙', '🦋', '🌹', '🌊', '⚡', '🔥', '🌈', '🎵', '🎮', '🏆', '💎', '🍕', '🍔', '🌮', '🍣', '🎂', '🍦', '🎁', '🚀', '🛸', '⚽', '🎸', '🎹', '🕹️', '🎭', '🗝️', '🌙', '⭐', '🌺', '🍀', '🦄', '🐉', '🦅'];
+        let score = 0, streak = 0, level = 1, timerInt, timeLeft, running = false;
+
+        function shuffle(a) { return a.sort(() => Math.random() - .5); }
+
+        function nextQ() {
+            const size = 4 + Math.floor(level / 3) * 4; const opts = Math.min(8, 4 + Math.floor(level / 2));
+            const target = EMOJIS[Math.floor(Math.random() * EMOJIS.length)];
+            const decoys = shuffle(EMOJIS.filter(e => e !== target)).slice(0, opts - 1);
+            const choices = shuffle([target, ...decoys]);
+            document.getElementById('target').textContent = target;
+            const el = document.getElementById('options'); el.innerHTML = '';
+            el.style.gridTemplateColumns = `repeat(${Math.ceil(Math.sqrt(opts))},1fr)`;
+            choices.forEach(ch => { const b = document.createElement('div'); b.className = 'opt'; b.textContent = ch; b.addEventListener('click', () => pick(b, ch, target)); el.appendChild(b); });
+            timeLeft = 8 - Math.min(4, Math.floor(level / 3)); document.getElementById('timerFill').style.width = '100%'; clearInterval(timerInt);
+            timerInt = setInterval(() => { timeLeft -= 0.1; document.getElementById('timerFill').style.width = Math.max(0, timeLeft / 8 * 100) + '%'; if (timeLeft <= 0) { clearInterval(timerInt); pick(null, null, target); } }, 100);
+        }
+
+        function pick(btn, ch, target) {
+            clearInterval(timerInt); document.querySelectorAll('.opt').forEach(b => b.style.pointerEvents = 'none');
+            if (ch === target) { score += 10 + streak * 2; streak++; level = Math.floor(score / 50) + 1; document.getElementById('feedback').textContent = `✅ Correct! +${10 + streak * 2} pts`; document.getElementById('feedback').style.color = '#22c55e'; btn?.classList.add('correct'); }
+            else { streak = 0; if (btn) btn.classList.add('wrong'); document.getElementById('feedback').textContent = ch === null ? '⏰ Too slow!' : '❌ Wrong emoji!'; document.getElementById('feedback').style.color = '#ef4444'; }
+            document.getElementById('score').textContent = score; document.getElementById('streak').textContent = streak; document.getElementById('level').textContent = level;
+            setTimeout(nextQ, 900);
+        }
+
+        function start() { score = 0; streak = 0; level = 1; running = true; document.getElementById('score').textContent = 0; document.getElementById('streak').textContent = 0; document.getElementById('level').textContent = 1; document.getElementById('startBtn').style.display = 'none'; nextQ(); }
+        document.getElementById('startBtn').addEventListener('click', start);
+    </script>
+</body>
+
+</html>
